@@ -6,15 +6,20 @@ import (
 	"fmt"
 	"os/exec"
 	goruntime "runtime"
-	"runtime/debug"
 	"sync"
 )
 
 //go:embed wails.json
 var wailsConfigJSON []byte
 
-// buildAppInfo parses the embedded wails.json and the Go build info once, since neither
-// changes while the app runs.
+// Set with -ldflags "-X main.buildCommit=... -X main.buildTime=...". The Go build info cannot
+// supply them, because wails build always passes -buildvcs=false.
+var (
+	buildCommit string
+	buildTime   string
+)
+
+// buildAppInfo parses the embedded wails.json once, since it cannot change while the app runs.
 var buildAppInfo = sync.OnceValues(func() (AppInfo, error) {
 	var config struct {
 		Info struct {
@@ -24,31 +29,12 @@ var buildAppInfo = sync.OnceValues(func() (AppInfo, error) {
 	if err := json.Unmarshal(wailsConfigJSON, &config); err != nil {
 		return AppInfo{}, fmt.Errorf("failed to parse embedded wails.json: %w", err)
 	}
-	info := AppInfo{Version: config.Info.ProductVersion}
-	buildInfo, ok := debug.ReadBuildInfo()
-	if !ok {
-		return info, nil
-	}
-	info.GoVersion = buildInfo.GoVersion
-	var revision string
-	var dirty bool
-	for _, setting := range buildInfo.Settings {
-		switch setting.Key {
-		case "vcs.revision":
-			revision = setting.Value
-		case "vcs.time":
-			info.BuildTime = setting.Value
-		case "vcs.modified":
-			dirty = setting.Value == "true"
-		}
-	}
-	if len(revision) >= 7 {
-		info.Commit = revision[:7]
-		if dirty {
-			info.Commit += "-dirty"
-		}
-	}
-	return info, nil
+	return AppInfo{
+		Version:   config.Info.ProductVersion,
+		Commit:    buildCommit,
+		BuildTime: buildTime,
+		GoVersion: goruntime.Version(),
+	}, nil
 })
 
 // openInTextEditor opens path in the system's editor without waiting for it to close.

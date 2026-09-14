@@ -14,7 +14,8 @@ A fast desktop API client that reads and writes Postman collections directly. De
 ## Build and run
 
 ```sh
-wails build                     # macOS: build/bin/restly.app
+# macOS: build/bin/restly.app. The flags stamp the commit and build time shown in Settings > About.
+wails build -clean -ldflags "-X main.buildCommit=$(git rev-parse --short HEAD) -X main.buildTime=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 open build/bin/restly.app
 
 wails dev                       # live-reload development build

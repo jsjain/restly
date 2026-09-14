@@ -10,9 +10,9 @@ import (
 // AppInfo is the version information shown in Settings > About.
 type AppInfo struct {
 	Version   string `json:"version"`   // wails.json info.productVersion, compiled in
-	Commit    string `json:"commit"`    // short vcs.revision, "-dirty" suffixed, "" when unavailable
-	BuildTime string `json:"buildTime"` // vcs.time, "" when unavailable
-	GoVersion string `json:"goVersion"` // from runtime/debug.BuildInfo
+	Commit    string `json:"commit"`    // main.buildCommit from -ldflags, "" when not set
+	BuildTime string `json:"buildTime"` // main.buildTime from -ldflags, RFC 3339, "" when not set
+	GoVersion string `json:"goVersion"`
 }
 
 type Workspace struct {
