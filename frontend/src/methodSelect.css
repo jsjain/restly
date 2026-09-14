@@ -6,13 +6,13 @@
   align-items: center;
   flex: 1 1 auto;
   min-width: 0;
-  background: var(--surface-input, #1a1b1e);
-  border: 1px solid var(--border-control, #3a3b40);
-  border-radius: var(--radius, 6px);
+  background: var(--surface-input);
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius);
 }
 
 .method-url-group:focus-within {
-  outline: 2px solid var(--border-focus, #4c8dff);
+  outline: 2px solid var(--border-focus);
   outline-offset: 1px;
 }
 
@@ -27,8 +27,8 @@
   padding: 0 10px;
   background: transparent;
   border: none;
-  border-right: 1px solid var(--border, #3a3b40);
-  color: var(--text, #e6e6e6);
+  border-right: 1px solid var(--border);
+  color: var(--text);
   cursor: pointer;
   font-family: var(--font-mono);
 }
@@ -42,7 +42,7 @@
 /* Shares the group's border/radius; the visible border now lives on the group itself. */
 .method-select-trigger + .url-field .url-input {
   border: none;
-  border-radius: 0 var(--radius, 6px) var(--radius, 6px) 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
   background: transparent;
 }
 
@@ -53,7 +53,7 @@
 }
 
 .method-select-trigger:hover:not(:disabled):not(.method-select-static) {
-  background: var(--surface-hover, #34353a);
+  background: var(--surface-hover);
 }
 
 .method-select-trigger:disabled {
@@ -62,7 +62,7 @@
 }
 
 .method-select-trigger:focus-visible {
-  outline: 2px solid var(--border-focus, #4c8dff);
+  outline: 2px solid var(--border-focus);
   outline-offset: -2px;
 }
 
@@ -77,7 +77,7 @@
 .method-select-chevron {
   display: inline-flex;
   align-items: center;
-  color: var(--text-subtle, #a0a0a8);
+  color: var(--text-subtle);
   flex: 0 0 auto;
   transition: transform 0.1s ease;
 }
@@ -89,10 +89,10 @@
 .method-select-popover {
   position: fixed;
   z-index: 1000;
-  background: var(--surface-overlay, #2d2e33);
-  border: 1px solid var(--border, #3a3b40);
-  border-radius: var(--radius, 6px);
-  box-shadow: var(--shadow-overlay, 0 8px 24px rgba(0, 0, 0, 0.45));
+  background: var(--surface-overlay);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-overlay);
   padding: 4px;
   display: flex;
   flex-direction: column;
@@ -106,8 +106,8 @@
   padding: 6px 10px;
   background: none;
   border: none;
-  border-radius: calc(var(--radius, 6px) - 2px);
-  color: var(--text, #e6e6e6);
+  border-radius: calc(var(--radius) - 2px);
+  color: var(--text);
   text-align: left;
   cursor: pointer;
   font-family: var(--font-mono);
@@ -115,7 +115,7 @@
 
 .method-select-option.highlighted,
 .method-select-option:hover {
-  background: var(--surface-hover, #34353a);
+  background: var(--surface-hover);
 }
 
 .method-select-check {
@@ -123,7 +123,7 @@
   align-items: center;
   width: 14px;
   flex: 0 0 auto;
-  color: var(--primary, #4c8dff);
+  color: var(--primary);
 }
 
 .method-select-option-label {
@@ -132,49 +132,49 @@
 }
 
 .method-select-custom-label {
-  color: var(--text-subtle, #a0a0a8);
+  color: var(--text-subtle);
 }
 
 .method-select-custom-input {
   padding: 6px 10px;
-  background: var(--surface-input, #1a1b1e);
-  border: 1px solid var(--border-focus, #4c8dff);
-  border-radius: calc(var(--radius, 6px) - 2px);
-  color: var(--text, #e6e6e6);
+  background: var(--surface-input);
+  border: 1px solid var(--border-focus);
+  border-radius: calc(var(--radius) - 2px);
+  color: var(--text);
 }
 
 .ms-color-get {
-  color: var(--method-get, #22c55e);
+  color: var(--method-get);
 }
 
 .ms-color-post {
-  color: var(--method-post, #f59e0b);
+  color: var(--method-post);
 }
 
 .ms-color-put {
-  color: var(--method-put, #3b82f6);
+  color: var(--method-put);
 }
 
 .ms-color-patch {
-  color: var(--method-patch, #a855f7);
+  color: var(--method-patch);
 }
 
 .ms-color-delete {
-  color: var(--method-delete, #ef4444);
+  color: var(--method-delete);
 }
 
 .ms-color-head {
-  color: var(--method-head, #94a3b8);
+  color: var(--method-head);
 }
 
 .ms-color-options {
-  color: var(--method-options, #94a3b8);
+  color: var(--method-options);
 }
 
 .ms-color-other {
-  color: var(--text-subtle, #a0a0a8);
+  color: var(--text-subtle);
 }
 
 .ms-color-ws {
-  color: var(--method-ws, #4c8dff);
+  color: var(--method-ws);
 }

@@ -16,6 +16,10 @@ const VAR_BG_ALPHA = 0.16;
 const MIN_VAR_BG_ALPHA = 0.08;
 // textSubtlest's contrast on the surface is at most textSubtle's divided by this.
 const SUBTLEST_STEP = 1.25;
+// Tokens that are not colors, so no "restly.<token>" key sets them.
+const NON_COLOR_KEYS = new Set<string>(["fontUi", "fontMono", "fontSizeUi", "fontSizeMono", "radius", "radiusSmall"]);
+// Tokens drawn as translucent layers, which keep their alpha instead of being composited on the surface.
+const TRANSLUCENT_KEYS = new Set<string>(["varDefinedBg", "varUndefinedBg", "overlayBackdrop", "scrollbarThumb", "scrollbarThumbHover"]);
 
 // parseColor reads #RGB, #RGBA, #RRGGBB, #RRGGBBAA, rgb() and rgba().
 export function parseColor(value: string): Rgba | null {
@@ -288,6 +292,8 @@ const defaults: Record<Base, Record<string, string>> = {
     "terminal.ansiMagenta": "#BC3FBC",
     "terminal.ansiRed": "#CD3131",
     "terminal.ansiCyan": "#11A8CD",
+    "scrollbarSlider.background": "#79797966",
+    "scrollbarSlider.hoverBackground": "#646464B3",
   },
   light: {
     "editor.background": "#FFFFFF",
@@ -307,6 +313,8 @@ const defaults: Record<Base, Record<string, string>> = {
     "terminal.ansiMagenta": "#BC05BC",
     "terminal.ansiRed": "#CD3131",
     "terminal.ansiCyan": "#0598BC",
+    "scrollbarSlider.background": "#64646466",
+    "scrollbarSlider.hoverBackground": "#646464B3",
   },
 };
 
@@ -409,13 +417,16 @@ export function convertVscodeTheme(json: unknown, fallbackName: string, bases: R
     contrast(textSubtle, surface) / contrast(placeholder, surface) >= SUBTLEST_STEP ? placeholder : dimmer(textSubtle, surface, SUBTLEST_STEP);
   const widgetBorder = pick("contrastBorder", "input.border", "dropdown.border");
   const checkboxBorder = pick("checkbox.border");
-  // The editor group and sidebar borders divide the main layout. panel.border is for the bottom panel and is
-  // often much brighter (One Dark Pro: #3e4452 against #181a1f).
-  const dividerBorder = pick("editorGroup.border", "sideBar.border", "panel.border");
-  // border is the widget or divider color, whichever stands out more from the surface (One Dark Pro's
-  // dropdown.border equals its sidebar background).
+  // A line drawn away from the text color (darker on a dark theme) reads as a gap between panels, not a
+  // divider. One Dark Pro sets editorGroup.border and tab.border to #181a1f on a #282c34 editor, and its
+  // lighter panel.border #3e4452 is the line VS Code shows, so borders skip colors on the wrong side.
+  const lineUp = (c: Rgba) => (luminance(over(c, surface)) - luminance(surface)) * (luminance(text) - luminance(surface)) > 0;
+  const dividerBorder = ["sideBar.border", "editorGroup.border", "panel.border", "tab.border", "editorGroupHeader.tabsBorder"]
+    .map((key) => read(key))
+    .find((c): c is Rgba => c !== undefined && lineUp(c));
+  // border is the widget or divider color, whichever stands out more from the surface.
   const border = [widgetBorder, dividerBorder]
-    .filter((c): c is Rgba => c !== undefined)
+    .filter((c): c is Rgba => c !== undefined && lineUp(c))
     .map((c) => over(c, surface))
     .reduce<Rgba | undefined>((best, c) => (!best || contrast(c, surface) > contrast(best, surface) ? c : best), undefined);
   const shadow = pick("widget.shadow") ?? d("widget.shadow");
@@ -467,6 +478,8 @@ export function convertVscodeTheme(json: unknown, fallbackName: string, bases: R
     selection: toHex(selection),
 
     shadowOverlay: `0 8px 24px ${toCss(shadow)}`,
+    scrollbarThumb: toCss(pick("scrollbarSlider.background") ?? d("scrollbarSlider.background")),
+    scrollbarThumbHover: toCss(pick("scrollbarSlider.hoverBackground") ?? d("scrollbarSlider.hoverBackground")),
   } as ThemeTokens;
 
   const globalRule = rules.find((r) => r.scope === undefined && typeof r.settings?.foreground === "string");
@@ -475,6 +488,22 @@ export function convertVscodeTheme(json: unknown, fallbackName: string, bases: R
     const value = scopeColor(rules, targets) ?? fallback;
     const c = value ? parseColor(value) : null;
     tokens[key] = toHex(over(c ?? text, surface));
+  }
+
+  // "restly.<token>" sets a token directly, for colors VS Code has no key for. surface goes first
+  // because the opaque tokens are composited on it. The contrast guard below still applies.
+  const colorKeys = Object.keys(tokens).filter((key) => !NON_COLOR_KEYS.has(key)) as Key[];
+  for (const key of ["surface" as Key, ...colorKeys.filter((key) => key !== "surface")]) {
+    const c = read(`restly.${key}`);
+    if (!c) continue;
+    if (key === "shadowOverlay") tokens.shadowOverlay = `0 8px 24px ${toCss(c)}`;
+    else if (TRANSLUCENT_KEYS.has(key)) tokens[key] = toCss(c);
+    else tokens[key] = toHex(over(c, parseColor(tokens.surface)!));
+  }
+  for (const key of Object.keys(colors)) {
+    if (key.startsWith("restly.") && !colorKeys.includes(key.slice("restly.".length) as Key)) {
+      warnings.push(`${key} is not a Restly color token, so it was ignored`);
+    }
   }
 
   const adjusted = guardContrast(tokens, base);

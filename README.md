@@ -54,7 +54,7 @@ Keys are remapped in `keybindings.json` in the per-machine data folder, using VS
 
 ## Themes and fonts
 
-Settings > Appearance lists Dark (VS Code Dark Modern), Light (VS Code Light Modern), One Dark (OneDark-Pro), and imported themes. "Import VS Code theme…" accepts any VS Code color theme JSON file and copies it into `themes/` in the per-machine data folder. To make your own theme, write a VS Code color theme: the keys under `colors` (such as `editor.background` or `input.border`) and the scopes under `tokenColors` are what Restly reads. Colors that would fail WCAG AA contrast are adjusted slightly, and the theme list notes which ones. The same page sets the UI font, Inter by default, and the editor font and sizes.
+Settings > Appearance lists Dark (VS Code Dark Modern), Light (VS Code Light Modern), One Dark (OneDark-Pro), and imported themes. "Import VS Code theme…" accepts any VS Code color theme JSON file and copies it into `themes/` in the per-machine data folder. To make your own theme, write a VS Code color theme: the keys under `colors` (such as `editor.background` or `input.border`) and the scopes under `tokenColors` are what Restly reads. Colors VS Code has no key for can be set directly with `restly.<token>` keys under `colors`, using the token names in `frontend/src/theme/tokens.ts`, for example `"restly.methodGet": "#00c853"`, `"restly.varDefinedBg": "#00c85329"`, or `"restly.overlayBackdrop": "#00000080"`. Every color in the UI comes from these tokens. Colors that would fail WCAG AA contrast are adjusted slightly, including ones set this way, and the theme list notes which ones. The same page sets the UI font, Inter by default, and the editor font and sizes.
 
 ## Tests
 

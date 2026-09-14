@@ -2,7 +2,7 @@
 // classes we must not use, see types.ts) and our own plain-JSON types. Every function
 // here is a thin wrapper: call the binding, cast the result, normalize Go nils to [].
 import * as Backend from "../wailsjs/go/main/App";
-import { EventsOn, EventsOff, ClipboardSetText } from "../wailsjs/runtime/runtime";
+import { EventsOn, EventsOff, ClipboardSetText, WindowSetBackgroundColour } from "../wailsjs/runtime/runtime";
 import type {
   Workspace,
   Collection,
@@ -23,6 +23,11 @@ import type {
 } from "./types";
 
 export { EventsOn, EventsOff, ClipboardSetText };
+
+// The native window paints this color behind the webview, visible while resizing.
+export function setWindowBackground(r: number, g: number, b: number): void {
+  WindowSetBackgroundColour(Math.round(r), Math.round(g), Math.round(b), 255);
+}
 
 export function getWorkspace(): Promise<Workspace> {
   return Backend.GetWorkspace() as unknown as Promise<Workspace>;

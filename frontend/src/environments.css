@@ -61,7 +61,7 @@
 }
 
 .ov-env-row.selected {
-  background: var(--surface-active, var(--surface-hover));
+  background: var(--surface-active);
   color: var(--text);
 }
 

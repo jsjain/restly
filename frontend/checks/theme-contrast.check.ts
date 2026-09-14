@@ -68,6 +68,30 @@ for (const file of files) {
   }
 }
 
+// restly.<token> keys set tokens directly, opaque ones composited on the surface, translucent ones kept.
+const custom = convertVscodeTheme(
+  {
+    type: "dark",
+    colors: {
+      "editor.background": "#202020",
+      "editorGroup.border": "#101010",
+      "panel.border": "#404040",
+      "restly.methodGet": "#00c853",
+      "restly.overlayBackdrop": "#00000080",
+      "restly.scrollbarThumb": "#ffffff33",
+      "restly.nope": "#ffffff",
+    },
+  },
+  "custom",
+  { dark: dark.tokens, light: light.tokens }
+);
+assert.equal(custom.tokens.methodGet, "#00c853");
+assert.equal(custom.tokens.overlayBackdrop, "rgba(0, 0, 0, 0.502)");
+assert.equal(custom.tokens.scrollbarThumb, "rgba(255, 255, 255, 0.2)");
+assert.ok(custom.warnings.some((w) => w.startsWith("restly.nope")), "unknown restly key warns");
+// A divider darker than a dark background reads as a gap, so the lighter panel.border wins.
+assert.equal(custom.tokens.borderSubtle, "#404040");
+
 if (failures.length) {
   console.error(`\n${failures.length} theme check failures:\n${failures.join("\n")}`);
   process.exit(1);

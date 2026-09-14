@@ -1,10 +1,9 @@
-/* Command palette, shortcuts help, and tab context menu. Tokens have fallbacks so this
-   renders correctly whether or not the theme file has defined them yet. */
+/* Command palette, shortcuts help, and tab context menu. */
 
 .overlay-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--overlay-backdrop);
   z-index: 200;
   display: flex;
   align-items: flex-start;
@@ -18,10 +17,10 @@
   max-height: 70vh;
   display: flex;
   flex-direction: column;
-  background: var(--surface-overlay, #2a2a2e);
-  border: 1px solid var(--border, #3a3a40);
-  border-radius: var(--radius, 6px);
-  box-shadow: var(--shadow-overlay, 0 12px 36px rgba(0, 0, 0, 0.5));
+  background: var(--surface-overlay);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-overlay);
   overflow: hidden;
 }
 
@@ -30,7 +29,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  border-bottom: 1px solid var(--border, #3a3a40);
+  border-bottom: 1px solid var(--border);
   flex: 0 0 auto;
 }
 
@@ -39,15 +38,15 @@
   background: transparent;
   border: none;
   outline: none;
-  color: var(--text, #e6e6e6);
+  color: var(--text);
   font-size: 14px;
   font-family: var(--font-mono);
 }
 
 .overlay-input-row .overlay-mode {
   font-size: 11px;
-  color: var(--text-subtlest, #707078);
-  border: 1px solid var(--border, #3a3a40);
+  color: var(--text-subtlest);
+  border: 1px solid var(--border);
   border-radius: 3px;
   padding: 1px 5px;
 }
@@ -60,7 +59,7 @@
 
 .overlay-group-title {
   font-size: 11px;
-  color: var(--text-subtlest, #707078);
+  color: var(--text-subtlest);
   padding: 8px 8px 2px;
 }
 
@@ -70,17 +69,17 @@
   gap: 8px;
   height: 30px;
   padding: 0 8px;
-  border-radius: var(--radius, 6px);
+  border-radius: var(--radius);
   cursor: pointer;
-  color: var(--text, #e6e6e6);
+  color: var(--text);
 }
 
 .overlay-row.active {
-  background: var(--surface-active, #3a3a42);
+  background: var(--surface-active);
 }
 
 .overlay-row:hover {
-  background: var(--surface-hover, #34343a);
+  background: var(--surface-hover);
 }
 
 .overlay-row .overlay-title {
@@ -95,7 +94,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--text-subtlest, #707078);
+  color: var(--text-subtlest);
   font-size: 12px;
   font-family: var(--font-mono);
 }
@@ -103,12 +102,12 @@
 /* --text-subtlest is only checked on panels, so dim text on hovered and active rows uses --text-subtle. */
 .overlay-row.active .overlay-subtitle,
 .overlay-row:hover .overlay-subtitle {
-  color: var(--text-subtle, #a0a0a8);
+  color: var(--text-subtle);
 }
 
 .overlay-row .overlay-keys {
   flex: 0 0 auto;
-  color: var(--text-subtle, #a0a0a8);
+  color: var(--text-subtle);
   font-size: 12px;
   font-family: var(--font-mono);
   white-space: nowrap;
@@ -117,7 +116,7 @@
 .overlay-empty {
   padding: 20px 12px;
   text-align: center;
-  color: var(--text-subtlest, #707078);
+  color: var(--text-subtlest);
 }
 
 /* Matched characters, as in VS Code's quick open: accent color and bold with no fill, so they stay
@@ -125,7 +124,7 @@
 .overlay-row mark,
 .shortcuts-help mark {
   background: none;
-  color: var(--primary, #4c8dff);
+  color: var(--primary);
   font-weight: 600;
 }
 
@@ -143,7 +142,7 @@
 .shortcuts-help-group-title {
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-subtle, #a0a0a8);
+  color: var(--text-subtle);
   margin-bottom: 4px;
 }
 
@@ -152,11 +151,11 @@
   justify-content: space-between;
   gap: 12px;
   padding: 4px 0;
-  border-bottom: 1px solid var(--border, #3a3a40);
+  border-bottom: 1px solid var(--border);
 }
 
 .shortcuts-help-row .overlay-keys {
-  color: var(--text-subtle, #a0a0a8);
+  color: var(--text-subtle);
   font-family: var(--font-mono);
   font-size: 12px;
 }
@@ -166,10 +165,10 @@
 .tab-context-menu {
   position: fixed;
   min-width: 200px;
-  background: var(--surface-overlay, #2a2a2e);
-  border: 1px solid var(--border, #3a3a40);
-  border-radius: var(--radius, 6px);
-  box-shadow: var(--shadow-overlay, 0 12px 36px rgba(0, 0, 0, 0.5));
+  background: var(--surface-overlay);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-overlay);
   padding: 4px;
   z-index: 210;
   --wails-draggable: no-drag;
@@ -185,7 +184,7 @@
   border-radius: 4px;
   background: none;
   border: none;
-  color: var(--text, #e6e6e6);
+  color: var(--text);
   font-size: 13px;
   cursor: pointer;
   justify-content: space-between;
@@ -193,29 +192,29 @@
 }
 
 .tab-context-menu-item .overlay-keys {
-  color: var(--text-subtlest, #707078);
+  color: var(--text-subtlest);
   font-family: var(--font-mono);
   font-size: 11px;
 }
 
 .tab-context-menu-item:hover,
 .tab-context-menu-item.active {
-  background: var(--surface-hover, #34343a);
+  background: var(--surface-hover);
 }
 
 .tab-context-menu-item:hover .overlay-keys,
 .tab-context-menu-item.active .overlay-keys {
-  color: var(--text-subtle, #a0a0a8);
+  color: var(--text-subtle);
 }
 
 .tab-context-menu-separator {
   height: 1px;
-  background: var(--border, #3a3a40);
+  background: var(--border);
   margin: 4px 0;
 }
 
 /* --- method badges reused from styles.css's .method-badge; WS has no default color there --- */
 
 .method-WS {
-  color: var(--method-ws, #4c8dff);
+  color: var(--method-ws);
 }

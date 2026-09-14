@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, Cookie, Settings, X } from "lucide-react";
 import {
   state,
@@ -171,11 +171,24 @@ function EnvPicker() {
 
 export default function Tabs() {
   const [menu, setMenu] = useState<{ tab: Tab; x: number; y: number } | null>(null);
+  const stripRef = useRef<HTMLDivElement>(null);
+
+  // The strip has no scrollbar, so a tab opened or switched to off screen must be scrolled to.
+  useEffect(() => {
+    stripRef.current?.querySelector(".tab.active")?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [state.activeTab, state.tabs.length]);
 
   return (
     <div className="main">
       <div className="tabbar">
-        <div className="tabbar-tabs">
+        <div
+          className="tabbar-tabs"
+          ref={stripRef}
+          onWheel={(e) => {
+            // A mouse wheel only scrolls vertically, which this strip cannot do.
+            if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) e.currentTarget.scrollLeft += e.deltaY;
+          }}
+        >
           {state.tabs.map((tab) => {
             const badge = tabBadge(tab);
             return (

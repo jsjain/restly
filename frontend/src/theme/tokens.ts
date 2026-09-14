@@ -6,7 +6,9 @@
 // convertVscodeTheme() in vscode.ts maps them, for example:
 //   editor.background -> surface          sideBar.background -> surfaceRaised
 //   input.background -> surfaceInput      input.border -> border, borderControl
-//   panel.border -> borderSubtle
+//   sideBar.border, editorGroup.border, panel.border, tab.border (the first lighter than the
+//     background on dark themes, darker on light ones) -> borderSubtle
+//   scrollbarSlider.background / scrollbarSlider.hoverBackground -> scrollbarThumb, scrollbarThumbHover
 //   editor.foreground -> text             descriptionForeground -> textSubtle
 //   focusBorder -> borderFocus            textLink.foreground (else button.background) -> primary
 //   button.background / button.hoverBackground / button.foreground -> primaryButton, primaryButtonHover, primaryButtonText
@@ -16,6 +18,11 @@
 // A key the theme leaves out comes from its type's VS Code default theme (Dark Modern or Light
 // Modern) or is blended from the theme's own background and foreground. Fonts, sizes, and radii
 // are not theme colors and come from the built-in theme of the same type.
+//
+// Every color token below can also be set directly with a "restly.<token>" key under "colors",
+// such as "restly.methodGet" or "restly.overlayBackdrop", the way VS Code extensions add their own
+// color keys. That covers colors VS Code has no key for. No CSS file holds a literal color
+// (frontend/checks/colors.check.ts), so these tokens are the only source of color in the UI.
 //
 // The names here are Restly's internal CSS contract and stay stable. Every color is checked
 // against WCAG AA by contrastPairs in vscode.ts.
@@ -82,6 +89,11 @@ export interface ThemeTokens {
   radius: string;
   radiusSmall: string;
   shadowOverlay: string;
+  // The dimmed layer behind dialogs and the command palette.
+  overlayBackdrop: string;
+  // Scrollbar thumbs, from scrollbarSlider.background and scrollbarSlider.hoverBackground.
+  scrollbarThumb: string;
+  scrollbarThumbHover: string;
 }
 
 export const tokenToCssVar: Record<keyof ThemeTokens, string> = {
@@ -142,4 +154,7 @@ export const tokenToCssVar: Record<keyof ThemeTokens, string> = {
   radius: "--radius",
   radiusSmall: "--radius-small",
   shadowOverlay: "--shadow-overlay",
+  overlayBackdrop: "--overlay-backdrop",
+  scrollbarThumb: "--scrollbar-thumb",
+  scrollbarThumbHover: "--scrollbar-thumb-hover",
 };

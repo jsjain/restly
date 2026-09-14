@@ -73,6 +73,8 @@ const darkTokens: ThemeTokens = {
   varUndefinedBg: "rgba(248, 81, 73, 0.16)",
 
   selection: "#264f78",
+  scrollbarThumb: "rgba(121, 121, 121, 0.4)", // scrollbarSlider.background #79797966
+  scrollbarThumbHover: "rgba(100, 100, 100, 0.7)",
 
   syntaxString: "#ce9178",
   syntaxNumber: "#b5cea8",
@@ -83,6 +85,7 @@ const darkTokens: ThemeTokens = {
   syntaxBoolean: "#569cd6",
 
   shadowOverlay: "0 8px 24px rgba(0, 0, 0, 0.36)",
+  overlayBackdrop: "rgba(0, 0, 0, 0.5)",
 };
 
 // VS Code Light Modern: light_modern.json, which includes light_plus.json and light_vs.json.
@@ -129,6 +132,8 @@ const lightTokens: ThemeTokens = {
   varUndefinedBg: "rgba(248, 81, 73, 0.16)",
 
   selection: "#add6ff",
+  scrollbarThumb: "rgba(100, 100, 100, 0.4)", // scrollbarSlider.background #64646466
+  scrollbarThumbHover: "rgba(100, 100, 100, 0.7)",
 
   syntaxString: "#a31515",
   syntaxNumber: "#098658",
@@ -139,6 +144,7 @@ const lightTokens: ThemeTokens = {
   syntaxBoolean: "#0000ff",
 
   shadowOverlay: "0 8px 24px rgba(0, 0, 0, 0.16)",
+  overlayBackdrop: "rgba(0, 0, 0, 0.5)",
 };
 
 // One Dark Pro (github.com/Binaryify/OneDark-Pro, themes/OneDark-Pro.json).
@@ -155,8 +161,8 @@ const oneDarkTokens: ThemeTokens = {
   textSubtle: "#abb2bf",
   textSubtlest: "#8e939c", // textSubtle one step dimmer #777c87
 
-  border: "#181a1f", // editorGroup.border
-  borderSubtle: "#181a1f",
+  border: "#3e4452", // panel.border
+  borderSubtle: "#3e4452",
   borderControl: "#3f4348", // dropdown.border #21252b
   borderFocus: "#7c818a", // focusBorder #3e4452
 
@@ -185,6 +191,8 @@ const oneDarkTokens: ThemeTokens = {
   varUndefinedBg: "rgba(194, 64, 56, 0.16)",
 
   selection: "#404859", // editor.selectionBackground #67769660
+  scrollbarThumb: "rgba(78, 86, 102, 0.376)", // scrollbarSlider.background #4e566660
+  scrollbarThumbHover: "rgba(90, 99, 117, 0.502)",
 
   syntaxString: "#98c379",
   syntaxNumber: "#d19a66",
@@ -195,6 +203,7 @@ const oneDarkTokens: ThemeTokens = {
   syntaxBoolean: "#d19a66",
 
   shadowOverlay: "0 8px 24px rgba(0, 0, 0, 0.36)",
+  overlayBackdrop: "rgba(0, 0, 0, 0.5)",
 };
 
 export const dark: Theme = { id: "dark", name: "Dark", base: "dark", tokens: darkTokens };

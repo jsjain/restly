@@ -66,7 +66,7 @@
    attribute selector outweighs this single class on specificity, so it would otherwise win. */
 .varinput-input {
   color: transparent !important;
-  caret-color: var(--text, #e6e6e6);
+  caret-color: var(--text);
 }
 
 /* The selection is painted by this input, under the mirror, so the mirror's text and {{var}}
@@ -79,7 +79,7 @@
 }
 
 .varinput-input::placeholder {
-  color: var(--text-subtle, #a0a0a8);
+  color: var(--text-subtle);
   opacity: 1;
 }
 
@@ -91,13 +91,13 @@
 }
 
 .vartoken-defined {
-  color: var(--var-defined, #7dd3fc);
-  background: var(--var-defined-bg, rgba(56, 189, 248, 0.15));
+  color: var(--var-defined);
+  background: var(--var-defined-bg);
 }
 
 .vartoken-undefined {
-  color: var(--var-undefined, #fca5a5);
-  background: var(--var-undefined-bg, rgba(248, 113, 113, 0.15));
+  color: var(--var-undefined);
+  background: var(--var-undefined-bg);
 }
 
 /* CodeMirror decorations: free to add a little padding since there's no sibling layer to
@@ -109,24 +109,24 @@
 }
 
 .cm-var-defined {
-  color: var(--var-defined, #7dd3fc);
-  background: var(--var-defined-bg, rgba(56, 189, 248, 0.15));
+  color: var(--var-defined);
+  background: var(--var-defined-bg);
 }
 
 .cm-var-undefined {
-  color: var(--var-undefined, #fca5a5);
-  background: var(--var-undefined-bg, rgba(248, 113, 113, 0.15));
+  color: var(--var-undefined);
+  background: var(--var-undefined-bg);
 }
 
 .var-popup {
   position: fixed;
   z-index: 1000;
   max-width: 360px;
-  background: var(--surface-overlay, #2a2a2e);
-  border: 1px solid var(--border, #3a3a40);
+  background: var(--surface-overlay);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  box-shadow: var(--shadow-overlay, 0 8px 24px rgba(0, 0, 0, 0.4));
-  color: var(--text, #e6e6e6);
+  box-shadow: var(--shadow-overlay);
+  color: var(--text);
   padding: 8px 10px;
   font-size: 12px;
   line-height: 1.5;
@@ -142,16 +142,16 @@
 }
 
 .var-popup-resolved {
-  color: var(--text-subtle, #a0a0a8);
+  color: var(--text-subtle);
 }
 
 .var-popup-scope {
   margin-top: 4px;
-  color: var(--text-subtle, #a0a0a8);
+  color: var(--text-subtle);
 }
 
 .var-popup-hint {
-  color: var(--text-subtle, #a0a0a8);
+  color: var(--text-subtle);
   max-width: 260px;
 }
 
@@ -166,10 +166,10 @@
   max-width: 360px;
   max-height: 220px;
   overflow-y: auto;
-  background: var(--surface-overlay, #2a2a2e);
-  border: 1px solid var(--border, #3a3a40);
+  background: var(--surface-overlay);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  box-shadow: var(--shadow-overlay, 0 8px 24px rgba(0, 0, 0, 0.4));
+  box-shadow: var(--shadow-overlay);
   font-size: 12px;
 }
 
@@ -179,20 +179,20 @@
   gap: 8px;
   padding: 5px 10px;
   cursor: pointer;
-  color: var(--text, #e6e6e6);
+  color: var(--text);
 }
 
 .var-autocomplete-item.active {
-  background: var(--var-defined-bg, rgba(56, 189, 248, 0.15));
+  background: var(--var-defined-bg);
 }
 
 .var-autocomplete-name {
-  font-family: var(--font-mono, ui-monospace, Menlo, monospace);
+  font-family: var(--font-mono);
   flex: 0 0 auto;
 }
 
 .var-autocomplete-scope {
-  color: var(--text-subtle, #a0a0a8);
+  color: var(--text-subtle);
   flex: 1 1 auto;
   text-align: right;
   overflow: hidden;
@@ -201,7 +201,7 @@
 }
 
 .var-autocomplete-value {
-  color: var(--text-subtle, #a0a0a8);
+  color: var(--text-subtle);
   flex: 0 0 auto;
-  font-family: var(--font-mono, ui-monospace, Menlo, monospace);
+  font-family: var(--font-mono);
 }

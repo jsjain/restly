@@ -4,7 +4,8 @@
 button.danger {
   background: var(--danger);
   border-color: var(--danger);
-  color: #fff;
+  /* The guard holds --danger at 4.5:1 against --surface, so --surface text on it reads in every theme. */
+  color: var(--surface);
   font-weight: 600;
 }
 

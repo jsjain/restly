@@ -5,7 +5,7 @@ import { toast } from "../store";
 import type { TextFile } from "../types";
 import { tokenToCssVar, type ThemeTokens } from "./tokens";
 import { builtinThemes, dark, light, type Theme } from "./themes";
-import { convertVscodeTheme } from "./vscode";
+import { convertVscodeTheme, parseColor } from "./vscode";
 
 const STORAGE_KEY = "restly.theme";
 // The active imported theme, already converted, so initTheme() can apply it before api.listThemes() resolves.
@@ -15,33 +15,6 @@ const IMPORTED_PREFIX = "vscode:";
 
 const registry = new Map<string, Theme>(builtinThemes.map((t) => [t.id, t]));
 let appliedId = dark.id;
-
-// LEGACY ALIASES: styles.css (and any sibling *.css) still reference the old flat
-// variable names below instead of the new tokens. This map lets applyTheme() set
-// both, so the existing UI re-themes correctly while styles.css is mid-rewrite.
-// Delete this map (and its use in applyTheme) once styles.css only reads --token
-// names from tokens.ts directly.
-export const legacyAliasMap: Record<string, keyof ThemeTokens> = {
-  "--bg": "surface",
-  "--bg-elevated": "surfaceRaised",
-  "--bg-hover": "surfaceHover",
-  "--bg-active": "surfaceActive",
-  "--border": "border",
-  "--text": "text",
-  "--text-dim": "textSubtle",
-  "--text-bright": "text",
-  "--accent": "primary",
-  "--error": "danger",
-  "--ok": "success",
-  "--method-get": "methodGet",
-  "--method-post": "methodPost",
-  "--method-put": "methodPut",
-  "--method-patch": "methodPatch",
-  "--method-delete": "methodDelete",
-  "--method-other": "methodHead",
-  "--font-ui": "fontUi",
-  "--font-mono": "fontMono",
-};
 
 type Listener = (id: string) => void;
 const listeners = new Set<Listener>();
@@ -112,15 +85,15 @@ export function applyTheme(id: string): void {
   for (const key of Object.keys(tokenToCssVar) as (keyof ThemeTokens)[]) {
     root.style.setProperty(tokenToCssVar[key], tokens[key]);
   }
-  for (const [cssVar, tokenKey] of Object.entries(legacyAliasMap)) {
-    root.style.setProperty(cssVar, tokens[tokenKey]);
-  }
 
   root.dataset.theme = theme.id;
   root.style.colorScheme = theme.base;
   appliedId = theme.id;
   if (theme.file) localStorage.setItem(IMPORTED_CACHE_KEY, JSON.stringify(theme));
   notify();
+  // Only the first frame after launch uses main.go's fixed color, before this runs.
+  const surface = parseColor(tokens.surface);
+  if (surface) api.setWindowBackground(surface.r, surface.g, surface.b);
 }
 
 export function setThemeId(id: string): void {
