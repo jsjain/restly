@@ -1,0 +1,44 @@
+/* Keyboard-focus ring for the Collections tree (roving tabindex), distinct from the
+   existing .tree-row.active highlight used for the open tab's row. */
+.tree-row:focus-visible {
+  outline: 1px solid var(--border-focus);
+  outline-offset: -1px;
+}
+
+/* Collections scroll in their own area; Environments is pinned below as a separate block
+   with its own bounded height and scroll, so a long collection list never pushes
+   Environments out of view. treeRows()/handleTreeKeyDown still see one flat DOM order of
+   [role="treeitem"] descendants, so ArrowDown/Up walk across both blocks unchanged. */
+.sidebar-tree {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sidebar-collections {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.sidebar-env-section {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border-subtle);
+  max-height: 40%;
+  min-height: 0;
+}
+
+.sidebar-env-list {
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* History view has no Environments block, so it scrolls the whole list itself. */
+.history-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+}

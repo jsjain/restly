@@ -1,0 +1,117 @@
+.theme-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.theme-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.theme-picker-option {
+  position: relative;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  color: var(--text-subtle);
+}
+
+.theme-picker-option:hover {
+  background: var(--surface-hover);
+}
+
+.theme-picker-option.active {
+  border-color: var(--border-focus);
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.theme-picker-option:has(.theme-picker-input:focus-visible) {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+
+.theme-picker-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px;
+  width: 104px;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 12px;
+}
+
+.theme-picker-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.theme-picker-swatch {
+  width: 64px;
+  height: 40px;
+  border-radius: var(--radius-small);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 8px;
+}
+
+.theme-picker-option.active .theme-picker-swatch {
+  box-shadow: 0 0 0 2px var(--border-focus);
+}
+
+.theme-picker-swatch-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.theme-picker-swatch-text {
+  width: 18px;
+  height: 2px;
+  border-radius: 1px;
+  flex: 0 0 auto;
+}
+
+.theme-picker-label {
+  text-align: center;
+  line-height: 1.25;
+}
+
+.theme-picker-remove.icon {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
+}
+
+.theme-picker-remove.icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.theme-picker-notes {
+  margin-bottom: 0;
+}
+
+.font-picker-select {
+  min-width: 200px;
+}
+
+.font-picker-size {
+  width: 64px;
+}

@@ -1,0 +1,141 @@
+/* Select: generic custom dropdown replacing the native select element, styled to match
+   the text-input/select look from styles.css. See methodSelect.css for the sibling
+   pattern this was copied from. */
+
+.select-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 60px;
+  height: 30px;
+  padding: 5px 8px;
+  background: var(--surface-input);
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-small);
+  color: var(--text);
+  font-weight: 400;
+  cursor: pointer;
+  text-align: left;
+}
+
+/* In dialog forms the dropdown fills the row like the text fields beside it. */
+.modal-panel .field-row > .select-trigger,
+.modal-panel .field-row > input[type="text"] {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.select-trigger:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+/* Inline variant for toolbars, such as the body language picker: link-colored text, no box until hover. */
+.select-trigger.select-inline {
+  min-width: 0;
+  height: 26px;
+  padding: 0 6px;
+  gap: 4px;
+  background: none;
+  border-color: transparent;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.select-trigger.select-inline .select-chevron {
+  color: var(--primary);
+}
+
+.select-trigger.select-inline:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.select-trigger:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.select-trigger:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+
+.select-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.select-placeholder {
+  color: var(--text-subtlest);
+}
+
+.select-chevron {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-subtle);
+  flex: 0 0 auto;
+  transition: transform 0.1s ease;
+}
+
+.select-trigger[aria-expanded="true"] .select-chevron {
+  transform: rotate(180deg);
+}
+
+.select-popover {
+  position: fixed;
+  z-index: 1000;
+  background: var(--surface-overlay);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-overlay);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.select-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  height: auto;
+  padding: 6px 10px;
+  background: none;
+  border: none;
+  border-radius: calc(var(--radius-small) - 2px);
+  color: var(--text);
+  text-align: left;
+  /* The global button rule centers content. */
+  justify-content: flex-start;
+  cursor: pointer;
+}
+
+.select-option.highlighted,
+.select-option:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.select-option:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.select-check {
+  display: inline-flex;
+  align-items: center;
+  width: 14px;
+  flex: 0 0 auto;
+  color: var(--primary);
+}
+
+.select-option-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre;
+}

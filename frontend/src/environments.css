@@ -1,0 +1,103 @@
+/* Environment picker groups and the collection overview's Environments sub-tab. */
+
+.menu-label {
+  padding: 8px 10px 4px;
+  font-size: 11px;
+  color: var(--text-subtlest);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menu-separator {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--border-subtle);
+}
+
+.env-picker-menu {
+  min-width: 220px;
+}
+
+.ov-envs {
+  display: grid;
+  grid-template-columns: minmax(200px, 260px) 1fr;
+  gap: 16px;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.ov-env-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-right: 1px solid var(--border-subtle);
+  padding-right: 12px;
+}
+
+.ov-env-new {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.ov-env-new input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ov-env-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-subtle);
+}
+
+.ov-env-row:hover {
+  background: var(--surface-hover);
+}
+
+.ov-env-row.selected {
+  background: var(--surface-active, var(--surface-hover));
+  color: var(--text);
+}
+
+.ov-env-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ov-env-active {
+  font-size: 11px;
+  color: var(--primary);
+}
+
+.ov-link-btn {
+  font-size: 11px;
+  padding: 0 4px;
+  height: auto;
+  background: none;
+  border: none;
+  color: var(--text-subtlest);
+  opacity: 0;
+}
+
+.ov-env-row:hover .ov-link-btn {
+  opacity: 1;
+}
+
+.ov-link-btn:hover {
+  color: var(--primary);
+}
+
+.ov-env-editor {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}

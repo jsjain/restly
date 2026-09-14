@@ -1,0 +1,44 @@
+/* Settings > About row: logo, name/version/build, and a copy button. */
+
+.about-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.about-logo {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  border-radius: 10px;
+}
+
+.about-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.about-name {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.about-version {
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+
+.about-build {
+  font-size: 11px;
+  color: var(--text-subtlest);
+}
+
+.about-go {
+  font-size: 11px;
+  color: var(--text-subtlest);
+}

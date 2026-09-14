@@ -1,0 +1,48 @@
+/* Code panel: docked to the right of the request/response split (see .code-panel-row in
+   RequestTab.tsx), so both stay visible while it's open. */
+
+.code-panel-row {
+  display: flex;
+  flex-direction: row;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.code-panel {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-left: 1px solid var(--border-subtle);
+  background: var(--surface);
+}
+
+.code-panel-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -3px;
+  width: 6px;
+  cursor: col-resize;
+  z-index: 1;
+}
+
+.code-panel-divider:hover {
+  background: var(--surface-active);
+}
+
+.code-panel-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex: 0 0 auto;
+}
+
+.code-panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+}

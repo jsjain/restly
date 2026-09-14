@@ -1,0 +1,13 @@
+/* Danger variant of button.primary (styles.css), for destructive confirm actions
+   (e.g. "Quit without saving"). Reuses the .modal-* classes from styles.css otherwise. */
+
+button.danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+  font-weight: 600;
+}
+
+button.danger:hover:not(:disabled) {
+  filter: brightness(1.1);
+}

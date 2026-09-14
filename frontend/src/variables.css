@@ -1,0 +1,207 @@
+/* {{variable}} highlighting: VarInput's mirror layer, its hover popup / autocomplete
+   dropdown (both portalled to document.body), and the CodeMirror decoration classes. */
+
+.varinput-wrap {
+  position: relative;
+  width: 100%;
+}
+
+/* KvTable dims disabled rows via `input { opacity: .45 }`; the visible text now lives in
+   the mirror, so it needs the same treatment. */
+.kv-table tr.disabled .varinput-mirror {
+  opacity: 0.45;
+}
+
+/* Mirror sits ON TOP of the input (not behind it): styles.css gives input[type="text"] an
+   opaque background on hover/focus, which would otherwise paint over the highlighting the
+   moment the row is interacted with. pointer-events: none lets clicks/typing reach the
+   input underneath. */
+.varinput-mirror {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  /* Must match input[type="text"]'s padding in styles.css exactly, or the highlighted
+     {{var}} spans drift out of alignment with the real (transparent) text underneath. */
+  padding: 5px 8px;
+  border: 1px solid transparent;
+  white-space: pre;
+  overflow: hidden;
+  pointer-events: none;
+  /* No `font: inherit` here: that shorthand resets font-size/font-family to "inherit" as
+     an explicit declaration, which then ties in specificity with styles.css's `.mono` rule
+     and can lose the cascade depending on CSS load order (observed: mirror rendering at the
+     inherited 13px ui font-size while the real <input> correctly got the 12.5px mono size,
+     via `.mono`'s font-size winning only on the input, uncontested). Leaving font-family and
+     font-size unset here means both this div and the sibling <input> inherit/match through
+     the exact same rules (.mono, .url-input) with no local competition, so they can't drift.
+     font-variant-ligatures/letter-spacing are pinned explicitly (mono + input below) since a
+     ligature-enabled monospace font would otherwise render narrower joined glyphs here than
+     the canvas/caret math (and the real input) assume. */
+}
+
+.varinput-input {
+  position: relative;
+  width: 100%;
+}
+
+/* Belt-and-suspenders text-metrics lock: whenever this pair renders as monospace (the common
+   case, e.g. the URL bar), pin font-family/size directly on both with equal, order-independent
+   specificity (two classes, matching `.request-toolbar .url-input`'s 0-2-0) instead of relying
+   on `.mono` alone to win the cascade the same way on a <div> and an <input>. Ligatures and
+   letter-spacing are pinned unconditionally so a ligature-heavy monospace font never renders
+   "://" narrower in the mirror than the real input's (invisible) text metrics assume. */
+.varinput-mirror,
+.varinput-input {
+  font-variant-ligatures: none;
+  letter-spacing: normal;
+}
+
+.varinput-mirror.mono,
+.varinput-input.mono {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono);
+}
+
+/* !important: an ordinary `input[type="text"]` rule in styles.css sets color, and an
+   attribute selector outweighs this single class on specificity, so it would otherwise win. */
+.varinput-input {
+  color: transparent !important;
+  caret-color: var(--text, #e6e6e6);
+}
+
+/* The selection is painted by this input, under the mirror, so the mirror's text and {{var}}
+   tints sit on top of it. --selection is opaque and chosen (theme/vscode.ts contrastPairs) so
+   --text and the variable colors stay readable over it. color: transparent keeps Firefox from
+   painting its own selected-text color through the mirror. */
+.varinput-input::selection {
+  color: transparent;
+  background: var(--selection);
+}
+
+.varinput-input::placeholder {
+  color: var(--text-subtle, #a0a0a8);
+  opacity: 1;
+}
+
+/* Mirror token spans: no padding/margin/border, so they never shift character positions
+   out of alignment with the transparent text sitting on top of them in the real input. */
+.vartoken-defined,
+.vartoken-undefined {
+  border-radius: 3px;
+}
+
+.vartoken-defined {
+  color: var(--var-defined, #7dd3fc);
+  background: var(--var-defined-bg, rgba(56, 189, 248, 0.15));
+}
+
+.vartoken-undefined {
+  color: var(--var-undefined, #fca5a5);
+  background: var(--var-undefined-bg, rgba(248, 113, 113, 0.15));
+}
+
+/* CodeMirror decorations: free to add a little padding since there's no sibling layer to
+   stay aligned with. */
+.cm-var-defined,
+.cm-var-undefined {
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
+.cm-var-defined {
+  color: var(--var-defined, #7dd3fc);
+  background: var(--var-defined-bg, rgba(56, 189, 248, 0.15));
+}
+
+.cm-var-undefined {
+  color: var(--var-undefined, #fca5a5);
+  background: var(--var-undefined-bg, rgba(248, 113, 113, 0.15));
+}
+
+.var-popup {
+  position: fixed;
+  z-index: 1000;
+  max-width: 360px;
+  background: var(--surface-overlay, #2a2a2e);
+  border: 1px solid var(--border, #3a3a40);
+  border-radius: 6px;
+  box-shadow: var(--shadow-overlay, 0 8px 24px rgba(0, 0, 0, 0.4));
+  color: var(--text, #e6e6e6);
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.var-popup-name {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.var-popup-row {
+  word-break: break-all;
+}
+
+.var-popup-resolved {
+  color: var(--text-subtle, #a0a0a8);
+}
+
+.var-popup-scope {
+  margin-top: 4px;
+  color: var(--text-subtle, #a0a0a8);
+}
+
+.var-popup-hint {
+  color: var(--text-subtle, #a0a0a8);
+  max-width: 260px;
+}
+
+.var-popup button.icon {
+  margin-top: 4px;
+}
+
+.var-autocomplete {
+  position: fixed;
+  z-index: 1000;
+  min-width: 220px;
+  max-width: 360px;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--surface-overlay, #2a2a2e);
+  border: 1px solid var(--border, #3a3a40);
+  border-radius: 6px;
+  box-shadow: var(--shadow-overlay, 0 8px 24px rgba(0, 0, 0, 0.4));
+  font-size: 12px;
+}
+
+.var-autocomplete-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
+  color: var(--text, #e6e6e6);
+}
+
+.var-autocomplete-item.active {
+  background: var(--var-defined-bg, rgba(56, 189, 248, 0.15));
+}
+
+.var-autocomplete-name {
+  font-family: var(--font-mono, ui-monospace, Menlo, monospace);
+  flex: 0 0 auto;
+}
+
+.var-autocomplete-scope {
+  color: var(--text-subtle, #a0a0a8);
+  flex: 1 1 auto;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.var-autocomplete-value {
+  color: var(--text-subtle, #a0a0a8);
+  flex: 0 0 auto;
+  font-family: var(--font-mono, ui-monospace, Menlo, monospace);
+}

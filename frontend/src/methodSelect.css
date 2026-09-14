@@ -1,0 +1,180 @@
+/* MethodSelect: trigger button joins the URL input on its right into one control with a
+   shared border. Consumers wrap both in `.method-url-group`. */
+
+.method-url-group {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  background: var(--surface-input, #1a1b1e);
+  border: 1px solid var(--border-control, #3a3b40);
+  border-radius: var(--radius, 6px);
+}
+
+.method-url-group:focus-within {
+  outline: 2px solid var(--border-focus, #4c8dff);
+  outline-offset: 1px;
+}
+
+.method-select-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  align-self: stretch;
+  width: 96px;
+  flex: 0 0 96px;
+  padding: 0 10px;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border, #3a3b40);
+  color: var(--text, #e6e6e6);
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+
+/* Non-interactive segment used by the WebSocket tab, which has no method to pick. */
+.method-select-trigger.method-select-static {
+  cursor: default;
+  justify-content: center;
+}
+
+/* Shares the group's border/radius; the visible border now lives on the group itself. */
+.method-select-trigger + .url-field .url-input {
+  border: none;
+  border-radius: 0 var(--radius, 6px) var(--radius, 6px) 0;
+  background: transparent;
+}
+
+.method-select-trigger + .url-field .varinput-mirror {
+  border-radius: 0;
+  border-color: transparent;
+  background: transparent;
+}
+
+.method-select-trigger:hover:not(:disabled):not(.method-select-static) {
+  background: var(--surface-hover, #34353a);
+}
+
+.method-select-trigger:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.method-select-trigger:focus-visible {
+  outline: 2px solid var(--border-focus, #4c8dff);
+  outline-offset: -2px;
+}
+
+.method-select-label {
+  font-weight: 700;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.method-select-chevron {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-subtle, #a0a0a8);
+  flex: 0 0 auto;
+  transition: transform 0.1s ease;
+}
+
+.method-select-trigger[aria-expanded="true"] .method-select-chevron {
+  transform: rotate(180deg);
+}
+
+.method-select-popover {
+  position: fixed;
+  z-index: 1000;
+  background: var(--surface-overlay, #2d2e33);
+  border: 1px solid var(--border, #3a3b40);
+  border-radius: var(--radius, 6px);
+  box-shadow: var(--shadow-overlay, 0 8px 24px rgba(0, 0, 0, 0.45));
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.method-select-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: none;
+  border: none;
+  border-radius: calc(var(--radius, 6px) - 2px);
+  color: var(--text, #e6e6e6);
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+
+.method-select-option.highlighted,
+.method-select-option:hover {
+  background: var(--surface-hover, #34353a);
+}
+
+.method-select-check {
+  display: inline-flex;
+  align-items: center;
+  width: 14px;
+  flex: 0 0 auto;
+  color: var(--primary, #4c8dff);
+}
+
+.method-select-option-label {
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.method-select-custom-label {
+  color: var(--text-subtle, #a0a0a8);
+}
+
+.method-select-custom-input {
+  padding: 6px 10px;
+  background: var(--surface-input, #1a1b1e);
+  border: 1px solid var(--border-focus, #4c8dff);
+  border-radius: calc(var(--radius, 6px) - 2px);
+  color: var(--text, #e6e6e6);
+}
+
+.ms-color-get {
+  color: var(--method-get, #22c55e);
+}
+
+.ms-color-post {
+  color: var(--method-post, #f59e0b);
+}
+
+.ms-color-put {
+  color: var(--method-put, #3b82f6);
+}
+
+.ms-color-patch {
+  color: var(--method-patch, #a855f7);
+}
+
+.ms-color-delete {
+  color: var(--method-delete, #ef4444);
+}
+
+.ms-color-head {
+  color: var(--method-head, #94a3b8);
+}
+
+.ms-color-options {
+  color: var(--method-options, #94a3b8);
+}
+
+.ms-color-other {
+  color: var(--text-subtle, #a0a0a8);
+}
+
+.ms-color-ws {
+  color: var(--method-ws, #4c8dff);
+}

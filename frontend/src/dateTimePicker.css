@@ -1,0 +1,135 @@
+/* DateTimePicker: themed replacement for <input type="datetime-local"> (see Select.tsx /
+   select.css for the sibling trigger+popover pattern this was copied from). */
+
+.dtp-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 5px 8px;
+  background: var(--surface-input);
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-small);
+  color: var(--text);
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.dtp-trigger:hover {
+  background: var(--surface-hover);
+}
+
+.dtp-placeholder {
+  color: var(--text-subtle);
+}
+
+.dtp-popover {
+  position: fixed;
+  z-index: 1000;
+  width: 240px;
+  background: var(--surface-overlay);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-overlay);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dtp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dtp-month-label {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.dtp-weekdays,
+.dtp-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.dtp-weekdays span {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-subtle);
+  padding-bottom: 2px;
+}
+
+.dtp-day {
+  height: 26px;
+  padding: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-small);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.dtp-day:hover {
+  background: var(--surface-hover);
+}
+
+.dtp-day-outside {
+  color: var(--text-subtle);
+}
+
+.dtp-day-today {
+  border-color: var(--border);
+}
+
+.dtp-day-selected {
+  background: var(--primary-button);
+  border-color: var(--primary-button);
+  color: var(--primary-button-text);
+  font-weight: 600;
+}
+
+.dtp-day-selected:hover {
+  background: var(--primary-button-hover);
+}
+
+.dtp-time {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.dtp-time input[type="number"] {
+  width: 40px;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+
+/* Hide the native up/down spinner: at 40px wide it eats the digits. */
+.dtp-time input[type="number"]::-webkit-outer-spin-button,
+.dtp-time input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.dtp-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+
+.dtp-session-btn {
+  padding: 0 8px;
+}
+
+.dtp-actions-right {
+  display: flex;
+  gap: 6px;
+}

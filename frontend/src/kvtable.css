@@ -1,0 +1,39 @@
+/* --- kv table add/delete controls (KvTable, EnvironmentTab, VariablesPanel) --- */
+
+.kv-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.kv-empty-hint {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: 12px;
+}
+
+.kv-add-btn {
+  align-self: flex-start;
+  margin-top: 6px;
+}
+
+/* Delete button: a red x, visible at rest (not just on hover), with a tinted hover fill. */
+.kv-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-small);
+  color: var(--danger);
+  flex: 0 0 auto;
+}
+
+.kv-delete:hover {
+  background: color-mix(in srgb, var(--danger) 16%, transparent);
+}
