@@ -13,7 +13,7 @@
   "info": {
     "companyName": "Restly",
     "productName": "Restly",
-    "productVersion": "0.1.1",
+    "productVersion": "0.1.2",
     "copyright": "Copyright © 2026 Shubham Jain",
     "comments": "A fast local API client"
   }

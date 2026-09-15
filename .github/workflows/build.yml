@@ -104,19 +104,28 @@ jobs:
           mkdir dist
           case "$RUNNER_OS" in
             macOS)
-              mv build/bin/restly.app build/bin/Restly.app
-              codesign --force --deep --sign - build/bin/Restly.app
-              ditto -c -k --keepParent build/bin/Restly.app "dist/Restly-$version-macos-universal.zip"
-              # The universal app holds both architectures, so each single-architecture app is a thinned copy.
-              for arch in arm64 x86_64; do
-                name=$([ "$arch" = arm64 ] && echo apple-silicon || echo intel)
-                app="build/$name/Restly.app"
-                mkdir -p "build/$name"
-                ditto build/bin/Restly.app "$app"
-                lipo "$app/Contents/MacOS/restly" -thin "$arch" -output "build/$name/restly"
-                mv "build/$name/restly" "$app/Contents/MacOS/restly"
-                codesign --force --deep --sign - "$app"
-                ditto -c -k --keepParent "$app" "dist/Restly-$version-macos-$name.zip"
+              for name in universal apple-silicon intel; do
+                stage="build/dmg-$name"
+                mkdir -p "$stage"
+                ditto build/bin/restly.app "$stage/Restly.app"
+                # The universal app holds both architectures, so each single-architecture app is a thinned copy.
+                arch=
+                case "$name" in
+                  apple-silicon) arch=arm64 ;;
+                  intel) arch=x86_64 ;;
+                esac
+                if [ -n "$arch" ]; then
+                  lipo "$stage/Restly.app/Contents/MacOS/restly" -thin "$arch" -output "build/restly-$arch"
+                  mv "build/restly-$arch" "$stage/Restly.app/Contents/MacOS/restly"
+                fi
+                codesign --force --deep --sign - "$stage/Restly.app"
+                ln -s /Applications "$stage/Applications"
+                # hdiutil on hosted runners sometimes fails with "Resource busy", so it gets three tries.
+                for attempt in 1 2 3; do
+                  hdiutil create -volname Restly -srcfolder "$stage" -ov -format UDZO "dist/Restly-$version-macos-$name.dmg" && break
+                  if [ "$attempt" = 3 ]; then exit 1; fi
+                  sleep 10
+                done
               done
               ;;
             Windows)

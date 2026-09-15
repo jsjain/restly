@@ -37,18 +37,18 @@ Download the file for your system from the [latest release](https://github.com/j
 
 | System | File |
 | --- | --- |
-| macOS 12 or newer, Apple silicon (M1 or later) | `Restly-<version>-macos-apple-silicon.zip` |
-| macOS 12 or newer, Intel | `Restly-<version>-macos-intel.zip` |
-| macOS 12 or newer, either kind of Mac | `Restly-<version>-macos-universal.zip` |
+| macOS 12 or newer, Apple silicon (M1 or later) | `Restly-<version>-macos-apple-silicon.dmg` |
+| macOS 12 or newer, Intel | `Restly-<version>-macos-intel.dmg` |
+| macOS 12 or newer, either kind of Mac | `Restly-<version>-macos-universal.dmg` |
 | Windows 10 or 11, 64-bit | `Restly-<version>-windows-amd64-setup.exe`, or the `portable.exe` without installing |
 | Ubuntu 24.04, Debian 13, or newer, x86-64 | `restly_<version>_amd64.deb` |
 | Other Linux x86-64 with glibc 2.39 or newer (Fedora 40 or newer) | `Restly-<version>-linux-amd64.tar.gz`, which needs GTK 3 and WebKitGTK 4.1 |
 
 The builds are not signed with an Apple or Windows certificate, so the first launch shows a warning.
 
-- **macOS.** Unzip, move Restly to Applications, and run `xattr -dr com.apple.quarantine /Applications/Restly.app` once, or open it and allow it under System Settings > Privacy & Security.
+- **macOS.** Open the DMG, drag Restly onto Applications, and run `xattr -dr com.apple.quarantine /Applications/Restly.app` once, or open it and allow it under System Settings > Privacy & Security.
 - **Windows.** In the SmartScreen dialog, choose More info > Run anyway. The installer adds WebView2 if it is missing.
-- **Linux.** On Ubuntu or Debian, `sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0`, then run `./restly`.
+- **Linux.** `sudo apt install ./restly_<version>_amd64.deb` installs Restly and its dependencies. For the tar.gz, install GTK 3 and WebKitGTK 4.1 (`sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0` on Debian and Ubuntu), then run `./restly`.
 
 ## Keyboard shortcuts
 
