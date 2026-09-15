@@ -838,9 +838,12 @@ textarea::placeholder {
 
 /* --- kv table (params, headers, cookies, variables) --- */
 
+/* A grid like Postman's: a rule above the header, under every row, and between columns. The
+   delete button's column has no rule, so the button reads as part of its row. */
 .kv-table {
   width: 100%;
   border-collapse: collapse;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .kv-table th {
@@ -856,6 +859,17 @@ textarea::placeholder {
   padding: 0 6px;
   height: 30px;
   vertical-align: middle;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.kv-table th + th,
+.kv-table td + td {
+  border-left: 1px solid var(--border-subtle);
+}
+
+.kv-table th:last-child:empty,
+.kv-table td:has(> .kv-delete) {
+  border-left: none;
 }
 
 .kv-table input[type="text"] {

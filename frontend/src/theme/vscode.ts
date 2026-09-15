@@ -19,7 +19,8 @@ const SUBTLEST_STEP = 1.25;
 // Tokens that are not colors, so no "restly.<token>" key sets them.
 const NON_COLOR_KEYS = new Set<string>(["fontUi", "fontMono", "fontSizeUi", "fontSizeMono", "radius", "radiusSmall"]);
 // Tokens drawn as translucent layers, which keep their alpha instead of being composited on the surface.
-const TRANSLUCENT_KEYS = new Set<string>(["varDefinedBg", "varUndefinedBg", "overlayBackdrop", "scrollbarThumb", "scrollbarThumbHover"]);
+const TRANSLUCENT_KEYS = new Set<string>(["varDefinedBg", "varUndefinedBg", "overlayBackdrop", "scrollbarThumb", "scrollbarThumbHover", "lineHighlight", "lineHighlightBorder"]);
+const CLEAR: Rgba = { r: 0, g: 0, b: 0, a: 0 };
 
 // parseColor reads #RGB, #RGBA, #RRGGBB, #RRGGBBAA, rgb() and rgba().
 export function parseColor(value: string): Rgba | null {
@@ -293,6 +294,7 @@ const defaults: Record<Base, Record<string, string>> = {
     "terminal.ansiRed": "#CD3131",
     "terminal.ansiCyan": "#11A8CD",
     "scrollbarSlider.background": "#79797966",
+    "editor.lineHighlightBorder": "#282828",
     "scrollbarSlider.hoverBackground": "#646464B3",
   },
   light: {
@@ -314,6 +316,7 @@ const defaults: Record<Base, Record<string, string>> = {
     "terminal.ansiRed": "#CD3131",
     "terminal.ansiCyan": "#0598BC",
     "scrollbarSlider.background": "#64646466",
+    "editor.lineHighlightBorder": "#EEEEEE",
     "scrollbarSlider.hoverBackground": "#646464B3",
   },
 };
@@ -405,6 +408,7 @@ export function convertVscodeTheme(json: unknown, fallbackName: string, bases: R
     d("button.background")
   );
   const selection = onSurface(pick("editor.selectionBackground"), d("editor.selectionBackground"));
+  const lineFill = pick("editor.lineHighlightBackground");
   const success = onSurface(pick("terminal.ansiGreen"), d("terminal.ansiGreen"));
   const danger = onSurface(pick("errorForeground", "editorError.foreground"), d("errorForeground"));
   const red = onSurface(pick("terminal.ansiRed"), d("terminal.ansiRed"));
@@ -480,6 +484,9 @@ export function convertVscodeTheme(json: unknown, fallbackName: string, bases: R
     shadowOverlay: `0 8px 24px ${toCss(shadow)}`,
     scrollbarThumb: toCss(pick("scrollbarSlider.background") ?? d("scrollbarSlider.background")),
     scrollbarThumbHover: toCss(pick("scrollbarSlider.hoverBackground") ?? d("scrollbarSlider.hoverBackground")),
+    lineHighlight: toCss(lineFill ?? CLEAR),
+    // VS Code draws its default border only when the theme sets no fill of its own.
+    lineHighlightBorder: toCss(pick("editor.lineHighlightBorder") ?? (lineFill && lineFill.a > 0 ? CLEAR : d("editor.lineHighlightBorder"))),
   } as ThemeTokens;
 
   const globalRule = rules.find((r) => r.scope === undefined && typeof r.settings?.foreground === "string");

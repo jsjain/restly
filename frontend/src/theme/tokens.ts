@@ -9,6 +9,7 @@
 //   sideBar.border, editorGroup.border, panel.border, tab.border (the first lighter than the
 //     background on dark themes, darker on light ones) -> borderSubtle
 //   scrollbarSlider.background / scrollbarSlider.hoverBackground -> scrollbarThumb, scrollbarThumbHover
+//   editor.lineHighlightBackground / editor.lineHighlightBorder -> lineHighlight, lineHighlightBorder
 //   editor.foreground -> text             descriptionForeground -> textSubtle
 //   focusBorder -> borderFocus            textLink.foreground (else button.background) -> primary
 //   button.background / button.hoverBackground / button.foreground -> primaryButton, primaryButtonHover, primaryButtonText
@@ -94,6 +95,9 @@ export interface ThemeTokens {
   // Scrollbar thumbs, from scrollbarSlider.background and scrollbarSlider.hoverBackground.
   scrollbarThumb: string;
   scrollbarThumbHover: string;
+  // The cursor line in editable code editors: a fill, a 2px border, or both, as in VS Code
+  lineHighlight: string;
+  lineHighlightBorder: string;
 }
 
 export const tokenToCssVar: Record<keyof ThemeTokens, string> = {
@@ -157,4 +161,6 @@ export const tokenToCssVar: Record<keyof ThemeTokens, string> = {
   overlayBackdrop: "--overlay-backdrop",
   scrollbarThumb: "--scrollbar-thumb",
   scrollbarThumbHover: "--scrollbar-thumb-hover",
+  lineHighlight: "--line-highlight",
+  lineHighlightBorder: "--line-highlight-border",
 };

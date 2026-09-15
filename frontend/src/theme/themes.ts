@@ -75,6 +75,8 @@ const darkTokens: ThemeTokens = {
   selection: "#264f78",
   scrollbarThumb: "rgba(121, 121, 121, 0.4)", // scrollbarSlider.background #79797966
   scrollbarThumbHover: "rgba(100, 100, 100, 0.7)",
+  lineHighlight: "rgba(0, 0, 0, 0)", // VS Code has no default editor.lineHighlightBackground
+  lineHighlightBorder: "#282828", // VS Code default editor.lineHighlightBorder
 
   syntaxString: "#ce9178",
   syntaxNumber: "#b5cea8",
@@ -134,6 +136,8 @@ const lightTokens: ThemeTokens = {
   selection: "#add6ff",
   scrollbarThumb: "rgba(100, 100, 100, 0.4)", // scrollbarSlider.background #64646466
   scrollbarThumbHover: "rgba(100, 100, 100, 0.7)",
+  lineHighlight: "rgba(0, 0, 0, 0)",
+  lineHighlightBorder: "#eeeeee", // VS Code default editor.lineHighlightBorder
 
   syntaxString: "#a31515",
   syntaxNumber: "#098658",
@@ -193,6 +197,8 @@ const oneDarkTokens: ThemeTokens = {
   selection: "#404859", // editor.selectionBackground #67769660
   scrollbarThumb: "rgba(78, 86, 102, 0.376)", // scrollbarSlider.background #4e566660
   scrollbarThumbHover: "rgba(90, 99, 117, 0.502)",
+  lineHighlight: "#2c313c", // editor.lineHighlightBackground
+  lineHighlightBorder: "rgba(0, 0, 0, 0)", // VS Code drops the default border when a theme sets a fill
 
   syntaxString: "#98c379",
   syntaxNumber: "#d19a66",

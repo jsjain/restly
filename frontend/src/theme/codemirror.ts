@@ -26,15 +26,23 @@ const restlyEditorBaseTheme = EditorView.theme({
   ".cm-selectedText, .cm-selectedText *": {
     color: "var(--text) !important",
   },
+  // VS Code's gutter has no border: line numbers sit on the editor background.
   ".cm-gutters": {
     backgroundColor: "var(--surface)",
     color: "var(--text-subtlest)",
     border: "none",
-    borderRight: "1px solid var(--border-subtle)",
   },
-  // The selection layer is drawn under the lines, so a filled active line would hide the selection on it.
+  ".cm-lineNumbers .cm-gutterElement": {
+    padding: "0 4px 0 12px",
+  },
+  // basicSetup's active line also marks lines holding a selection, and the selection layer is drawn
+  // under the lines, so a fill there would hide the selection. currentLine below replaces it.
   ".cm-activeLine": {
     backgroundColor: "transparent",
+  },
+  ".cm-currentLine": {
+    backgroundColor: "var(--line-highlight)",
+    boxShadow: "inset 0 0 0 2px var(--line-highlight-border)",
   },
   // VS Code marks the active line number by color only. A filled cell reads as a stray box in the gutter.
   ".cm-activeLineGutter": {
@@ -135,5 +143,15 @@ const selectedText = EditorView.decorations.compute(["selection"], (state) =>
   Decoration.set(state.selection.ranges.filter((r) => !r.empty).map((r) => selectedTextMark.range(r.from, r.to)))
 );
 
+const currentLineMark = Decoration.line({ class: "cm-currentLine" });
+
+// currentLine highlights the cursor's line the way VS Code does: only while nothing is selected, so
+// it never covers a selection, and only in editable editors, since read-only viewers have no cursor.
+const currentLine = EditorView.decorations.compute(["selection", EditorView.editable], (state) => {
+  if (!state.facet(EditorView.editable) || state.selection.ranges.some((r) => !r.empty)) return Decoration.none;
+  const starts = new Set(state.selection.ranges.map((r) => state.doc.lineAt(r.head).from));
+  return Decoration.set([...starts].map((from) => currentLineMark.range(from)), true);
+});
+
 /** CodeMirror 6 extension applying Restly's theme tokens. Reconfigure-free theme switching. */
-export const restlyEditorTheme = [restlyEditorBaseTheme, syntaxHighlighting(restlyHighlightStyle), selectedText];
+export const restlyEditorTheme = [restlyEditorBaseTheme, syntaxHighlighting(restlyHighlightStyle), selectedText, currentLine];

@@ -91,6 +91,17 @@ assert.equal(custom.tokens.scrollbarThumb, "rgba(255, 255, 255, 0.2)");
 assert.ok(custom.warnings.some((w) => w.startsWith("restly.nope")), "unknown restly key warns");
 // A divider darker than a dark background reads as a gap, so the lighter panel.border wins.
 assert.equal(custom.tokens.borderSubtle, "#404040");
+// With no line highlight keys, VS Code's default 2px border marks the cursor line.
+assert.equal(custom.tokens.lineHighlight, "rgba(0, 0, 0, 0)");
+assert.equal(custom.tokens.lineHighlightBorder, "#282828");
+// A theme that sets only a fill gets no default border, as in VS Code.
+const filled = convertVscodeTheme(
+  { type: "dark", colors: { "editor.background": "#202020", "editor.lineHighlightBackground": "#ffffff10" } },
+  "filled",
+  { dark: dark.tokens, light: light.tokens }
+);
+assert.equal(filled.tokens.lineHighlight, "rgba(255, 255, 255, 0.063)");
+assert.equal(filled.tokens.lineHighlightBorder, "rgba(0, 0, 0, 0)");
 
 if (failures.length) {
   console.error(`\n${failures.length} theme check failures:\n${failures.join("\n")}`);
