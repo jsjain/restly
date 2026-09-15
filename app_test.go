@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"restly/internal/collection"
 	"restly/internal/httpx"
@@ -309,5 +310,53 @@ func TestWorkspaceFileRejectsOutsidePaths(t *testing.T) {
 		if _, err := app.workspaceFile(path); err == nil {
 			t.Errorf("workspaceFile(%q) accepted a path outside the workspace", path)
 		}
+	}
+}
+
+func TestCancelSendStopsTheRequest(t *testing.T) {
+	release := make(chan struct{})
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
+		select {
+		case <-req.Context().Done():
+		case <-release:
+		}
+	}))
+	defer server.Close()
+	defer close(release)
+
+	app := newTestApp(t)
+	done := make(chan *SendResult, 1)
+	go func() {
+		result, err := app.Send(SendInput{
+			ID: "tab-1",
+			Item: &collection.Item{
+				Name:    "slow",
+				Request: &collection.Request{Method: "GET", URL: &collection.URL{Raw: server.URL}},
+			},
+		})
+		if err != nil {
+			t.Errorf("Send failed: %v", err)
+		}
+		done <- result
+	}()
+	for registered := false; !registered; {
+		app.mu.Lock()
+		registered = app.sends["tab-1"] != nil
+		app.mu.Unlock()
+	}
+	app.CancelSend("tab-1")
+
+	select {
+	case result := <-done:
+		if result == nil || result.Error != errSendCancelled {
+			t.Fatalf("result = %+v, want error %q", result, errSendCancelled)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("Send did not return after CancelSend")
+	}
+	app.mu.Lock()
+	defer app.mu.Unlock()
+	if len(app.sends) != 0 {
+		t.Fatalf("sends = %v, want empty after the send returns", app.sends)
 	}
 }

@@ -25,6 +25,9 @@ const (
 	maxThemeSize    = 5 << 20
 )
 
+// errSendCancelled is the SendResult error after CancelSend, shown in the response pane.
+const errSendCancelled = "Request cancelled"
+
 // keybindingsTemplate is written when keybindings.json does not exist yet.
 const keybindingsTemplate = `// Restly keybindings, in the shape of VS Code's keybindings.json.
 // Each entry binds a key to a command id. Keyboard Shortcuts (cmd+/ or ctrl+/) lists the ids.

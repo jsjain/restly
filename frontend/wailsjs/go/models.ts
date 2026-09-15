@@ -614,6 +614,7 @@ export namespace main {
 	    path: number[];
 	    item?: collection.Item;
 	    env: string;
+	    id: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new SendInput(source);
@@ -625,6 +626,7 @@ export namespace main {
 	        this.path = source["path"];
 	        this.item = this.convertValues(source["item"], collection.Item);
 	        this.env = source["env"];
+	        this.id = source["id"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

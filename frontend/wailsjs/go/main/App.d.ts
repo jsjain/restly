@@ -6,6 +6,8 @@ import {httpx} from '../models';
 import {jsontext} from '../models';
 import {collection} from '../models';
 
+export function CancelSend(arg1:string):Promise<void>;
+
 export function ClearCookies():Promise<void>;
 
 export function ClearHistory():Promise<void>;

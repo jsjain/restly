@@ -88,10 +88,11 @@ export default function RequestTab({ tab }: Props) {
   async function handleSend() {
     if (!item || !item.request || tab.sending) return;
     tab.sending = true;
+    tab.sendId = crypto.randomUUID();
     notifyChange();
     try {
       // The selection can change while the request is in flight, so keep the one it ran with.
-      const input = buildInput();
+      const input = { ...buildInput(), id: tab.sendId };
       const result = await api.send(input);
       tab.sendResult = result;
       if (coll) coll.variable = result.variables;
@@ -102,6 +103,7 @@ export default function RequestTab({ tab }: Props) {
       toast(String(err), "error");
     } finally {
       tab.sending = false;
+      tab.sendId = undefined;
       notifyChange();
     }
   }
@@ -198,9 +200,15 @@ export default function RequestTab({ tab }: Props) {
                 />
               </div>
             </div>
-            <button className="primary" onClick={handleSend} disabled={tab.sending}>
-              {tab.sending ? "Sending…" : "Send"}
-            </button>
+            {tab.sending ? (
+              <button className="send-button" onClick={() => tab.sendId && api.cancelSend(tab.sendId)}>
+                Cancel
+              </button>
+            ) : (
+              <button className="primary send-button" onClick={handleSend}>
+                Send
+              </button>
+            )}
             <button onClick={handleSave}>Save</button>
             <button
               className={`ghost${tab.showSnippet ? " active" : ""}`}

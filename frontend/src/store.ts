@@ -38,6 +38,7 @@ export interface RequestTab extends TabBase {
   ws?: WsTabState;
   sendResult: SendResult | null;
   sending: boolean;
+  sendId?: string; // the in-flight send, for Cancel
   showSnippet: boolean;
   snippetLang: string;
   snippetCode: string;

@@ -50,7 +50,8 @@ type App struct {
 	environments map[string]*collection.Environment
 	globals      *collection.Environment
 	settings     Settings
-	stopRun      context.CancelFunc // nil when no run is active
+	stopRun      context.CancelFunc            // nil when no run is active
+	sends        map[string]context.CancelFunc // in-flight sends by SendInput.ID
 	lastBody     []byte
 }
 
@@ -58,6 +59,7 @@ func NewApp() *App {
 	app := &App{
 		collections:  map[string]*collection.Collection{},
 		environments: map[string]*collection.Environment{},
+		sends:        map[string]context.CancelFunc{},
 		settings:     Settings{Network: httpx.DefaultNetwork()},
 		emit:         func(string, any) {},
 		logError:     log.Printf,
@@ -731,13 +733,26 @@ func (app *App) Send(input SendInput) (*SendResult, error) {
 	if err != nil {
 		return nil, err
 	}
+	ctx, cancel := context.WithCancel(app.ctx)
+	defer cancel()
+	if input.ID != "" {
+		app.mu.Lock()
+		app.sends[input.ID] = cancel
+		app.mu.Unlock()
+		defer func() {
+			app.mu.Lock()
+			delete(app.sends, input.ID)
+			app.mu.Unlock()
+		}()
+	}
 	before := snapshot(tgt.scope)
-	outcome := runner.Exec(app.ctx, app.client, tgt.scope, runner.Step{
+	outcome := runner.Exec(ctx, app.client, tgt.scope, runner.Step{
 		Collection: tgt.coll,
 		Ancestors:  ancestors,
 		Item:       input.Item,
 		Info:       script.Info{RequestName: input.Item.Name, IterationCount: 1},
 	})
+	cancelled := ctx.Err() != nil && app.ctx.Err() == nil
 
 	result := &SendResult{
 		Response: outcome.Response,
@@ -745,6 +760,8 @@ func (app *App) Send(input SendInput) (*SendResult, error) {
 		Console:  outcome.Console,
 	}
 	switch {
+	case cancelled:
+		result.Error = errSendCancelled
 	case outcome.Err != nil:
 		result.Error = outcome.Err.Error()
 	case outcome.Skipped:
@@ -764,8 +781,19 @@ func (app *App) Send(input SendInput) (*SendResult, error) {
 		result.Environment = app.environments[tgt.envFile]
 	}
 	app.mu.Unlock()
-	app.recordHistory(historyEntry(input.Item, outcome, result.Error))
+	if !cancelled {
+		app.recordHistory(historyEntry(input.Item, outcome, result.Error))
+	}
 	return result, nil
+}
+
+// CancelSend stops the send started with this ID: its scripts and its HTTP exchange.
+func (app *App) CancelSend(id string) {
+	app.mu.Lock()
+	defer app.mu.Unlock()
+	if cancel := app.sends[id]; cancel != nil {
+		cancel()
+	}
 }
 
 // Snippet generates code for the request with variables substituted. Scripts do not run.

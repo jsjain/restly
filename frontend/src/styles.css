@@ -723,6 +723,11 @@ textarea::placeholder {
   flex: 0 0 auto;
 }
 
+/* Send and Cancel swap in place, so the toolbar keeps its width. */
+.request-toolbar .send-button {
+  min-width: 76px;
+}
+
 .request-toolbar .url-input {
   flex: 1 1 auto;
   font-family: var(--font-mono);

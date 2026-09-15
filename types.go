@@ -44,6 +44,7 @@ type SendInput struct {
 	Path []int            `json:"path"` // item position from the collection root
 	Item *collection.Item `json:"item"` // editor state, which may be unsaved
 	Env  string           `json:"env"`  // environment file, "" for none
+	ID   string           `json:"id"`   // names the send for CancelSend, "" when it cannot be cancelled
 }
 
 type SendResult struct {

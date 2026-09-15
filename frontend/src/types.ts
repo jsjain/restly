@@ -196,6 +196,7 @@ export interface SendInput {
   path: number[];
   item?: Item;
   env: string;
+  id?: string; // names the send so api.cancelSend can stop it
 }
 
 export interface SendResult {

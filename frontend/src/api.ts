@@ -118,6 +118,10 @@ export async function send(input: SendInput): Promise<SendResult> {
   return result;
 }
 
+export function cancelSend(id: string): Promise<void> {
+  return Backend.CancelSend(id);
+}
+
 export function snippet(input: SendInput, lang: string): Promise<string> {
   return Backend.Snippet(input as unknown as Parameters<typeof Backend.Send>[0], lang);
 }
