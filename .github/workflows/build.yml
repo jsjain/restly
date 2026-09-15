@@ -107,6 +107,17 @@ jobs:
               mv build/bin/restly.app build/bin/Restly.app
               codesign --force --deep --sign - build/bin/Restly.app
               ditto -c -k --keepParent build/bin/Restly.app "dist/Restly-$version-macos-universal.zip"
+              # The universal app holds both architectures, so each single-architecture app is a thinned copy.
+              for arch in arm64 x86_64; do
+                name=$([ "$arch" = arm64 ] && echo apple-silicon || echo intel)
+                app="build/$name/Restly.app"
+                mkdir -p "build/$name"
+                ditto build/bin/Restly.app "$app"
+                lipo "$app/Contents/MacOS/restly" -thin "$arch" -output "build/$name/restly"
+                mv "build/$name/restly" "$app/Contents/MacOS/restly"
+                codesign --force --deep --sign - "$app"
+                ditto -c -k --keepParent "$app" "dist/Restly-$version-macos-$name.zip"
+              done
               ;;
             Windows)
               installer=$(ls build/bin/*installer*.exe)
@@ -148,6 +159,8 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v7
+
       - uses: actions/download-artifact@v8
         with:
           path: dist
@@ -157,11 +170,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          notes=(--generate-notes)
+          notes_file="$GITHUB_WORKSPACE/docs/releases/$GITHUB_REF_NAME.md"
+          if [ -f "$notes_file" ]; then notes=(--notes-file "$notes_file"); fi
           cd dist
           sha256sum * > SHA256SUMS.txt
           # A release published on GitHub already exists. A pushed tag has none yet.
           if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
             gh release upload "$GITHUB_REF_NAME" * --repo "$GITHUB_REPOSITORY" --clobber
           else
-            gh release create "$GITHUB_REF_NAME" * --repo "$GITHUB_REPOSITORY" --title "Restly ${GITHUB_REF_NAME#v}" --generate-notes
+            gh release create "$GITHUB_REF_NAME" * --repo "$GITHUB_REPOSITORY" --title "Restly ${GITHUB_REF_NAME#v}" "${notes[@]}"
           fi

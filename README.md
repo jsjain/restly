@@ -37,7 +37,9 @@ Download the file for your system from the [latest release](https://github.com/j
 
 | System | File |
 | --- | --- |
-| macOS 12 or newer, Apple silicon and Intel | `Restly-<version>-macos-universal.zip` |
+| macOS 12 or newer, Apple silicon (M1 or later) | `Restly-<version>-macos-apple-silicon.zip` |
+| macOS 12 or newer, Intel | `Restly-<version>-macos-intel.zip` |
+| macOS 12 or newer, either kind of Mac | `Restly-<version>-macos-universal.zip` |
 | Windows 10 or 11, 64-bit | `Restly-<version>-windows-amd64-setup.exe`, or the `portable.exe` without installing |
 | Ubuntu 24.04, Debian 13, or newer, x86-64 | `restly_<version>_amd64.deb` |
 | Other Linux x86-64 with glibc 2.39 or newer (Fedora 40 or newer) | `Restly-<version>-linux-amd64.tar.gz`, which needs GTK 3 and WebKitGTK 4.1 |
@@ -84,7 +86,7 @@ for check in frontend/checks/*.check.ts; do node "$check"; done
 
 ## Releasing
 
-The version is `info.productVersion` in `wails.json`. Change it and commit, then either push a matching tag (`git tag v1.0.1 && git push origin v1.0.1`) or publish a release with that tag on GitHub. The Build workflow builds all three systems and attaches the files and `SHA256SUMS.txt` to the release, creating the release for a pushed tag. It fails if the tag and the version differ. Running the workflow by hand from the Actions tab builds without publishing and keeps the files as run artifacts.
+The version is `info.productVersion` in `wails.json`. Change it and commit, then either push a matching tag (`git tag v1.0.1 && git push origin v1.0.1`) or publish a release with that tag on GitHub. The Build workflow builds all three systems and attaches the files and `SHA256SUMS.txt` to the release, creating the release for a pushed tag. A release created this way takes its notes from `docs/releases/<tag>.md` when that file exists. The workflow fails if the tag and the version differ. Running the workflow by hand from the Actions tab builds without publishing and keeps the files as run artifacts.
 
 ## Limits
 
