@@ -2,6 +2,13 @@ package script
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
+	"encoding/json"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -40,6 +47,25 @@ func TestRun_JSONResponseIntoVariable(t *testing.T) {
 	}
 	if got := in.Scope.Collection["token"]; got != "abc123" {
 		t.Fatalf("collectionVariables[token] = %q, want abc123 (console: %v)", got, out.Console)
+	}
+}
+
+func TestRun_RestlyAliasesPm(t *testing.T) {
+	in := Input{
+		Code:     "restly.collectionVariables.set(\"TOKEN\", `Bearer ${restly.response.json().access_token}`); pm.environment.set(\"same\", restly === pm);",
+		Event:    "test",
+		Scope:    newScope(),
+		Response: fakeResponse(200, "OK", `{"access_token":"abc123"}`),
+	}
+	out, err := Run(context.Background(), in)
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+	if got := in.Scope.Collection["TOKEN"]; got != "Bearer abc123" {
+		t.Fatalf("collectionVariables[TOKEN] = %q, want Bearer abc123 (console: %v)", got, out.Console)
+	}
+	if got := in.Scope.Environment["same"]; got != "true" {
+		t.Fatalf("environment[same] = %q, want true", got)
 	}
 }
 
@@ -422,6 +448,277 @@ func TestRun_SendRequestRejectsWithoutSend(t *testing.T) {
 	}
 	if got := in.Scope.Environment["err"]; got == "" {
 		t.Fatalf("expected pm.sendRequest to reject when Send is nil")
+	}
+}
+
+func TestRun_CryptoJSSHA256(t *testing.T) {
+	in := Input{
+		Code:  `pm.environment.set("hash", CryptoJS.SHA256("abc").toString());`,
+		Event: "test",
+		Scope: newScope(),
+	}
+	if _, err := Run(context.Background(), in); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+	sum := sha256.Sum256([]byte("abc"))
+	want := hex.EncodeToString(sum[:])
+	if got := in.Scope.Environment["hash"]; got != want {
+		t.Fatalf("hash = %q, want %q", got, want)
+	}
+}
+
+// TestRun_CryptoJSPostmanLoginPattern mirrors the user's imported Postman login pre-request
+// scripts: CryptoJS.SHA256 over globals, stored back with postman.setGlobalVariable. The
+// stored value must be the hex string, not a WordArray dumped as JSON.
+func TestRun_CryptoJSPostmanLoginPattern(t *testing.T) {
+	scope := newScope()
+	scope.Globals["PASSWORD"] = "hunter2"
+	scope.Globals["USER_ID"] = "u1"
+	scope.Globals["VC_CODE"] = "vc9"
+	in := Input{
+		Code: `var token = CryptoJS.SHA256(postman.getGlobalVariable("PASSWORD"));
+			postman.setGlobalVariable("PASS", token);
+			var vc_str = postman.getGlobalVariable("USER_ID") + "|" +
+			postman.getGlobalVariable("VC_CODE");
+			var vc_code =  CryptoJS.SHA256(vc_str);
+			postman.setGlobalVariable("vc", vc_code);`,
+		Event: "prerequest",
+		Scope: scope,
+	}
+	if _, err := Run(context.Background(), in); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+	passSum := sha256.Sum256([]byte("hunter2"))
+	wantPass := hex.EncodeToString(passSum[:])
+	vcSum := sha256.Sum256([]byte("u1|vc9"))
+	wantVC := hex.EncodeToString(vcSum[:])
+	if got := scope.Globals["PASS"]; got != wantPass {
+		t.Fatalf("Globals[PASS] = %q, want %q (a WordArray must stringify to its hex form, not [object Object])", got, wantPass)
+	}
+	if got := scope.Globals["vc"]; got != wantVC {
+		t.Fatalf("Globals[vc] = %q, want %q", got, wantVC)
+	}
+}
+
+func TestRun_CryptoJSRequireHmacBase64(t *testing.T) {
+	in := Input{
+		Code:  `pm.environment.set("mac", require("crypto-js").HmacSHA256("msg", "key").toString(require("crypto-js").enc.Base64));`,
+		Event: "test",
+		Scope: newScope(),
+	}
+	if _, err := Run(context.Background(), in); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+	mac := hmac.New(sha256.New, []byte("key"))
+	mac.Write([]byte("msg"))
+	want := base64.StdEncoding.EncodeToString(mac.Sum(nil))
+	if got := in.Scope.Environment["mac"]; got != want {
+		t.Fatalf("mac = %q, want %q", got, want)
+	}
+}
+
+// TestRun_CryptoJSRandomAndAESRoundTrip covers WordArray.random and AES.encrypt/decrypt with
+// a passphrase, both of which need crypto-js's secure-random path to work (see crypto.
+// getRandomValues in helpers.go). If this fails, WordArray.random has no working entropy
+// source in this runtime and AES passphrase encryption is unsupported.
+func TestRun_CryptoJSRandomAndAESRoundTrip(t *testing.T) {
+	in := Input{
+		Code: `var wa = CryptoJS.lib.WordArray.random(16);
+			pm.environment.set("sigBytes", String(wa.sigBytes));
+			var enc = CryptoJS.AES.encrypt("hello world", "pass123").toString();
+			var dec = CryptoJS.AES.decrypt(enc, "pass123").toString(CryptoJS.enc.Utf8);
+			pm.environment.set("roundTrip", dec);`,
+		Event: "test",
+		Scope: newScope(),
+	}
+	out, err := Run(context.Background(), in)
+	if err != nil {
+		t.Fatalf("Run: %v (console: %v)", err, out.Console)
+	}
+	if got := in.Scope.Environment["sigBytes"]; got != "16" {
+		t.Fatalf("sigBytes = %q, want 16", got)
+	}
+	if got := in.Scope.Environment["roundTrip"]; got != "hello world" {
+		t.Fatalf("roundTrip = %q, want hello world", got)
+	}
+}
+
+func TestRun_CryptoJSNotLoadedWithoutUse(t *testing.T) {
+	before := cryptoJSLoadCount.Load()
+	in := Input{Code: `pm.environment.set("a", "b");`, Event: "test", Scope: newScope()}
+	if _, err := Run(context.Background(), in); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+	if after := cryptoJSLoadCount.Load(); after != before {
+		t.Fatalf("cryptoJSLoadCount changed from %d to %d for a script that never touches CryptoJS", before, after)
+	}
+}
+
+func TestRun_CryptoJSLoadedWhenUsed(t *testing.T) {
+	before := cryptoJSLoadCount.Load()
+	in := Input{Code: `CryptoJS.SHA256("x").toString();`, Event: "test", Scope: newScope()}
+	if _, err := Run(context.Background(), in); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+	if after := cryptoJSLoadCount.Load(); after != before+1 {
+		t.Fatalf("cryptoJSLoadCount changed from %d to %d, want exactly +1", before, after)
+	}
+}
+
+func TestRun_PreRequestHeaderAddUpsertRemove(t *testing.T) {
+	req := &collection.Request{
+		Method: "GET",
+		URL:    &collection.URL{Raw: "https://example.com"},
+		Header: []collection.KV{{Key: "X-Old", Value: "old"}, {Key: "X-Obj", Value: "old"}},
+	}
+	in := Input{
+		Code: `pm.request.addHeader({key: "X-Test", value: "1"});
+			pm.request.upsertHeader({key: "X-Test", value: "2"});
+			pm.request.removeHeader("X-Old");
+			pm.request.removeHeader({key: "X-Obj"});`,
+		Event:   "prerequest",
+		Scope:   newScope(),
+		Request: req,
+	}
+	if _, err := Run(context.Background(), in); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+	byKey := map[string]string{}
+	for _, header := range req.Header {
+		byKey[header.Key] = header.Value
+	}
+	if byKey["X-Old"] != "" {
+		t.Fatalf("request.Header = %+v, want X-Old removed", req.Header)
+	}
+	if _, stillThere := byKey["X-Obj"]; stillThere {
+		t.Fatalf("request.Header = %+v, want X-Obj removed via the {key: ...} form", req.Header)
+	}
+	if byKey["X-Test"] != "2" {
+		t.Fatalf("request.Header = %+v, want X-Test upserted to 2", req.Header)
+	}
+}
+
+// scriptNode is one collection/folder/request event holder to run scripts for.
+type scriptNode struct {
+	name   string
+	events []collection.Event
+	req    *collection.Request // nil for the collection itself and for folders
+}
+
+// collectScriptNodes walks a loaded collection the way runner.Exec's chain does, but flattened
+// into every collection/folder/request node instead of just one item's ancestor chain.
+func collectScriptNodes(coll *collection.Collection) []scriptNode {
+	nodes := []scriptNode{{name: coll.Info.Name, events: coll.Event}}
+	var walk func(items []*collection.Item)
+	walk = func(items []*collection.Item) {
+		for _, item := range items {
+			nodes = append(nodes, scriptNode{name: item.Name, events: item.Event, req: item.Request})
+			if item.IsFolder() {
+				walk(item.Item)
+			}
+		}
+	}
+	walk(coll.Item)
+	return nodes
+}
+
+// cloneCollectionRequest mirrors runner.cloneRequest (internal/runner/helpers.go), unexported
+// there, so a pre-request script's write-back never touches the loaded collection in place.
+func cloneCollectionRequest(req *collection.Request) (*collection.Request, error) {
+	if req == nil {
+		return nil, nil
+	}
+	data, err := json.Marshal(req)
+	if err != nil {
+		return nil, err
+	}
+	var clone collection.Request
+	if err := json.Unmarshal(data, &clone); err != nil {
+		return nil, err
+	}
+	return &clone, nil
+}
+
+// TestRealCollectionScriptsRun runs every pre-request and test script from the user's real,
+// imported Postman collections through Run, read-only (RESTLY_REAL_COLLECTIONS lists files;
+// see TestRoundTripRealCollections in internal/collection for the same env var convention).
+// It never calls LoadCollection's result back through SaveCollection, and configures no Send
+// function, so pm.sendRequest only ever rejects locally instead of reaching the network.
+//
+// A script failing an assertion against the fake response, or hitting the no-Send rejection,
+// is expected and only logged. Only errors that mean Restly is missing part of the scripted
+// API (a ReferenceError, "is not a function", or "is not available in Restly") are real
+// failures worth failing the test over.
+//
+// "Cannot read property" is the odd one out: a pre-request script has no response to read, so
+// that error there really does mean some pm/CryptoJS surface came back undefined. A test
+// script, though, almost always throws it just by walking into a field the canned {} response
+// body does not have (e.g. pm.response.json().data.token) - an expected assertion failure in
+// substance, even though its message matches the same "missing API" string. So this pattern is
+// only treated as fatal for prerequest scripts; for test scripts it is logged like any other
+// assertion failure.
+func TestRealCollectionScriptsRun(t *testing.T) {
+	paths := filepath.SplitList(os.Getenv("RESTLY_REAL_COLLECTIONS"))
+	if len(paths) == 0 {
+		t.Skip("RESTLY_REAL_COLLECTIONS is not set")
+	}
+	alwaysFatal := []string{"ReferenceError", "is not a function", "is not available in Restly"}
+	const prerequestOnlyFatal = "Cannot read property"
+
+	for _, path := range paths {
+		if path == "" {
+			continue // a trailing separator in the env var splits into one empty path
+		}
+		coll, err := collection.LoadCollection(path)
+		if err != nil {
+			// One stray non-collection file (e.g. an environment export matched by a broad
+			// glob) should not hide every result for the files sorted after it.
+			t.Errorf("failed to load %s: %v", path, err)
+			continue
+		}
+		var ran, failed int
+		for _, node := range collectScriptNodes(coll) {
+			req, err := cloneCollectionRequest(node.req)
+			if err != nil {
+				t.Errorf("%s: %s: failed to clone request: %v", path, node.name, err)
+				continue
+			}
+			for _, listen := range []string{"prerequest", "test"} {
+				code := collection.Code(node.events, listen)
+				if code == "" {
+					continue
+				}
+				in := Input{
+					Code:    code,
+					Event:   listen,
+					Scope:   newScope(),
+					Request: req,
+				}
+				if listen == "test" {
+					in.Response = fakeResponse(200, "OK", "{}", httpx.Header{Key: "Content-Type", Value: "application/json"})
+				}
+				ran++
+				if _, err := Run(context.Background(), in); err != nil {
+					isMissingAPI := false
+					for _, pattern := range alwaysFatal {
+						if strings.Contains(err.Error(), pattern) {
+							isMissingAPI = true
+							break
+						}
+					}
+					if !isMissingAPI && listen == "prerequest" && strings.Contains(err.Error(), prerequestOnlyFatal) {
+						isMissingAPI = true
+					}
+					if isMissingAPI {
+						failed++
+						t.Errorf("%s: %q %s script hit a missing API: %v", path, node.name, listen, err)
+					} else {
+						t.Logf("%s: %q %s script: %v", path, node.name, listen, err)
+					}
+				}
+			}
+		}
+		t.Logf("%s: ran %d scripts, %d failed on a missing API", path, ran, failed)
 	}
 }
 

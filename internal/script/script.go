@@ -171,22 +171,53 @@ func setupBridges(
 		}
 		return vm.Get("chai")
 	}
+	// loadCryptoJS mirrors loadChai, returning the library value straight to pm.js's getter
+	// instead of assigning a "CryptoJS" global itself: pm.js's global CryptoJS is still the
+	// bare accessor property at this point (it only replaces itself with the loaded value
+	// once the getter returns), so a Go-side assignment here would hit that same accessor
+	// with no setter and fail. crypto-js reads its "crypto" global once, at load time (see
+	// cryptoSecureRandomInt in crypto-js.js), so setGetRandomValues runs first.
+	cryptoJSLoaded := false
+	var cryptoJSValue goja.Value
+	loadCryptoJS := func() goja.Value {
+		if !cryptoJSLoaded {
+			setGetRandomValues(vm)
+			program, err := compiledCryptoJS()
+			if err != nil {
+				panic(vm.NewGoError(fmt.Errorf("failed to load crypto-js: %w", err)))
+			}
+			value, err := vm.RunProgram(program)
+			if err != nil {
+				panic(vm.NewGoError(fmt.Errorf("failed to load crypto-js: %w", err)))
+			}
+			cryptoJSValue = value
+			cryptoJSLoadCount.Add(1)
+			cryptoJSLoaded = true
+		}
+		return cryptoJSValue
+	}
+
 	// require.Registry.Enable (inside NewEventLoop) already set a Node-style require; this
-	// overwrites it so the sandbox only ever exposes chai.
+	// overwrites it so the sandbox only ever exposes chai and crypto-js.
 	if err := vm.Set("require", func(name string) goja.Value {
-		if name != "chai" {
+		switch name {
+		case "chai":
+			return loadChai()
+		case "crypto-js":
+			return loadCryptoJS()
+		default:
 			panic(vm.NewGoError(fmt.Errorf("require('%s') is not available in Restly", name)))
 		}
-		return loadChai()
 	}); err != nil {
 		return fmt.Errorf("failed to set require: %w", err)
 	}
 
 	host := vm.NewObject()
 	hostFuncs := map[string]any{
-		"log":      func(line string) { out.Console = append(out.Console, line) },
-		"replace":  func(text string) string { return in.Scope.Replace(text) },
-		"loadChai": loadChai,
+		"log":          func(line string) { out.Console = append(out.Console, line) },
+		"replace":      func(text string) string { return in.Scope.Replace(text) },
+		"loadChai":     loadChai,
+		"loadCryptoJS": loadCryptoJS,
 		"reserveTest": func(name string) int {
 			out.Tests = append(out.Tests, TestResult{Name: name})
 			return len(out.Tests) - 1

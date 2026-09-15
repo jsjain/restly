@@ -11,5 +11,8 @@ const DefaultTimeout = 30 * time.Second
 //go:embed chai.js
 var chaiSource string
 
+//go:embed crypto-js.js
+var cryptoJSSource string
+
 //go:embed pm.js
 var pmShimSource string

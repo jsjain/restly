@@ -12,7 +12,7 @@
 ## Why Restly
 
 - **Your collections stay plain files.** Restly reads and writes Postman v2.1 collection and environment files in `~/Restly`. You can keep them in git, review changes in a pull request, and still open them in Postman. There is no account, sign-in, or cloud sync.
-- **Your Postman scripts keep running.** Pre-request and test scripts use the same `pm` API and Chai assertions, including `pm.sendRequest` and `setNextRequest`.
+- **Your Postman scripts keep running.** Pre-request and test scripts use Postman's API and Chai assertions, including `sendRequest` and `setNextRequest`. The script object is `restly`, and `pm` is the same object, so imported scripts run unchanged. The script editor autocompletes both. [docs/variables-and-scripts.md](docs/variables-and-scripts.md) lists every variable scope and script API with examples.
 - **It is light.** The app is a Go core in the system webview, not a bundled browser. The Apple silicon build is 18 MB and uses about 120 MB of memory after launch, and a 5 MB collection decodes in 124 ms on an M4 Pro.
 - **It works from the keyboard.** Every action has a command in the palette, shortcuts can be remapped, and the collection tree is navigable with arrow keys. Themes and keybindings use VS Code's formats, so existing ones carry over.
 
@@ -90,7 +90,7 @@ The version is `info.productVersion` in `wails.json`. Change it and commit, then
 
 ## Limits
 
-- Scripts run in goja, not V8. `for await` and async generators are not supported, and `require` only provides `chai`.
+- Scripts run in goja, not V8. `for await` and async generators are not supported, and `require` only provides `chai` and `crypto-js`.
 - Auth types other than basic, bearer, and API key are kept in the file but not applied. OAuth 2 token flows are not implemented.
 - Client certificates must be PEM files without a passphrase.
 - There is no cloud sync, mock server, or monitor.

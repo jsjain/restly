@@ -11,6 +11,12 @@ function __toStoredString(value) {
   if (value === undefined || value === null) return "";
   if (typeof value === "string") return value;
   if (typeof value === "object") {
+    // An object with its own toString (e.g. a crypto-js WordArray) means the author wants
+    // that string form, not a JSON dump of its internal fields; arrays keep the JSON dump,
+    // since Array.prototype.toString ("1,2,3") is never what a script setting an array wants.
+    if (!Array.isArray(value) && typeof value.toString === "function" && value.toString !== Object.prototype.toString) {
+      return String(value);
+    }
     try {
       return JSON.stringify(value);
     } catch (e) {
@@ -116,6 +122,8 @@ function __makeScope(map, readonly) {
 }
 
 var pm = {};
+// restly is the same object under Restly's name. Scripts from Postman keep using pm.
+var restly = pm;
 
 pm.environment = __makeScope(__environment, false);
 pm.collectionVariables = __makeScope(__collection, false);
@@ -185,6 +193,25 @@ function __ensureChai() {
 Object.defineProperty(pm, "expect", {
   get: function () {
     return __ensureChai().expect;
+  },
+});
+
+// ---- CryptoJS, loaded lazily on first use ----
+//
+// A plain `var CryptoJS = __host.loadCryptoJS()` would load it on every run, so this is a
+// configurable getter first; the first read loads the library and replaces itself with a
+// plain writable value, matching how a real global (assigned once) behaves from then on.
+Object.defineProperty(globalThis, "CryptoJS", {
+  configurable: true,
+  get: function () {
+    var lib = __host.loadCryptoJS();
+    Object.defineProperty(globalThis, "CryptoJS", {
+      value: lib,
+      writable: true,
+      configurable: true,
+      enumerable: true,
+    });
+    return lib;
   },
 });
 
@@ -351,13 +378,26 @@ function __buildRequestApi(reqData) {
   reqData.url = __normalizeUrl(reqData.url);
   var urlApi = __buildUrlApi(reqData.url);
 
+  var headers = __makeKVList(
+    function () {
+      return reqData.header;
+    },
+    { caseInsensitive: true }
+  );
+
   var api = {
-    headers: __makeKVList(
-      function () {
-        return reqData.header;
-      },
-      { caseInsensitive: true }
-    ),
+    headers: headers,
+    // Postman Request methods: aliases of headers.add/remove/upsert. removeHeader takes
+    // either a key string or a {key: ...} header object, same as headers.remove(name).
+    addHeader: function (header) {
+      headers.add(header);
+    },
+    removeHeader: function (keyOrHeader) {
+      headers.remove(keyOrHeader && typeof keyOrHeader === "object" ? keyOrHeader.key : keyOrHeader);
+    },
+    upsertHeader: function (header) {
+      headers.upsert(header);
+    },
     get body() {
       return reqData.body;
     },

@@ -1,6 +1,7 @@
 package script
 
 import (
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -17,6 +18,9 @@ import (
 // can confirm a script that never touches pm.expect skips the cost of loading it.
 var chaiLoadCount atomic.Int64
 
+// cryptoJSLoadCount is chaiLoadCount's counterpart for crypto-js.
+var cryptoJSLoadCount atomic.Int64
+
 var (
 	pmShimOnce    sync.Once
 	pmShimProgram *goja.Program
@@ -25,6 +29,10 @@ var (
 	chaiOnce    sync.Once
 	chaiProgram *goja.Program
 	chaiErr     error
+
+	cryptoJSOnce    sync.Once
+	cryptoJSProgram *goja.Program
+	cryptoJSErr     error
 )
 
 // compiledPMShim compiles pm.js once and reuses the bytecode across every Run call.
@@ -44,6 +52,18 @@ func compiledChai() (*goja.Program, error) {
 		chaiProgram, chaiErr = goja.Compile("chai.js", wrapped, false)
 	})
 	return chaiProgram, chaiErr
+}
+
+// compiledCryptoJS wraps crypto-js.js as a CommonJS module inside its own IIFE, so its
+// module/exports locals never touch the runtime's global object (unlike chai's, which are
+// plain globals). That keeps the two vendored libraries from clobbering each other's
+// module/exports if a script loads both in one runtime. Compiled once and reused.
+func compiledCryptoJS() (*goja.Program, error) {
+	cryptoJSOnce.Do(func() {
+		wrapped := "(function(){var module={exports:{}},exports=module.exports;" + cryptoJSSource + ";return module.exports;})()"
+		cryptoJSProgram, cryptoJSErr = goja.Compile("crypto-js.js", wrapped, false)
+	})
+	return cryptoJSProgram, cryptoJSErr
 }
 
 // wrapCode wraps user code in an async IIFE on the same first line so line numbers in
@@ -133,6 +153,35 @@ func writeBackRequest(vm *goja.Runtime, req *collection.Request) error {
 	}
 	*req = updated
 	return nil
+}
+
+// setGetRandomValues defines a global crypto.getRandomValues backed by crypto/rand, the one
+// global crypto-js.js looks for (via globalThis.crypto) to seed WordArray.random and AES's
+// passphrase key derivation. It fills the raw bytes behind whatever typed array is passed,
+// which works for any element width without needing a case per typed-array kind.
+func setGetRandomValues(vm *goja.Runtime) {
+	getRandomValues := func(call goja.FunctionCall) goja.Value {
+		arg := call.Argument(0)
+		obj := arg.ToObject(vm)
+		bufVal := obj.Get("buffer")
+		if bufVal == nil || goja.IsUndefined(bufVal) {
+			panic(vm.NewTypeError("crypto.getRandomValues: argument must be an integer-typed array"))
+		}
+		ab, ok := bufVal.Export().(goja.ArrayBuffer)
+		if !ok {
+			panic(vm.NewTypeError("crypto.getRandomValues: argument must be an integer-typed array"))
+		}
+		byteOffset := int(obj.Get("byteOffset").ToInteger())
+		byteLength := int(obj.Get("byteLength").ToInteger())
+		view := ab.Bytes()[byteOffset : byteOffset+byteLength]
+		if _, err := rand.Read(view); err != nil {
+			panic(vm.NewGoError(fmt.Errorf("crypto.getRandomValues: %w", err)))
+		}
+		return arg
+	}
+	cryptoObj := vm.NewObject()
+	_ = cryptoObj.Set("getRandomValues", getRandomValues)
+	_ = vm.Set("crypto", cryptoObj)
 }
 
 func decodeBase64(encoded string) (string, error) {
