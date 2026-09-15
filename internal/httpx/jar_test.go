@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"testing"
 	"time"
@@ -236,7 +237,9 @@ func TestJar_SaveLoadRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to stat saved cookie file: %v", err)
 	}
-	assertEqual(t, "file mode", info.Mode().Perm(), os.FileMode(0o600))
+	if runtime.GOOS != "windows" { // Windows files have no Unix permission bits
+		assertEqual(t, "file mode", info.Mode().Perm(), os.FileMode(0o600))
+	}
 
 	loaded := NewJar()
 	if err := loaded.Load(path); err != nil {

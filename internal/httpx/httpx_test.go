@@ -252,7 +252,11 @@ func TestResolve_FormData(t *testing.T) {
 			]
 		}
 	}`)
-	req.Body.FormData[1].Src = json.RawMessage(`"` + tempFile + `"`)
+	src, err := json.Marshal(tempFile) // quoted by hand, a Windows path's backslashes are invalid JSON escapes
+	if err != nil {
+		t.Fatalf("failed to encode file path: %v", err)
+	}
+	req.Body.FormData[1].Src = src
 	scope := scopeWith(map[string]string{"who": "restly"})
 
 	prep, err := Resolve(req, nil, scope)

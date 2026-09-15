@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 	"sync"
 	"testing"
@@ -215,6 +216,9 @@ func TestClearPersistsAcrossReopen(t *testing.T) {
 }
 
 func TestFileModeIs0600(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows files have no Unix permission bits")
+	}
 	path := filepath.Join(t.TempDir(), "history.jsonl")
 	limit := 2
 	store, err := Open(path, limit)
