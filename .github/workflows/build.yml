@@ -115,6 +115,21 @@ jobs:
               ;;
             Linux)
               tar -czf "dist/Restly-$version-linux-amd64.tar.gz" -C build/bin restly
+              pkg=build/deb
+              install -Dm755 build/bin/restly "$pkg/usr/bin/restly"
+              install -Dm644 build/appicon.png "$pkg/usr/share/pixmaps/restly.png"
+              mkdir -p "$pkg/DEBIAN" "$pkg/usr/share/applications"
+              printf '%s\n' "[Desktop Entry]" "Type=Application" "Name=Restly" "Comment=Desktop API client for Postman collections" \
+                "Exec=restly" "Icon=restly" "Categories=Development;" "Terminal=false" > "$pkg/usr/share/applications/restly.desktop"
+              # Ubuntu 24.04 renamed GTK's package in the 64-bit time_t transition, and Debian 12 did not.
+              printf '%s\n' "Package: restly" "Version: $version" "Architecture: amd64" \
+                "Maintainer: Shubham Jain <6463002+jsjain@users.noreply.github.com>" \
+                "Depends: libgtk-3-0t64 | libgtk-3-0, libwebkit2gtk-4.1-0" "Section: devel" "Priority: optional" \
+                "Homepage: https://github.com/jsjain/restly" "Description: Desktop API client for Postman collections" > "$pkg/DEBIAN/control"
+              dpkg-deb --build --root-owner-group "$pkg" "dist/restly_${version}_amd64.deb"
+              # Installing the package fails here if a Depends name does not exist.
+              sudo apt-get install -y "./dist/restly_${version}_amd64.deb"
+              test -x /usr/bin/restly
               ;;
           esac
           ls -l dist

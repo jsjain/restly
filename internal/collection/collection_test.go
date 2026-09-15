@@ -11,9 +11,6 @@ import (
 	"testing"
 )
 
-// realCollections are the user's Postman exports. Tests skip the ones not present on this machine.
-var realCollections = []string{}
-
 func assertSameJSON(t *testing.T, label string, want, got []byte) {
 	t.Helper()
 	var wantValue, gotValue any
@@ -28,8 +25,14 @@ func assertSameJSON(t *testing.T, label string, want, got []byte) {
 	}
 }
 
+// Real Postman exports are private, so they are listed in RESTLY_REAL_COLLECTIONS (separated like
+// PATH) instead of in the repository. Missing files are skipped.
 func TestRoundTripRealCollections(t *testing.T) {
-	for _, path := range realCollections {
+	paths := filepath.SplitList(os.Getenv("RESTLY_REAL_COLLECTIONS"))
+	if len(paths) == 0 {
+		t.Skip("RESTLY_REAL_COLLECTIONS is not set")
+	}
+	for _, path := range paths {
 		original, err := os.ReadFile(path)
 		if errors.Is(err, fs.ErrNotExist) {
 			t.Logf("skipping missing %s", path)

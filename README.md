@@ -39,7 +39,8 @@ Download the file for your system from the [latest release](https://github.com/j
 | --- | --- |
 | macOS 12 or newer, Apple silicon and Intel | `Restly-<version>-macos-universal.zip` |
 | Windows 10 or 11, 64-bit | `Restly-<version>-windows-amd64-setup.exe`, or the `portable.exe` without installing |
-| Linux x86-64 with glibc 2.39 or newer (Ubuntu 24.04, Debian 13, Fedora 40) | `Restly-<version>-linux-amd64.tar.gz`, which needs GTK 3 and WebKitGTK 4.1 |
+| Ubuntu 24.04, Debian 13, or newer, x86-64 | `restly_<version>_amd64.deb` |
+| Other Linux x86-64 with glibc 2.39 or newer (Fedora 40 or newer) | `Restly-<version>-linux-amd64.tar.gz`, which needs GTK 3 and WebKitGTK 4.1 |
 
 The builds are not signed with an Apple or Windows certificate, so the first launch shows a warning.
 
@@ -91,3 +92,7 @@ The version is `info.productVersion` in `wails.json`. Change it and commit, then
 - Auth types other than basic, bearer, and API key are kept in the file but not applied. OAuth 2 token flows are not implemented.
 - Client certificates must be PEM files without a passphrase.
 - There is no cloud sync, mock server, or monitor.
+
+## License
+
+[MIT](LICENSE)
