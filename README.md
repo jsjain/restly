@@ -47,8 +47,6 @@ The builds are not signed with an Apple or Windows certificate, so the first lau
 - **Windows.** In the SmartScreen dialog, choose More info > Run anyway. The installer adds WebView2 if it is missing.
 - **Linux.** On Ubuntu or Debian, `sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0`, then run `./restly`.
 
-Every push to `main` also builds all three systems. Those files are under the run's Artifacts in the [Actions tab](https://github.com/jsjain/restly/actions), which requires a GitHub sign-in.
-
 ## Keyboard shortcuts
 
 The default shortcuts are listed in [`frontend/src/keybindings.default.json`](frontend/src/keybindings.default.json), where `mod` means ⌘ on macOS and Ctrl elsewhere. To change them, run "Open Keybindings File" from the command palette (⌘K or Ctrl+K) and add entries in the same format: `{ "key": "cmd+j", "command": "send" }` adds a key, and `{ "key": "mod+enter", "command": "-send" }` removes one. Press ⌘/ or Ctrl+/ to see every shortcut in the app.
@@ -85,7 +83,7 @@ for check in frontend/checks/*.check.ts; do node "$check"; done
 
 ## Releasing
 
-The version is `info.productVersion` in `wails.json`. Change it, commit, and push a matching tag, for example `git tag v1.0.1 && git push origin v1.0.1`. The workflow builds all three systems and publishes a release with the files and `SHA256SUMS.txt`. It fails if the tag and the version differ.
+The version is `info.productVersion` in `wails.json`. Change it and commit, then either push a matching tag (`git tag v1.0.1 && git push origin v1.0.1`) or publish a release with that tag on GitHub. The Build workflow builds all three systems and attaches the files and `SHA256SUMS.txt` to the release, creating the release for a pushed tag. It fails if the tag and the version differ. Running the workflow by hand from the Actions tab builds without publishing and keeps the files as run artifacts.
 
 ## Limits
 
