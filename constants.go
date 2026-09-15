@@ -29,6 +29,8 @@ const (
 const keybindingsTemplate = `// Restly keybindings, in the shape of VS Code's keybindings.json.
 // Each entry binds a key to a command id. Keyboard Shortcuts (cmd+/ or ctrl+/) lists the ids.
 // A command starting with "-" removes that key from the command, so the default can be replaced.
+// The defaults, in this format ("mod" is cmd on macOS and ctrl elsewhere), are listed at
+// https://github.com/jsjain/restly/blob/main/frontend/src/keybindings.default.json
 // Restly reloads this file when its window regains focus.
 [
   // { "key": "cmd+shift+]", "command": "next-tab" },

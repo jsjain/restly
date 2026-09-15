@@ -5,6 +5,7 @@ import { state, openDraftTab, openAppSettingsTab, openCookiesTab, openSaveDraftM
 import { newWebSocketItem } from "./websocket";
 import { requestClose, reopenClosed, nextTab, goToTab, closeAll, closeOthers, duplicateTab, tabItem } from "./tabActions";
 import * as api from "./api";
+import defaultKeybindings from "./keybindings.default.json";
 
 export interface Command {
   id: string;
@@ -17,8 +18,10 @@ export interface Command {
 
 const registry = new Map<string, Command>();
 
+// Default keys come from keybindings.default.json, the file users read to see them.
 export function registerCommand(cmd: Command): void {
-  registry.set(cmd.id, cmd);
+  const keys = defaultKeybindings.filter((binding) => binding.command === cmd.id).map((binding) => binding.key);
+  registry.set(cmd.id, { ...cmd, keys });
 }
 
 export function listCommands(): Command[] {
@@ -89,19 +92,19 @@ async function copyAsCurl(): Promise<void> {
   }
 }
 
-registerCommand({ id: "send", title: "Send Request", group: "Request", keys: ["mod+enter"], when: isActiveRequestTab, run: () => fire(SEND) });
-registerCommand({ id: "save", title: "Save", group: "Request", keys: ["mod+s"], when: hasActiveTab, run: runSave });
-registerCommand({ id: "copy-curl", title: "Copy as cURL", group: "Request", keys: ["mod+shift+c"], when: isActiveRequestTab, run: () => void copyAsCurl() });
-registerCommand({ id: "format-body", title: "Format Body", group: "Request", keys: ["shift+alt+f"], when: isActiveRequestTab, run: () => fire(FORMAT_BODY) });
+registerCommand({ id: "send", title: "Send Request", group: "Request", when: isActiveRequestTab, run: () => fire(SEND) });
+registerCommand({ id: "save", title: "Save", group: "Request", when: hasActiveTab, run: runSave });
+registerCommand({ id: "copy-curl", title: "Copy as cURL", group: "Request", when: isActiveRequestTab, run: () => void copyAsCurl() });
+registerCommand({ id: "format-body", title: "Format Body", group: "Request", when: isActiveRequestTab, run: () => fire(FORMAT_BODY) });
 
-registerCommand({ id: "new-http-request", title: "New HTTP Request", group: "Tabs", keys: ["mod+n", "mod+t"], run: () => openDraftTab() });
-registerCommand({ id: "import-curl", title: "Import cURL", group: "Tabs", keys: ["mod+o"], run: () => fire(IMPORT_CURL) });
-registerCommand({ id: "new-websocket-request", title: "New WebSocket Request", group: "Tabs", keys: ["mod+shift+w"], run: () => openDraftTab(newWebSocketItem()) });
-registerCommand({ id: "close-tab", title: "Close Tab", group: "Tabs", keys: ["mod+w"], when: hasActiveTab, run: () => requestClose(state.activeTab!) });
-registerCommand({ id: "reopen-closed-tab", title: "Reopen Closed Tab", group: "Tabs", keys: ["mod+shift+t"], run: reopenClosed });
-registerCommand({ id: "next-tab", title: "Next Tab", group: "Tabs", keys: ["ctrl+tab", "mod+alt+right", "mod+shift+]", "ctrl+pagedown"], run: () => nextTab(1) });
-registerCommand({ id: "prev-tab", title: "Previous Tab", group: "Tabs", keys: ["ctrl+shift+tab", "mod+alt+left", "mod+shift+[", "ctrl+pageup"], run: () => nextTab(-1) });
-registerCommand({ id: "duplicate-tab", title: "Duplicate Tab", group: "Tabs", keys: ["mod+d"], when: isActiveRequestTab, run: () => duplicateTab(state.activeTab!) });
+registerCommand({ id: "new-http-request", title: "New HTTP Request", group: "Tabs", run: () => openDraftTab() });
+registerCommand({ id: "import-curl", title: "Import cURL", group: "Tabs", run: () => fire(IMPORT_CURL) });
+registerCommand({ id: "new-websocket-request", title: "New WebSocket Request", group: "Tabs", run: () => openDraftTab(newWebSocketItem()) });
+registerCommand({ id: "close-tab", title: "Close Tab", group: "Tabs", when: hasActiveTab, run: () => requestClose(state.activeTab!) });
+registerCommand({ id: "reopen-closed-tab", title: "Reopen Closed Tab", group: "Tabs", run: reopenClosed });
+registerCommand({ id: "next-tab", title: "Next Tab", group: "Tabs", run: () => nextTab(1) });
+registerCommand({ id: "prev-tab", title: "Previous Tab", group: "Tabs", run: () => nextTab(-1) });
+registerCommand({ id: "duplicate-tab", title: "Duplicate Tab", group: "Tabs", when: isActiveRequestTab, run: () => duplicateTab(state.activeTab!) });
 registerCommand({ id: "close-all-tabs", title: "Close All Tabs", group: "Tabs", run: closeAll });
 registerCommand({ id: "close-other-tabs", title: "Close Other Tabs", group: "Tabs", when: hasActiveTab, run: () => closeOthers(state.activeTab!) });
 
@@ -110,26 +113,25 @@ for (let i = 1; i <= 8; i++) {
     id: `go-to-tab-${i}`,
     title: `Go to Tab ${i}`,
     group: "Tabs",
-    keys: [`mod+${i}`],
     when: () => state.tabs.length >= i,
     run: () => goToTab(i - 1),
   });
 }
-registerCommand({ id: "go-to-last-tab", title: "Go to Last Tab", group: "Tabs", keys: ["mod+9"], when: () => state.tabs.length > 0, run: () => goToTab(state.tabs.length - 1) });
+registerCommand({ id: "go-to-last-tab", title: "Go to Last Tab", group: "Tabs", when: () => state.tabs.length > 0, run: () => goToTab(state.tabs.length - 1) });
 
-registerCommand({ id: "focus-url", title: "Focus URL", group: "Navigation", keys: ["mod+l"], when: isActiveRequestTab, run: () => fire(FOCUS_URL) });
-registerCommand({ id: "command-palette", title: "Command Palette", group: "Navigation", keys: ["mod+k", "mod+shift+p"], run: () => fire(OPEN_PALETTE, { mode: "all" as PaletteMode }) });
-registerCommand({ id: "quick-open-request", title: "Quick Open Request", group: "Navigation", keys: ["mod+p"], run: () => fire(OPEN_PALETTE, { mode: "requests" as PaletteMode }) });
-registerCommand({ id: "switch-environment", title: "Switch Environment", group: "Navigation", keys: ["mod+e"], run: () => fire(OPEN_PALETTE, { mode: "environments" as PaletteMode }) });
+registerCommand({ id: "focus-url", title: "Focus URL", group: "Navigation", when: isActiveRequestTab, run: () => fire(FOCUS_URL) });
+registerCommand({ id: "command-palette", title: "Command Palette", group: "Navigation", run: () => fire(OPEN_PALETTE, { mode: "all" as PaletteMode }) });
+registerCommand({ id: "quick-open-request", title: "Quick Open Request", group: "Navigation", run: () => fire(OPEN_PALETTE, { mode: "requests" as PaletteMode }) });
+registerCommand({ id: "switch-environment", title: "Switch Environment", group: "Navigation", run: () => fire(OPEN_PALETTE, { mode: "environments" as PaletteMode }) });
 
-registerCommand({ id: "toggle-sidebar", title: "Toggle Sidebar", group: "View", keys: ["mod+b"], run: () => fire(TOGGLE_SIDEBAR) });
-registerCommand({ id: "focus-sidebar-search", title: "Focus Sidebar Search", group: "View", keys: ["mod+shift+f"], run: () => fire(FOCUS_SIDEBAR_SEARCH) });
-registerCommand({ id: "focus-sidebar", title: "Focus Sidebar", group: "View", keys: ["mod+shift+e", "mod+0"], run: () => fire(FOCUS_SIDEBAR) });
-registerCommand({ id: "toggle-code-panel", title: "Toggle Code Panel", group: "View", keys: ["mod+alt+c"], when: isActiveRequestTab, run: () => fire(TOGGLE_CODE) });
+registerCommand({ id: "toggle-sidebar", title: "Toggle Sidebar", group: "View", run: () => fire(TOGGLE_SIDEBAR) });
+registerCommand({ id: "focus-sidebar-search", title: "Focus Sidebar Search", group: "View", run: () => fire(FOCUS_SIDEBAR_SEARCH) });
+registerCommand({ id: "focus-sidebar", title: "Focus Sidebar", group: "View", run: () => fire(FOCUS_SIDEBAR) });
+registerCommand({ id: "toggle-code-panel", title: "Toggle Code Panel", group: "View", when: isActiveRequestTab, run: () => fire(TOGGLE_CODE) });
 
-registerCommand({ id: "keyboard-shortcuts", title: "Keyboard Shortcuts", group: "Help", keys: ["mod+/"], run: () => fire(OPEN_SHORTCUTS) });
+registerCommand({ id: "keyboard-shortcuts", title: "Keyboard Shortcuts", group: "Help", run: () => fire(OPEN_SHORTCUTS) });
 
-registerCommand({ id: "open-settings", title: "Open Settings", group: "Settings", keys: ["mod+,"], run: () => openAppSettingsTab() });
+registerCommand({ id: "open-settings", title: "Open Settings", group: "Settings", run: () => openAppSettingsTab() });
 registerCommand({ id: "open-cookies", title: "Open Cookies", group: "Settings", run: () => openCookiesTab() });
 registerCommand({ id: "open-keybindings", title: "Open Keybindings File", group: "Settings", run: () => api.openKeybindings().catch((err) => toast(String(err), "error")) });
 registerCommand({ id: "reload-keybindings", title: "Reload Keybindings", group: "Settings", run: () => fire(RELOAD_KEYBINDINGS) });

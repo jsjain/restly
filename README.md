@@ -1,69 +1,95 @@
-<img src="icon.png" width="96"/>
+<p align="center">
+  <img src="icon.png" width="112" alt="Restly logo">
+</p>
 
-# Restly
+<h1 align="center">Restly</h1>
 
-A fast desktop API client that reads and writes Postman collections directly. Design: `docs/superpowers/specs/2026-09-13-restly-design.md`.
+<p align="center">
+  A fast desktop API client that works directly on your Postman collections.<br>
+  <a href="https://github.com/jsjain/restly/releases/latest"><b>Download for macOS, Windows, and Linux</b></a>
+</p>
 
-## Requirements
+## Why Restly
 
-- Go 1.25 or newer
-- Node.js with npm
-- Wails CLI v2.15: `go install github.com/wailsapp/wails/v2/cmd/wails@v2.15.0`
-- macOS: Xcode command line tools. Windows: WebView2 (preinstalled on Windows 11). Linux: `libgtk-3-dev` and `libwebkit2gtk-4.1-dev`.
+- **Your collections stay plain files.** Restly reads and writes Postman v2.1 collection and environment files in `~/Restly`. You can keep them in git, review changes in a pull request, and still open them in Postman. There is no account, sign-in, or cloud sync.
+- **Your Postman scripts keep running.** Pre-request and test scripts use the same `pm` API and Chai assertions, including `pm.sendRequest` and `setNextRequest`.
+- **It is light.** The app is a Go core in the system webview, not a bundled browser. The Apple silicon build is 18 MB and uses about 120 MB of memory after launch, and a 5 MB collection decodes in 124 ms on an M4 Pro.
+- **It works from the keyboard.** Every action has a command in the palette, shortcuts can be remapped, and the collection tree is navigable with arrow keys. Themes and keybindings use VS Code's formats, so existing ones carry over.
 
-## Build and run
+## Features
 
-```sh
-# macOS: build/bin/restly.app. The flags stamp the commit and build time shown in Settings > About.
-wails build -clean -ldflags "-X main.buildCommit=$(git rev-parse --short HEAD) -X main.buildTime=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-open build/bin/restly.app
+- **Requests.** Params, headers, and body as raw JSON, XML, or text, URL-encoded, form data with files, binary, or GraphQL. Basic, bearer, and API key auth, inherited from folders and collections. JSON, XML, and GraphQL variable bodies can be formatted.
+- **Responses.** Body, headers, cookies, test results, console output, and timings.
+- **Variables and environments.** `{{variables}}` resolve from local, data, environment, collection, and global scopes, with `$guid`, `$timestamp`, `$isoTimestamp`, and `$randomInt`. Editors color each variable by whether it resolves, show its value on hover, and suggest names as you type. Values can be marked secret, and an environment can belong to one collection or be shared by all.
+- **Scripts.** Pre-request and test scripts at collection, folder, and request level.
+- **Collection runner.** Runs a collection or folder for several iterations with an optional delay, streaming results per request.
+- **Code generation.** cURL, JavaScript fetch, Python requests, and Go, in a side panel that updates as you edit.
+- **cURL import.** Paste a cURL command into the URL bar or the import dialog.
+- **WebSocket requests.** Connect, send text messages, and read the event log.
+- **History and cookies.** The last 500 sends reopen as editable requests, and the cookie jar can be viewed and edited.
+- **Network settings.** Proxy with a bypass list, TLS verification toggle, extra CA certificates, and client certificates per host.
+- **Collections.** Import and export Postman files, clone collections, and edit the description, auth, and scripts of collections and folders, and collection variables.
+- **Themes.** Dark, Light, and One Dark built in, plus any imported VS Code color theme, with configurable UI and editor fonts.
 
-wails dev                       # live-reload development build
-```
+## Install
 
-Wails builds for the OS it runs on, so build the Windows and Linux binaries on those systems.
+Download the file for your system from the [latest release](https://github.com/jsjain/restly/releases/latest).
 
-The app version comes from `wails.json`'s `info.productVersion` and is shown in Settings > About, alongside the build commit and date when available.
+| System | File |
+| --- | --- |
+| macOS 12 or newer, Apple silicon and Intel | `Restly-<version>-macos-universal.zip` |
+| Windows 10 or 11, 64-bit | `Restly-<version>-windows-amd64-setup.exe`, or the `portable.exe` without installing |
+| Linux x86-64 with glibc 2.39 or newer (Ubuntu 24.04, Debian 13, Fedora 40) | `Restly-<version>-linux-amd64.tar.gz`, which needs GTK 3 and WebKitGTK 4.1 |
 
-## Workspace
+The builds are not signed with an Apple or Windows certificate, so the first launch shows a warning.
 
-Collections and environments live in `~/Restly` as Postman files (`*.postman_collection.json`, `*.postman_environment.json`). Import copies Postman exports there, and Export copies them out unchanged. Variable changes made by scripts are saved to those files. Environment values are stored in plain text, as in Postman exports.
+- **macOS.** Unzip, move Restly to Applications, and run `xattr -dr com.apple.quarantine /Applications/Restly.app` once, or open it and allow it under System Settings > Privacy & Security.
+- **Windows.** In the SmartScreen dialog, choose More info > Run anyway. The installer adds WebView2 if it is missing.
+- **Linux.** On Ubuntu or Debian, `sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0`, then run `./restly`.
 
-An environment created from a collection's Environments tab belongs to that collection: its file carries `"x-restly-collection"`, and only that collection's requests offer it. Environments created from the sidebar are shared by every request.
-
-Postman exports have no WebSocket requests, so Restly saves them with an `x-restly-type` member. Postman ignores that member and imports them as plain GET requests.
-
-## Per-machine data
-
-Settings (proxy, SSL, client certificates), cookies, and request history live outside the workspace: `~/Library/Application Support/Restly` on macOS, `%AppData%\Restly` on Windows, and `~/.config/Restly` on Linux. They can hold tokens and session cookies in plain text, which is why they stay out of a workspace you might share or keep in git.
+Every push to `main` also builds all three systems. Those files are under the run's Artifacts in the [Actions tab](https://github.com/jsjain/restly/actions), which requires a GitHub sign-in.
 
 ## Keyboard shortcuts
 
-Press ⌘/ (Ctrl+/ on Windows and Linux) to list every shortcut. The most used:
+The default shortcuts are listed in [`frontend/src/keybindings.default.json`](frontend/src/keybindings.default.json), where `mod` means ⌘ on macOS and Ctrl elsewhere. To change them, run "Open Keybindings File" from the command palette (⌘K or Ctrl+K) and add entries in the same format: `{ "key": "cmd+j", "command": "send" }` adds a key, and `{ "key": "mod+enter", "command": "-send" }` removes one. Press ⌘/ or Ctrl+/ to see every shortcut in the app.
 
-- ⌘↵ sends a request or connects a WebSocket
-- ⌘S saves
-- ⌘K opens the command palette, ⌘P opens a request by name, ⌘E switches environment
-- ⌘N (or ⌘T) opens a new request, ⌘O imports a cURL command, ⌘W closes the tab, ⌘⇧T reopens the last closed tab
-- ⌘L focuses the URL, ⌘B toggles the sidebar, ⌘⇧F searches the sidebar
-- ⌘⇧] and ⌘⇧[ (or Ctrl+PageDown and Ctrl+PageUp) move to the next and previous tab
-- ⌘⇧E or ⌘0 moves focus into the collection tree. There, arrows move and expand, Enter opens, F2 renames, Delete deletes after asking, typing jumps to a name, and Escape returns to the request
-- ⌥⌘C toggles the code panel, and ⇧⌥F formats a JSON, XML, or GraphQL variables body
+## Themes
 
-Keys are remapped in `keybindings.json` in the per-machine data folder, using VS Code's format: `{ "key": "cmd+j", "command": "new-http-request" }` adds a key, and `"command": "-new-http-request"` removes one. The Keyboard Shortcuts overlay lists command ids and opens the file, and Restly reloads it when its window regains focus. `when` clauses and two-step chords such as `cmd+k cmd+s` are not supported.
+Settings > Appearance lists the built-in themes and imports any VS Code color theme JSON file. Restly reads a theme's `colors` and `tokenColors`. Colors VS Code has no key for can be set with `restly.<token>` keys under `colors`, using the names in [`frontend/src/theme/tokens.ts`](frontend/src/theme/tokens.ts), for example `"restly.methodGet": "#00c853"`. Every color in the interface comes from these tokens. Colors that would fail WCAG AA contrast are adjusted slightly, and the theme list notes which ones.
 
-## Themes and fonts
+## Where data is stored
 
-Settings > Appearance lists Dark (VS Code Dark Modern), Light (VS Code Light Modern), One Dark (OneDark-Pro), and imported themes. "Import VS Code theme…" accepts any VS Code color theme JSON file and copies it into `themes/` in the per-machine data folder. To make your own theme, write a VS Code color theme: the keys under `colors` (such as `editor.background` or `input.border`) and the scopes under `tokenColors` are what Restly reads. Colors VS Code has no key for can be set directly with `restly.<token>` keys under `colors`, using the token names in `frontend/src/theme/tokens.ts`, for example `"restly.methodGet": "#00c853"`, `"restly.varDefinedBg": "#00c85329"`, or `"restly.overlayBackdrop": "#00000080"`. Every color in the UI comes from these tokens. Colors that would fail WCAG AA contrast are adjusted slightly, including ones set this way, and the theme list notes which ones. The same page sets the UI font, Inter by default, and the editor font and sizes.
+Collections and environments live in `~/Restly`. Import copies Postman exports there, and Export copies them out unchanged. Restly adds two members that Postman ignores: `x-restly-collection` on an environment that belongs to one collection, and `x-restly-type` on WebSocket requests, which Postman imports as plain GET requests.
 
-## Tests
+Settings, cookies, history, imported themes, and `keybindings.json` stay on the machine: `~/Library/Application Support/Restly` on macOS, `%AppData%\Restly` on Windows, and `~/.config/Restly` on Linux. They can hold tokens and session cookies in plain text, which is why they are kept out of a workspace you might share. Environment values are also plain text, as in Postman exports.
+
+## Build from source
+
+Requirements: Go 1.25 or newer, Node.js 22.18 or newer, and the Wails CLI (`go install github.com/wailsapp/wails/v2/cmd/wails@v2.15.0`). macOS needs the Xcode command line tools, Windows needs WebView2, and Linux needs `libgtk-3-dev` and `libwebkit2gtk-4.1-dev`.
+
+```sh
+wails dev    # development build with live reload
+
+# Release build in build/bin. The flags stamp the commit and build time shown in Settings > About.
+wails build -clean -ldflags "-X main.buildCommit=$(git rev-parse --short HEAD) -X main.buildTime=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+```
+
+Add `-tags webkit2_41` on Linux and `-nsis` on Windows for the installer. [`.github/workflows/build.yml`](.github/workflows/build.yml) has the exact steps for each system.
+
+Tests:
 
 ```sh
 go test ./...
+for check in frontend/checks/*.check.ts; do node "$check"; done
 ```
 
-`internal/collection` round-trips the real collections listed in `collection_test.go` when they exist on the machine.
+## Releasing
 
-## Script support limits
+The version is `info.productVersion` in `wails.json`. Change it, commit, and push a matching tag, for example `git tag v1.0.1 && git push origin v1.0.1`. The workflow builds all three systems and publishes a release with the files and `SHA256SUMS.txt`. It fails if the tag and the version differ.
 
-Scripts run in goja, not V8. `for await` and async generators are not supported, and `require` only provides `chai`.
+## Limits
+
+- Scripts run in goja, not V8. `for await` and async generators are not supported, and `require` only provides `chai`.
+- Auth types other than basic, bearer, and API key are kept in the file but not applied. OAuth 2 token flows are not implemented.
+- Client certificates must be PEM files without a passphrase.
+- There is no cloud sync, mock server, or monitor.
