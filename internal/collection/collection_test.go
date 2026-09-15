@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"testing"
 )
 
@@ -168,6 +169,9 @@ func TestIsWebSocket(t *testing.T) {
 }
 
 func TestWriteJSONKeepsFileMode(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows files have no Unix permission bits to keep")
+	}
 	dir := t.TempDir()
 	fresh := filepath.Join(dir, "fresh.json")
 	private := filepath.Join(dir, "private.json")

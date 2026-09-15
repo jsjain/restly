@@ -79,8 +79,13 @@ jobs:
         if: runner.os == 'Linux'
         run: for check in frontend/checks/*.check.ts; do node "$check"; done
 
+      # Failed test lines become annotations, which show on the run page without opening the log.
       - name: Go tests
-        run: go test -tags "${{ matrix.tags }}" ./...
+        run: |
+          go test -tags "${{ matrix.tags }}" ./... 2>&1 | tee go-test.log || {
+            grep -E -- '_test\.go:[0-9]+:|--- FAIL' go-test.log | head -10 | sed 's/^ */::error::/'
+            exit 1
+          }
 
       - name: Build app
         run: >
