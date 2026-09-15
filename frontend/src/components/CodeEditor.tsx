@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { EditorState, Prec, Transaction, type Extension } from "@codemirror/state";
 import { EditorView, basicSetup } from "codemirror";
 import { keymap } from "@codemirror/view";
+import { search } from "@codemirror/search";
 import { StreamLanguage } from "@codemirror/language";
 import { tags } from "@lezer/highlight";
 import { json } from "@codemirror/lang-json";
@@ -11,6 +12,7 @@ import { python } from "@codemirror/legacy-modes/mode/python";
 import { go } from "@codemirror/legacy-modes/mode/go";
 import { restlyEditorTheme } from "../theme/codemirror";
 import { variablesExtension } from "../editor/variablesExtension";
+import { createSearchPanel } from "../editor/SearchPanel";
 
 // basicSetup's defaultKeymap binds Mod-Enter to insertBlankLine and does not stop
 // propagation. The app uses Mod-Enter to send the active request, so swallow it here
@@ -30,6 +32,7 @@ interface Props {
   readOnly?: boolean;
   onChange?: (value: string) => void;
   variables?: boolean;
+  extensions?: Extension[]; // read when the view is created, so pass a stable array
 }
 
 function langExtension(lang: CodeLang): Extension[] {
@@ -42,7 +45,7 @@ function langExtension(lang: CodeLang): Extension[] {
   return [];
 }
 
-export default function CodeEditor({ value, language, readOnly, onChange, variables }: Props) {
+export default function CodeEditor({ value, language, readOnly, onChange, variables, extensions }: Props) {
   const container = useRef<HTMLDivElement | null>(null);
   const view = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
@@ -60,11 +63,13 @@ export default function CodeEditor({ value, language, readOnly, onChange, variab
       doc: value,
       extensions: [
         basicSetup,
+        search({ top: true, createPanel: createSearchPanel }),
         noModEnter,
         ...restlyEditorTheme,
         ...langExtension(language),
         ...(variables ? [variablesExtension()] : []),
-        EditorView.editable.of(!readOnly),
+        ...(extensions ?? []),
+        // Read-only viewers stay focusable, as in VS Code, so they show a cursor and Find works in them.
         EditorState.readOnly.of(!!readOnly),
         EditorView.updateListener.of((update) => {
           if (update.docChanged && !syncing.current) onChangeRef.current?.(update.state.doc.toString());

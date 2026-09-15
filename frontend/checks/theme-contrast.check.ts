@@ -102,6 +102,15 @@ const filled = convertVscodeTheme(
 );
 assert.equal(filled.tokens.lineHighlight, "rgba(255, 255, 255, 0.063)");
 assert.equal(filled.tokens.lineHighlightBorder, "rgba(0, 0, 0, 0)");
+// Dark Modern's own divider, #2b2b2b on #1f1f1f, is lifted until grid lines show.
+const faint = convertVscodeTheme(
+  { type: "dark", colors: { "editor.background": "#1f1f1f", "panel.border": "#2b2b2b" } },
+  "faint",
+  { dark: dark.tokens, light: light.tokens }
+);
+assert.ok(faint.adjusted.includes("borderSubtle"), "faint divider is adjusted");
+const dividerPair = contrastPairs.find((p) => p.fg === "borderSubtle" && p.bg[0] === "surface")!;
+assert.ok(pairRatio(faint.tokens, dividerPair) >= 1.4, `faint divider lifted to ${faint.tokens.borderSubtle}`);
 
 if (failures.length) {
   console.error(`\n${failures.length} theme check failures:\n${failures.join("\n")}`);

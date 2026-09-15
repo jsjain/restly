@@ -1,0 +1,61 @@
+/* App Settings tab layout: a fixed-width rail of sections on the left, independently
+   scrolling content on the right. Section content itself still uses .settings-page /
+   .settings-section from panels.css. */
+
+.settings-shell {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.settings-rail {
+  flex: 0 0 190px;
+  width: 190px;
+  overflow-y: auto;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--surface-raised);
+}
+
+.settings-rail-item {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  border-radius: var(--radius-small);
+  background: transparent;
+  color: var(--text-subtle);
+  font-size: var(--font-size-ui);
+  text-align: left;
+  cursor: pointer;
+}
+
+.settings-rail-item:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.settings-rail-item[aria-current="true"] {
+  background: var(--surface-active);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.settings-rail-item:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.settings-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+.settings-seconds-input {
+  width: 70px;
+}

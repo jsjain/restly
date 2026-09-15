@@ -3,6 +3,7 @@
   { "key": "mod+s", "command": "save" },
   { "key": "mod+shift+c", "command": "copy-curl" },
   { "key": "shift+alt+f", "command": "format-body" },
+  { "key": "mod+f", "command": "find" },
   { "key": "mod+n", "command": "new-http-request" },
   { "key": "mod+t", "command": "new-http-request" },
   { "key": "mod+o", "command": "import-curl" },

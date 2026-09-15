@@ -6,6 +6,8 @@ import { newWebSocketItem } from "./websocket";
 import { requestClose, reopenClosed, nextTab, goToTab, closeAll, closeOthers, duplicateTab, tabItem } from "./tabActions";
 import * as api from "./api";
 import defaultKeybindings from "./keybindings.default.json";
+import { EditorView } from "@codemirror/view";
+import { openSearchPanel } from "@codemirror/search";
 
 export interface Command {
   id: string;
@@ -78,6 +80,31 @@ function runSave(): void {
   }
 }
 
+// Find searches the editor the user is in: the focused one, else the one in the pane they last
+// clicked (request above, response below), else the response body. Inactive tabs stay mounted
+// but hidden, so only editors with a layout box count.
+let lastPane: Element | null = null;
+document.addEventListener("pointerdown", (e) => {
+  lastPane = e.target instanceof Element ? e.target.closest(".split-top, .split-bottom") : null;
+}, true);
+
+function visibleEditor(root: ParentNode, selector = ".cm-editor"): HTMLElement | null {
+  return [...root.querySelectorAll<HTMLElement>(selector)].find((el) => el.getClientRects().length > 0) ?? null;
+}
+
+function findTarget(): HTMLElement | null {
+  const focused = document.activeElement?.closest<HTMLElement>(".cm-editor");
+  if (focused) return focused;
+  const pane = lastPane?.isConnected ? visibleEditor(lastPane) : null;
+  return pane ?? visibleEditor(document, ".split-bottom .cm-editor") ?? visibleEditor(document);
+}
+
+function runFind(): void {
+  const target = findTarget();
+  const view = target && EditorView.findFromDOM(target);
+  if (view) openSearchPanel(view);
+}
+
 async function copyAsCurl(): Promise<void> {
   const tab = state.activeTab;
   if (!tab || tab.kind !== "request") return;
@@ -96,6 +123,7 @@ registerCommand({ id: "send", title: "Send Request", group: "Request", when: isA
 registerCommand({ id: "save", title: "Save", group: "Request", when: hasActiveTab, run: runSave });
 registerCommand({ id: "copy-curl", title: "Copy as cURL", group: "Request", when: isActiveRequestTab, run: () => void copyAsCurl() });
 registerCommand({ id: "format-body", title: "Format Body", group: "Request", when: isActiveRequestTab, run: () => fire(FORMAT_BODY) });
+registerCommand({ id: "find", title: "Find in Editor", group: "Request", when: () => findTarget() !== null, run: runFind });
 
 registerCommand({ id: "new-http-request", title: "New HTTP Request", group: "Tabs", run: () => openDraftTab() });
 registerCommand({ id: "import-curl", title: "Import cURL", group: "Tabs", run: () => fire(IMPORT_CURL) });

@@ -1,4 +1,5 @@
 import CodeEditor from "./CodeEditor";
+import { scriptCompletions } from "../editor/scriptCompletions";
 import type { EventEntry } from "../types";
 
 interface Target {
@@ -33,5 +34,5 @@ export default function ScriptEditor({ target, listen, onChange }: Props) {
     onChange();
   }
 
-  return <CodeEditor value={code} language="javascript" onChange={setCode} />;
+  return <CodeEditor value={code} language="javascript" onChange={setCode} extensions={scriptCompletions} />;
 }

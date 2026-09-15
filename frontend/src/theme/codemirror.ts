@@ -73,21 +73,18 @@ const restlyEditorBaseTheme = EditorView.theme({
     backgroundColor: "var(--surface-overlay)",
     color: "var(--text)",
   },
+  // The find widget (editor/SearchPanel.tsx) floats over the top right of the text, as in VS Code.
   ".cm-panels.cm-panels-top": {
-    borderBottom: "1px solid var(--border)",
+    position: "absolute",
+    top: "0",
+    left: "auto",
+    right: "14px",
+    zIndex: "10",
+    backgroundColor: "transparent",
+    border: "none",
   },
   ".cm-panels.cm-panels-bottom": {
     borderTop: "1px solid var(--border)",
-  },
-  ".cm-panel input, .cm-panel button, .cm-panel select": {
-    fontFamily: "var(--font-ui)",
-    fontSize: "var(--font-size-ui)",
-  },
-  ".cm-panel.cm-search button": {
-    backgroundColor: "var(--surface-raised)",
-    border: "1px solid var(--border)",
-    color: "var(--text)",
-    borderRadius: "var(--radius-small)",
   },
   ".cm-tooltip": {
     backgroundColor: "var(--surface-overlay)",
@@ -146,9 +143,9 @@ const selectedText = EditorView.decorations.compute(["selection"], (state) =>
 const currentLineMark = Decoration.line({ class: "cm-currentLine" });
 
 // currentLine highlights the cursor's line the way VS Code does: only while nothing is selected, so
-// it never covers a selection, and only in editable editors, since read-only viewers have no cursor.
-const currentLine = EditorView.decorations.compute(["selection", EditorView.editable], (state) => {
-  if (!state.facet(EditorView.editable) || state.selection.ranges.some((r) => !r.empty)) return Decoration.none;
+// it never covers a selection. Read-only viewers are focusable and get it too.
+const currentLine = EditorView.decorations.compute(["selection"], (state) => {
+  if (state.selection.ranges.some((r) => !r.empty)) return Decoration.none;
   const starts = new Set(state.selection.ranges.map((r) => state.doc.lineAt(r.head).from));
   return Decoration.set([...starts].map((from) => currentLineMark.range(from)), true);
 });

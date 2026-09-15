@@ -217,7 +217,17 @@ export function ensureCollection(file: string): Promise<Collection> {
   return promise;
 }
 
+// Edit counts per file. The save call serializes its arguments when it starts, so an edit made
+// while the save is in flight is not in the file and must keep the file dirty. Auto-save runs
+// every few seconds while the user types, which makes that overlap common.
+const edits = new Map<string, number>();
+
+function countEdit(file: string): void {
+  edits.set(file, (edits.get(file) ?? 0) + 1);
+}
+
 export function markCollectionDirty(file: string): void {
+  countEdit(file);
   state.dirtyCollections.add(file);
   bump();
 }
@@ -229,8 +239,9 @@ export function isCollectionDirty(file: string): boolean {
 export async function saveCollectionFile(file: string): Promise<void> {
   const coll = state.collections.get(file);
   if (!coll) return;
+  const before = edits.get(file);
   await api.saveCollection(file, coll);
-  state.dirtyCollections.delete(file);
+  if (edits.get(file) === before) state.dirtyCollections.delete(file);
   bump();
 }
 
@@ -276,6 +287,7 @@ export function ensureEnvironment(file: string): Promise<Environment> {
 }
 
 export function markEnvironmentDirty(file: string): void {
+  countEdit(file);
   state.dirtyEnvironments.add(file);
   bump();
 }
@@ -287,8 +299,9 @@ export function isEnvironmentDirty(file: string): boolean {
 export async function saveEnvironmentFile(file: string): Promise<void> {
   const env = state.environments.get(file);
   if (!env) return;
+  const before = edits.get(file);
   await api.saveEnvironment(file, env);
-  state.dirtyEnvironments.delete(file);
+  if (edits.get(file) === before) state.dirtyEnvironments.delete(file);
   bump();
 }
 

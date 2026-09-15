@@ -115,8 +115,11 @@ export const contrastPairs: ContrastPair[] = [
   ...on(syntax, each(["surface"]), 4.5),
   // Inputs and dropdowns are recognized by their fill, placeholder and position, as in VS Code and Postman,
   // so their outline only has to be visible. 3:1 outlines read as heavy boxes. Checkboxes use textSubtlest
-  // and the focus ring keeps 3:1. border and borderSubtle are layout dividers with no minimum.
+  // and the focus ring keeps 3:1.
   ...on(["borderControl"], each(["surface", "surfaceRaised", "surfaceOverlay"]), 1.4),
+  // Dividers and grid lines. Dark Modern's #2b2b2b on #1f1f1f (1.17:1) disappears on most screens.
+  // Postman's grid is about 1.33:1.
+  ...on(["border", "borderSubtle"], each(["surface", "surfaceRaised"]), 1.4),
   ...on(["borderFocus"], each([...fields, "surfaceHover", "surfaceActive"]), 3),
   ...on(["primary", "info", "success", "notice", "warning", "danger"], each(["surface", "surfaceRaised", "surfaceOverlay"]), 4.5),
   // Filled buttons keep the theme's button text. The guard changes the fill instead.
@@ -448,8 +451,8 @@ export function convertVscodeTheme(json: unknown, fallbackName: string, bases: R
     textSubtle: toHex(textSubtle),
     textSubtlest: toHex(textSubtlest),
 
-    // border and borderSubtle stay the theme's own colors. borderControl starts from the widget
-    // border and is the one the guard lifts until visible.
+    // Borders start from the theme's own colors. borderControl starts from the widget border. The
+    // guard lifts all three until visible (see contrastPairs).
     border: toHex(border ?? blend(0.3)),
     borderSubtle: toHex(onSurface(dividerBorder, blend(0.12))),
     borderControl: toHex(onSurface(widgetBorder ?? checkboxBorder, blend(0.3))),

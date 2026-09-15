@@ -29,26 +29,31 @@ const layout = {
 // the guard changed it.
 
 // VS Code Dark Modern: extensions/theme-defaults/themes/dark_modern.json, which includes
-// dark_plus.json and dark_vs.json.
+// dark_plus.json and dark_vs.json. Restly's surface is #262626 instead of #1f1f1f, so every
+// background and border below is Dark Modern's color 7 steps lighter before conversion:
+// editor.background and tab.activeBackground #262626, sideBar.background #1f1f1f,
+// editorWidget.background #272727, input.background and dropdown.background #383838,
+// input.border, dropdown.border and checkbox.border #434343, panel.border and sideBar.border #323232,
+// editor.lineHighlightBorder #2f2f2f.
 const darkTokens: ThemeTokens = {
   ...layout,
-  surface: "#1f1f1f",
-  surfaceRaised: "#181818",
-  surfaceOverlay: "#202020",
-  surfaceHover: "#2d2d2d",
-  surfaceActive: "#373737",
-  surfaceInput: "#313131",
+  surface: "#262626",
+  surfaceRaised: "#1f1f1f",
+  surfaceOverlay: "#272727",
+  surfaceHover: "#333333",
+  surfaceActive: "#3d3d3d",
+  surfaceInput: "#383838",
 
   text: "#cccccc",
-  textSubtle: "#a0a0a0", // descriptionForeground #9d9d9d
-  textSubtlest: "#8b8b8b", // textSubtle one step dimmer (input.placeholderForeground #989898 is too close)
+  textSubtle: "#a7a7a7", // descriptionForeground #9d9d9d
+  textSubtlest: "#8d8d8d", // textSubtle one step dimmer (input.placeholderForeground #989898 is too close)
 
-  border: "#3c3c3c",
-  borderSubtle: "#2b2b2b",
-  borderControl: "#3c3c3c",
-  borderFocus: "#1684d8", // focusBorder #0078d4
+  border: "#434343",
+  borderSubtle: "#3e3e3e", // panel.border #323232
+  borderControl: "#434343",
+  borderFocus: "#258cda", // focusBorder #0078d4
 
-  primary: "#4daafc",
+  primary: "#52adfc", // textLink.foreground #4daafc
   primaryButton: "#0078d4",
   primaryButtonHover: "#026ec1",
   primaryButtonText: "#ffffff",
@@ -56,27 +61,27 @@ const darkTokens: ThemeTokens = {
   success: "#0dbc79",
   notice: "#e5e510",
   warning: "#cca700",
-  danger: "#f96a63", // errorForeground #f85149
+  danger: "#fa7b74", // errorForeground #f85149
 
-  methodGet: "#0dbc79",
+  methodGet: "#16be7e", // terminal.ansiGreen #0dbc79
   methodPost: "#e5e510",
-  methodPut: "#70a3db", // terminal.ansiBlue #2472c8
-  methodPatch: "#d482d4", // terminal.ansiMagenta #bc3fbc
-  methodDelete: "#e28686", // terminal.ansiRed #cd3131
-  methodHead: "#a0a0a0", // descriptionForeground #9d9d9d
-  methodOptions: "#da8f28", // ansiRed/ansiYellow mix #d98b21
-  methodWs: "#1dadd0", // terminal.ansiCyan #11a8cd
+  methodPut: "#7cabde", // terminal.ansiBlue #2472c8
+  methodPatch: "#d78ed7", // terminal.ansiMagenta #bc3fbc
+  methodDelete: "#e49191", // terminal.ansiRed #cd3131
+  methodHead: "#a7a7a7", // descriptionForeground #9d9d9d
+  methodOptions: "#de993b", // ansiRed/ansiYellow mix #d98b21
+  methodWs: "#33b5d4", // terminal.ansiCyan #11a8cd
 
-  varDefined: "#29c489", // terminal.ansiGreen #0dbc79
+  varDefined: "#44cb98", // terminal.ansiGreen #0dbc79
   varDefinedBg: "rgba(13, 188, 121, 0.16)",
-  varUndefined: "#fa857f", // errorForeground #f85149
+  varUndefined: "#fb918b", // errorForeground #f85149
   varUndefinedBg: "rgba(248, 81, 73, 0.16)",
 
-  selection: "#264f78",
+  selection: "#275079", // editor.selectionBackground #264f78
   scrollbarThumb: "rgba(121, 121, 121, 0.4)", // scrollbarSlider.background #79797966
   scrollbarThumbHover: "rgba(100, 100, 100, 0.7)",
   lineHighlight: "rgba(0, 0, 0, 0)", // VS Code has no default editor.lineHighlightBackground
-  lineHighlightBorder: "#282828", // VS Code default editor.lineHighlightBorder
+  lineHighlightBorder: "#2f2f2f",
 
   syntaxString: "#ce9178",
   syntaxNumber: "#b5cea8",
@@ -105,7 +110,7 @@ const lightTokens: ThemeTokens = {
   textSubtlest: "#727272", // input.placeholderForeground #767676
 
   border: "#cecece",
-  borderSubtle: "#e5e5e5",
+  borderSubtle: "#d3d3d3", // panel.border #e5e5e5
   borderControl: "#cecece",
   borderFocus: "#005fb8",
 

@@ -7,8 +7,19 @@ import ConfirmCloseModal from "./components/ConfirmCloseModal";
 import Overlays from "./components/Overlays";
 import { TOGGLE_SIDEBAR } from "./commands";
 import { initKeybindings } from "./keybindings";
+import { startAutosave, loadAutosaveSettings, watchAutosaveSettings, realClock } from "./autosave";
 import "./panels.css";
-import { loadWorkspace, state, subscribe, getVersion, toast, startEvents, loadHistory } from "./store";
+import {
+  loadWorkspace,
+  state,
+  subscribe,
+  getVersion,
+  toast,
+  startEvents,
+  loadHistory,
+  saveCollectionFile,
+  saveEnvironmentFile,
+} from "./store";
 
 // macOS draws the traffic lights over the webview (hidden title bar), so the first row leaves room for them.
 const isMac = navigator.userAgent.includes("Mac");
@@ -28,6 +39,23 @@ export default function App() {
   // keybindings.json overrides the registerCommand defaults; load at startup and again
   // whenever the window regains focus (e.g. after editing it in the system text editor).
   useEffect(() => initKeybindings(), []);
+
+  // Auto-save dirty collection/environment files on a timer; draft (unsaved-file) tabs are
+  // never in dirtyCollections/dirtyEnvironments, so they stay manual.
+  useEffect(
+    () =>
+      startAutosave({
+        listDirty: () => [
+          ...Array.from(state.dirtyCollections, (file) => ({ file, save: () => saveCollectionFile(file) })),
+          ...Array.from(state.dirtyEnvironments, (file) => ({ file, save: () => saveEnvironmentFile(file) })),
+        ],
+        getSettings: loadAutosaveSettings,
+        toast: (text, kind) => toast(text, kind),
+        clock: realClock,
+        onSettingsChanged: watchAutosaveSettings,
+      }),
+    []
+  );
 
   // Keyboard shortcuts, including Cmd/Ctrl+S, live in commands.ts and are installed by Overlays.
   useEffect(() => {

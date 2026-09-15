@@ -838,12 +838,13 @@ textarea::placeholder {
 
 /* --- kv table (params, headers, cookies, variables) --- */
 
-/* A grid like Postman's: a rule above the header, under every row, and between columns. The
-   delete button's column has no rule, so the button reads as part of its row. */
+/* A grid like Postman's: an outer frame, a rule under every row, and rules between columns. The
+   checkbox shares the key's cell and the delete button's column has no rule, so both read as part
+   of their row. */
 .kv-table {
   width: 100%;
   border-collapse: collapse;
-  border-top: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-subtle);
 }
 
 .kv-table th {
@@ -867,6 +868,8 @@ textarea::placeholder {
   border-left: 1px solid var(--border-subtle);
 }
 
+.kv-table th:first-child:empty + th,
+.kv-table td:first-child:has(> input[type="checkbox"]) + td,
 .kv-table th:last-child:empty,
 .kv-table td:has(> .kv-delete) {
   border-left: none;

@@ -23,7 +23,7 @@ func main() {
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		BackgroundColour: &options.RGBA{R: 31, G: 31, B: 31, A: 1}, // Dark theme surface (#1f1f1f), so the window does not flash before CSS loads
+		BackgroundColour: &options.RGBA{R: 38, G: 38, B: 38, A: 1}, // Dark theme surface (#262626), so the window does not flash before CSS loads
 		// The webview draws the only top bar, with room left for the traffic lights.
 		Mac: &mac.Options{
 			TitleBar: mac.TitleBarHiddenInset(),
