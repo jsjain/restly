@@ -1,0 +1,382 @@
+/* Sidebar: header, view tabs, search, history, Environments section, method tags. Tree rows are in sidebarTree.css. */
+
+.sidebar {
+  width: 280px;
+  flex: 0 0 280px;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--surface-raised);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* The window drag region. The label is plain text, so Wails drags from it too. */
+.sidebar-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 8px 0 12px;
+}
+
+.sidebar-title {
+  margin-right: auto;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.menu-anchor {
+  position: relative;
+}
+
+/* Cmd/Ctrl+B hides the sidebar with CSS, so its search text and scroll position survive. */
+.sidebar-hidden .sidebar {
+  display: none;
+}
+
+/* The header and the tab bar share one height. */
+.sidebar-actions,
+.tabbar {
+  min-height: var(--h-bar);
+  align-items: center;
+  background: var(--surface-raised);
+}
+
+/* titlebar_darwin.go switches the window to the compact toolbar, which centers the traffic lights
+   20pt from the top, so on macOS this row stays 40px whatever the density. */
+.platform-mac .sidebar-actions,
+.platform-mac .tabbar {
+  min-height: 40px;
+  height: 40px;
+}
+
+/* The traffic lights end near x=70, so 84px leaves a clear gap before the label. */
+.platform-mac .sidebar-actions {
+  padding-left: 84px;
+}
+
+/* --- Collections | History --- */
+
+.sidebar-view-switch {
+  display: flex;
+  gap: 2px;
+  padding: 4px 10px 0;
+}
+
+.sidebar-view-switch button {
+  height: auto;
+  padding: 4px 8px;
+  border-color: transparent;
+  border-radius: var(--radius-small);
+  color: var(--text-subtle);
+}
+
+.sidebar-view-switch button:hover:not(:disabled) {
+  background: none;
+  color: var(--text);
+}
+
+.sidebar-view-switch button.active,
+.sidebar-view-switch button.active:hover:not(:disabled) {
+  background: var(--surface-active);
+  color: var(--text);
+}
+
+.sidebar-scroll {
+  flex: 1 1 auto;
+  overflow-y: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* --- search --- */
+
+.sidebar-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 8px 10px 6px;
+}
+
+.sidebar-search-icon {
+  position: absolute;
+  left: 8px;
+  color: var(--text-subtlest);
+  pointer-events: none;
+  display: flex;
+}
+
+.sidebar-search input[type="text"] {
+  flex: 1 1 auto;
+  width: 100%;
+  height: var(--h-control);
+  padding: 0 52px 0 28px;
+  border-color: transparent;
+  background: var(--surface-hover);
+}
+
+.sidebar-search .kbd {
+  position: absolute;
+  right: 6px;
+  pointer-events: none;
+}
+
+.sidebar-search button.icon {
+  position: absolute;
+  right: 2px;
+  width: 24px;
+  height: 24px;
+}
+
+/* --- section labels (history days, Environments) --- */
+
+.sidebar-section-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px 4px;
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  color: var(--text-subtlest);
+}
+
+.sidebar-section-title .grow {
+  flex: 1 1 auto;
+}
+
+.sidebar-section-title button.ghost {
+  height: 20px;
+  padding: 0 6px;
+  font-size: var(--fs-micro);
+}
+
+/* --- history rows. The row also carries .tree-row for the shared row look. --- */
+
+.history-list {
+  padding: 0 6px 8px;
+}
+
+.history-row {
+  gap: 5px;
+  padding-left: 6px;
+}
+
+/* The wrapped host overflows the fixed row height and is clipped, so it shows only when the path leaves room. */
+.history-row .name {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 6px;
+  height: var(--h-row);
+  line-height: var(--h-row);
+}
+
+.history-row .name > span:first-child {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-row .name .host {
+  color: var(--text-subtlest);
+  font-size: var(--fs-small);
+}
+
+.history-row .method-badge {
+  width: 34px;
+}
+
+.history-row .tag {
+  min-width: 30px;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+.history-row .history-time {
+  flex: 0 0 auto;
+  width: 32px;
+  text-align: right;
+  font-size: var(--fs-micro);
+  color: var(--text-subtlest);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Over the time on hover instead of shifting the row. */
+.history-row .menu-btn {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--surface-hover);
+}
+
+.history-row .menu-btn.menu-open {
+  background: var(--surface-active);
+}
+
+/* --- Environments --- */
+
+.sidebar-collapsible-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  height: auto;
+  padding: 8px 6px 4px 12px;
+  background: none;
+  border: none;
+  border-radius: 0;
+  color: var(--text-subtlest);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.sidebar-collapsible-header:hover {
+  color: var(--text-subtle);
+}
+
+.sidebar-collapsible-header:focus-visible {
+  outline: 1px solid var(--border-focus);
+  outline-offset: -1px;
+}
+
+.sidebar-collapsible-header .chevron {
+  display: flex;
+  transition: transform 120ms ease;
+}
+
+.sidebar-collapsible-header .chevron.expanded {
+  transform: rotate(90deg);
+}
+
+.sidebar-collapsible-header .label {
+  flex: 1 1 auto;
+  text-align: left;
+}
+
+.sidebar-collapsible-header button.icon {
+  width: 20px;
+  height: 20px;
+}
+
+.inline-input {
+  display: flex;
+  gap: 4px;
+  padding: 4px 6px;
+}
+
+.inline-input input {
+  flex: 1 1 auto;
+}
+
+/* Globals' icon and the status dot share one 16px slot so the names line up. */
+.tree-row .env-icon {
+  width: 16px;
+  justify-content: center;
+}
+
+/* Filled when it is the selected environment, a ring otherwise. */
+.env-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-subtlest);
+  flex: 0 0 auto;
+}
+
+.env-status-dot.on {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.env-active-label {
+  flex: 0 0 auto;
+  font-size: var(--fs-micro);
+  color: var(--text-subtlest);
+}
+
+/* --- collections empty state --- */
+
+.sidebar-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 28px 16px 0;
+  text-align: center;
+  color: var(--text-subtle);
+}
+
+.sidebar-empty svg {
+  color: var(--text-subtlest);
+  margin-bottom: 6px;
+}
+
+.sidebar-empty-title {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.sidebar-empty p {
+  margin: 0 0 12px;
+}
+
+.sidebar-empty-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* --- row menus: danger item --- */
+
+.menu button.danger,
+.menu button.danger svg {
+  color: var(--danger);
+}
+
+/* --- method tags (sidebar, tabs, palette, history, runner). Text only, in a fixed column so names align. --- */
+
+.method-badge {
+  flex: 0 0 auto;
+  width: 38px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-tag);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+}
+
+.method-GET {
+  color: var(--method-get);
+}
+
+.method-POST {
+  color: var(--method-post);
+}
+
+.method-PUT {
+  color: var(--method-put);
+}
+
+.method-PATCH {
+  color: var(--method-patch);
+}
+
+.method-DELETE {
+  color: var(--method-delete);
+}
+
+.method-HEAD,
+.method-OTHER {
+  color: var(--method-head);
+}
+
+.method-OPTIONS {
+  color: var(--method-options);
+}
+
+.method-ws,
+.method-WS {
+  color: var(--method-ws);
+}

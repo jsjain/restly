@@ -58,6 +58,11 @@ export interface ThemeTokens {
   notice: string;
   warning: string;
   danger: string;
+  // Translucent fills behind tags, banners, and selected menu rows: the color above at low alpha.
+  primaryTint: string;
+  successTint: string;
+  warningTint: string;
+  dangerTint: string;
   // Methods
   methodGet: string;
   methodPost: string;
@@ -87,8 +92,10 @@ export interface ThemeTokens {
   fontMono: string;
   fontSizeUi: string;
   fontSizeMono: string;
-  radius: string;
+  radiusXs: string;
   radiusSmall: string;
+  radius: string;
+  radiusLarge: string;
   shadowOverlay: string;
   // The dimmed layer behind dialogs and the command palette.
   overlayBackdrop: string;
@@ -126,6 +133,10 @@ export const tokenToCssVar: Record<keyof ThemeTokens, string> = {
   notice: "--notice",
   warning: "--warning",
   danger: "--danger",
+  primaryTint: "--primary-tint",
+  successTint: "--success-tint",
+  warningTint: "--warning-tint",
+  dangerTint: "--danger-tint",
 
   methodGet: "--method-get",
   methodPost: "--method-post",
@@ -155,8 +166,10 @@ export const tokenToCssVar: Record<keyof ThemeTokens, string> = {
   fontMono: "--font-mono",
   fontSizeUi: "--font-size-ui",
   fontSizeMono: "--font-size-mono",
-  radius: "--radius",
+  radiusXs: "--radius-xs",
   radiusSmall: "--radius-small",
+  radius: "--radius",
+  radiusLarge: "--radius-large",
   shadowOverlay: "--shadow-overlay",
   overlayBackdrop: "--overlay-backdrop",
   scrollbarThumb: "--scrollbar-thumb",

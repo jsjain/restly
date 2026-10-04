@@ -4,13 +4,15 @@
   display: flex;
   align-items: center;
   gap: 14px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .about-logo {
   width: 48px;
   height: 48px;
   flex: 0 0 auto;
-  border-radius: 10px;
+  border-radius: var(--radius-large);
 }
 
 .about-text {
@@ -23,22 +25,22 @@
 
 .about-name {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: var(--font-size-ui);
   font-weight: 600;
   color: var(--text);
 }
 
 .about-version {
-  font-size: 12px;
+  font-size: var(--fs-small);
   color: var(--text-subtle);
 }
 
 .about-build {
-  font-size: 11px;
+  font-size: var(--fs-micro);
   color: var(--text-subtlest);
 }
 
 .about-go {
-  font-size: 11px;
+  font-size: var(--fs-micro);
   color: var(--text-subtlest);
 }

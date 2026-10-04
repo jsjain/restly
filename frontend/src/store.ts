@@ -723,3 +723,19 @@ function pathOf(items: Item[] | undefined, target: Item): number[] | undefined {
   }
   return undefined;
 }
+
+// tabDirty reports unsaved edits behind a tab: its file, or for a draft the draft itself.
+export function tabDirty(tab: Tab): boolean {
+  if (tab.kind === "cookies" || tab.kind === "appsettings") return false;
+  if (tab.kind === "request" && tab.file === "") return !!tab.draftDirty;
+  return tab.kind === "environment" ? isEnvironmentDirty(tab.file) : isCollectionDirty(tab.file);
+}
+
+// ago renders an age in milliseconds as "6 s ago", "3 min ago", "2 h ago" or "4 d ago".
+export function ago(ms: number): string {
+  const s = Math.max(0, Math.round(ms / 1000));
+  if (s < 60) return `${s} s ago`;
+  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)} h ago`;
+  return `${Math.floor(s / 86400)} d ago`;
+}

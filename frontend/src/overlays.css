@@ -8,109 +8,159 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding-top: 12vh;
+  padding-top: 84px;
 }
 
+.overlay-backdrop.centered {
+  align-items: center;
+  padding-top: 0;
+}
+
+/* No border: --shadow-overlay draws a 1px ring. */
 .overlay-panel {
   width: 640px;
   max-width: 90vw;
-  max-height: 70vh;
+  max-height: calc(100vh - 84px - 24px);
   display: flex;
   flex-direction: column;
   background: var(--surface-overlay);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-large);
   box-shadow: var(--shadow-overlay);
   overflow: hidden;
 }
 
-.overlay-input-row {
+/* --- command palette --- */
+
+.palette-query {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border);
+  gap: 10px;
+  height: 48px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--border-subtle);
   flex: 0 0 auto;
+  color: var(--text-subtlest);
 }
 
-.overlay-input-row input {
+.palette-query input {
   flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
   background: transparent;
   border: none;
   outline: none;
+  box-shadow: none;
   color: var(--text);
-  font-size: 14px;
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
+  font-size: var(--fs-title);
 }
 
-.overlay-input-row .overlay-mode {
-  font-size: 11px;
-  color: var(--text-subtlest);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  padding: 1px 5px;
+/* The base focus ring for text fields would draw a box inside the panel. */
+.palette-query input:not([type="checkbox"]):not([type="radio"]):focus {
+  border: none;
+  box-shadow: none;
 }
 
 .overlay-list {
   overflow-y: auto;
   flex: 1 1 auto;
-  padding: 4px;
+  max-height: 420px;
+  padding: 6px;
 }
 
 .overlay-group-title {
-  font-size: 11px;
+  font-size: var(--fs-micro);
+  font-weight: 500;
   color: var(--text-subtlest);
-  padding: 8px 8px 2px;
+  padding: 8px 8px 4px;
 }
 
 .overlay-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 30px;
+  gap: 10px;
+  height: 34px;
   padding: 0 8px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-small);
   cursor: pointer;
   color: var(--text);
-}
-
-.overlay-row.active {
-  background: var(--surface-active);
 }
 
 .overlay-row:hover {
   background: var(--surface-hover);
 }
 
+.overlay-row.active {
+  background: var(--surface-active);
+}
+
+/* One column for method tags and group icons, so titles line up across groups. */
+.pal-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex: 0 0 38px;
+  width: 38px;
+  color: var(--text-subtle);
+}
+
+.pal-ico .method-badge {
+  width: auto;
+  padding: 0;
+  text-align: left;
+}
+
+.pal-dot {
+  width: 7px;
+  height: 7px;
+  margin-left: 2px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-subtlest);
+  flex: 0 0 auto;
+}
+
+.pal-dot.on {
+  background: var(--success);
+  border-color: var(--success);
+}
+
 .overlay-row .overlay-title {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .overlay-row .overlay-subtitle {
-  flex: 1 1 auto;
+  flex: 1 1 0;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--text-subtlest);
-  font-size: 12px;
-  font-family: var(--font-mono);
+  font-size: var(--fs-small);
 }
 
 /* --text-subtlest is only checked on panels, so dim text on hovered and active rows uses --text-subtle. */
 .overlay-row.active .overlay-subtitle,
-.overlay-row:hover .overlay-subtitle {
+.overlay-row:hover .overlay-subtitle,
+.overlay-row.active .pal-time,
+.overlay-row:hover .pal-time {
   color: var(--text-subtle);
 }
 
-.overlay-row .overlay-keys {
+.pal-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex: 0 0 auto;
-  color: var(--text-subtle);
-  font-size: 12px;
-  font-family: var(--font-mono);
-  white-space: nowrap;
+  margin-left: auto;
+}
+
+.pal-time {
+  color: var(--text-subtlest);
+  font-size: var(--fs-small);
 }
 
 .overlay-empty {
@@ -119,8 +169,7 @@
   color: var(--text-subtlest);
 }
 
-/* Matched characters, as in VS Code's quick open: accent color and bold with no fill, so they stay
-   readable on active rows. */
+/* Matched characters: accent color and bold with no fill, so they stay readable on active rows. */
 .overlay-row mark,
 .shortcuts-help mark {
   background: none;
@@ -128,49 +177,149 @@
   font-weight: 600;
 }
 
+.palette-foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 34px;
+  padding: 0 14px;
+  border-top: 1px solid var(--border-subtle);
+  flex: 0 0 auto;
+  font-size: var(--fs-micro);
+  color: var(--text-subtlest);
+}
+
+.palette-foot > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.palette-foot .pal-esc {
+  margin-left: auto;
+}
+
 /* --- shortcuts help --- */
+
+.shortcuts-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 12px;
+  flex: 0 0 auto;
+}
+
+.shortcuts-head h2 {
+  margin: 0;
+  font-size: var(--fs-title);
+  font-weight: 600;
+}
+
+.shortcuts-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px;
+  flex: 0 0 auto;
+}
+
+.shortcuts-filter {
+  position: relative;
+  flex: 1 1 auto;
+}
+
+.shortcuts-filter svg {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  margin-top: -7px;
+  color: var(--text-subtlest);
+  pointer-events: none;
+}
+
+.shortcuts-filter input {
+  width: 100%;
+  height: var(--h-control);
+  padding: 0 8px 0 28px;
+}
 
 .shortcuts-help {
   overflow-y: auto;
-  padding: 4px 12px 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 4px 20px 8px;
+  columns: 2;
+  column-gap: 36px;
+}
+
+.shortcuts-help .overlay-empty {
+  column-span: all;
 }
 
 .shortcuts-help-group {
-  margin-top: 10px;
+  break-inside: avoid;
+  padding-bottom: 10px;
 }
 
 .shortcuts-help-group-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-subtle);
-  margin-bottom: 4px;
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  color: var(--text-subtlest);
+  padding: 10px 0 4px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .shortcuts-help-row {
   display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  color: var(--text);
+}
+
+.shortcuts-help-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shortcuts-help-keys {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.shortcuts-help-or {
+  font-size: var(--fs-micro);
+  color: var(--text-subtlest);
+}
+
+.shortcuts-foot {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 4px 0;
-  border-bottom: 1px solid var(--border);
+  padding: 10px 20px 18px;
+  flex: 0 0 auto;
+  color: var(--text-subtlest);
+  font-size: var(--fs-small);
 }
 
-.shortcuts-help-row .overlay-keys {
-  color: var(--text-subtle);
-  font-family: var(--font-mono);
-  font-size: 12px;
-}
+/* --- tab context menu (the shared menu look from styles.css .menu, placed by the portal) --- */
 
-/* --- tab context menu --- */
-
+/* No border: --shadow-overlay draws a 1px ring. */
 .tab-context-menu {
   position: fixed;
   min-width: 200px;
   background: var(--surface-overlay);
-  border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-overlay);
   padding: 4px;
   z-index: 210;
+  outline: none;
   --wails-draggable: no-drag;
 }
 
@@ -178,43 +327,23 @@
   display: flex;
   align-items: center;
   width: 100%;
-  height: 28px;
+  height: var(--h-row);
   text-align: left;
-  padding: 0 10px;
-  border-radius: 4px;
+  padding: 0 8px;
+  border-radius: var(--radius-xs);
   background: none;
   border: none;
   color: var(--text);
-  font-size: 13px;
-  cursor: pointer;
-  justify-content: space-between;
+  font-weight: 400;
+  justify-content: flex-start;
   gap: 16px;
 }
 
-.tab-context-menu-item .overlay-keys {
-  color: var(--text-subtlest);
-  font-family: var(--font-mono);
-  font-size: 11px;
+.tab-context-menu-item .kbd {
+  margin-left: auto;
 }
 
-.tab-context-menu-item:hover,
-.tab-context-menu-item.active {
-  background: var(--surface-hover);
-}
-
-.tab-context-menu-item:hover .overlay-keys,
-.tab-context-menu-item.active .overlay-keys {
-  color: var(--text-subtle);
-}
-
-.tab-context-menu-separator {
-  height: 1px;
-  background: var(--border);
-  margin: 4px 0;
-}
-
-/* --- method badges reused from styles.css's .method-badge; WS has no default color there --- */
-
-.method-WS {
-  color: var(--method-ws);
+.tab-context-menu .tab-context-menu-item:hover:not(:disabled),
+.tab-context-menu .tab-context-menu-item.active {
+  background: var(--surface-active);
 }

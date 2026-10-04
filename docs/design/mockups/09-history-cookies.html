@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Restly · History and cookies</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="app.css">
+<script src="shell.js"></script>
+<style>
+  .wcap { max-width: 1280px; margin: 0 auto 10px; font-size: 12px; opacity: 0.65; }
+  .window + .wcap { margin-top: 36px; }
+
+  /* history list */
+  .sb-section .btn { height: 20px; padding: 0 6px; font-size: var(--fs-micro); }
+  .hrow { gap: 5px; padding-left: 6px; }
+  .hrow .name { display: flex; flex-wrap: wrap; column-gap: 6px; height: var(--h-row); line-height: var(--h-row); overflow: hidden; }
+  .hrow .name > span:first-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .hrow .name .host { color: var(--text-subtlest); font-size: var(--fs-small); }
+  .hrow .tag { min-width: 30px; justify-content: center; padding: 0 4px; }
+  .hrow .time { width: 30px; text-align: right; font-size: var(--fs-micro); color: var(--text-subtlest); font-variant-numeric: tabular-nums; }
+  .hrow .m { width: 34px; }
+
+  /* cookies */
+  .ck-bar { display: flex; align-items: center; gap: 8px; padding: 0 28px; margin-top: 16px; }
+  .ck-bar .filter { position: relative; width: 240px; }
+  .ck-bar .filter .i { position: absolute; left: 8px; top: 7px; color: var(--text-subtlest); }
+  .ck-bar .filter .input { width: 100%; padding-left: 28px; }
+  .ck-bar .grow { flex: 1; }
+  .ck-group { padding: 0 28px; margin-top: 18px; }
+  .ck-gh { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: 500; }
+  .ck-gh .mono { font-weight: 500; font-size: var(--fs-ui); }
+  .ck-gh .count { font-size: var(--fs-small); color: var(--text-subtlest); font-weight: 400; }
+  .flags { display: flex; gap: 4px; }
+  .kv td.add { background: var(--primary-tint); }
+  .kv td.add .input { height: 24px; width: 100%; font-family: var(--font-mono); font-size: var(--fs-mono); }
+  .kv td.add .dtbtn { display: flex; align-items: center; gap: 6px; height: 24px; padding: 0 6px; border-radius: var(--radius-small); border: 1px solid var(--border-focus); box-shadow: 0 0 0 1px var(--border-focus); background: var(--surface-input); font-size: var(--fs-small); }
+  .kv td.add .dtbtn .i { color: var(--text-subtlest); }
+  .kv td.add .fl { display: flex; align-items: center; gap: 10px; font-size: var(--fs-micro); color: var(--text-subtle); }
+  .kv td.add .fl span { display: inline-flex; align-items: center; gap: 4px; }
+  .kv td { overflow: hidden; }
+  .acts2 { width: 64px; text-align: center; padding: 0; color: var(--text-subtlest); }
+  .kv tr .acts2 .i { visibility: hidden; margin: 0 3px; vertical-align: middle; }
+  .kv tr:hover .acts2 .i, .kv tr.hover .acts2 .i, .kv tr.always .acts2 .i { visibility: visible; }
+  .kv tr.always .acts2 .i.ok { color: var(--success); }
+
+  /* date-time popover */
+  .dt { width: 268px; padding: 12px; }
+  .dt .nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-weight: 500; }
+  .dt .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; font-size: var(--fs-small); font-variant-numeric: tabular-nums; }
+  .dt .grid .h { color: var(--text-subtlest); font-size: var(--fs-micro); height: 20px; display: grid; place-items: center; }
+  .dt .grid .d { height: 28px; display: grid; place-items: center; border-radius: var(--radius-small); }
+  .dt .grid .d.o { color: var(--text-subtlest); opacity: 0.6; }
+  .dt .grid .d.today { box-shadow: inset 0 0 0 1px var(--primary); color: var(--primary); }
+  .dt .grid .d.sel { background: var(--primary-button); color: var(--primary-button-text); }
+  .dt .time { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-subtle); font-size: var(--fs-small); color: var(--text-subtle); }
+  .dt .time .input { width: 46px; text-align: center; }
+  .dt .sess { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: var(--fs-small); color: var(--text-subtle); }
+  .dt .foot { display: flex; justify-content: space-between; margin-top: 12px; }
+</style>
+</head>
+<body data-screen="09-history-cookies.html">
+<div class="deck">
+
+  <div class="wcap">History view</div>
+  <div class="window">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="sb-head"><span class="ws">Restly <i data-i="chevrons-up-down" class="sm"></i></span>
+          <span class="btn icon sm" title="New"><i data-i="plus"></i></span><span class="btn icon sm" title="Import"><i data-i="import"></i></span></div>
+        <div class="sb-views"><a>Collections</a><a class="on">History</a></div>
+        <div class="sb-search"><i data-i="search" class="sm"></i><input placeholder="Search history"><span class="kbd">⌘⇧F</span></div>
+        <div class="tree">
+          <div class="sb-section">Today<span class="grow"></span><span class="btn ghost">Clear</span></div>
+          <div class="row hrow on"><span data-m="GET"></span><span class="name"><span>/api/users?page=1</span><span class="host">127.0.0.1</span></span><span class="tag ok">200</span><span class="time">14:22</span></div>
+          <div class="row hrow"><span data-m="POST"></span><span class="name"><span>/api/users</span><span class="host">127.0.0.1</span></span><span class="tag ok">201</span><span class="time">14:19</span></div>
+          <div class="row hrow"><span data-m="PATCH"></span><span class="name"><span>/api/users/4821/role</span><span class="host">127.0.0.1</span></span><span class="tag warn">403</span><span class="time">13:58</span></div>
+          <div class="row hrow"><span data-m="GET"></span><span class="name"><span>/api/orders?status=open</span><span class="host">staging.northwind.dev</span></span><span class="tag err">500</span><span class="time">11:42</span></div>
+          <div class="row hrow"><span data-m="GET"></span><span class="name"><span>/health</span><span class="host">127.0.0.1</span></span><span class="tag err">ERR</span><span class="time">10:07</span></div>
+          <div class="row hrow"><span data-m="WS"></span><span class="name"><span>/ws/orders</span><span class="host">127.0.0.1</span></span><span class="tag ok">101</span><span class="time">09:31</span></div>
+          <div class="sb-section">Yesterday</div>
+          <div class="row hrow"><span data-m="POST"></span><span class="name"><span>/auth/login</span><span class="host">staging.northwind.dev</span></span><span class="tag ok">200</span><span class="time">17:48</span></div>
+          <div class="row hrow"><span data-m="GET"></span><span class="name"><span>/api/users</span><span class="host">staging.northwind.dev</span></span><span class="tag ok">200</span><span class="time">17:40</span></div>
+          <div class="row hrow"><span data-m="DELETE"></span><span class="name"><span>/api/users/4790</span><span class="host">staging.northwind.dev</span></span><span class="tag ok">204</span><span class="time">17:12</span></div>
+          <div class="row hrow"><span data-m="GET"></span><span class="name"><span>/api/users/4790</span><span class="host">staging.northwind.dev</span></span><span class="tag warn">404</span><span class="time">17:12</span></div>
+          <div class="row hrow"><span data-m="POST"></span><span class="name"><span>/api/users</span><span class="host">staging.northwind.dev</span></span><span class="tag ok">201</span><span class="time">16:55</span></div>
+          <div class="row hrow"><span data-m="GET"></span><span class="name"><span>/api/orders</span><span class="host">staging.northwind.dev</span></span><span class="tag ok">200</span><span class="time">16:31</span></div>
+          <div class="row hrow"><span data-m="GET"></span><span class="name"><span>/health</span><span class="host">127.0.0.1</span></span><span class="tag ok">200</span><span class="time">15:08</span></div>
+          <div class="row hrow"><span data-m="WS"></span><span class="name"><span>/ws/orders</span><span class="host">127.0.0.1</span></span><span class="tag ok">101</span><span class="time">14:50</span></div>
+          <div class="row hrow"><span data-m="GET"></span><span class="name"><span>/api/users?page=2</span><span class="host">127.0.0.1</span></span><span class="tag ok">200</span><span class="time">14:44</span></div>
+          <div class="row hrow"><span data-m="POST"></span><span class="name"><span>/auth/refresh</span><span class="host">127.0.0.1</span></span><span class="tag err">500</span><span class="time">14:31</span></div>
+        </div>
+      </aside>
+      <section class="main">
+        <div data-tabbar='{"tabs":[{"m":"GET","label":"/api/users","on":true,"dirty":true}]}'></div>
+
+        <div class="reqname">
+          <span class="crumbs"><i data-i="clock" class="sm"></i> <b>History draft</b> <span class="subtlest">· sent today at 14:22, not in a collection</span></span>
+          <span class="grow"></span>
+          <span class="btn ghost"><i data-i="save" class="sm"></i>Save to collection <span class="kbd">⌘S</span></span>
+        </div>
+
+        <div class="reqbar">
+          <div class="url">
+            <span class="meth m auto get">GET <i data-i="chevron-down" class="sm"></i></span>
+            <span class="text">http://127.0.0.1:8765/api/users<span class="q">?page=</span>1</span>
+          </div>
+          <span class="btn primary lg">Send <span class="kbd">⌘↵</span></span>
+        </div>
+
+        <div class="subtabs" style="margin-top:8px">
+          <a class="on">Params <span class="c">1</span></a>
+          <a>Headers <span class="c">2</span></a>
+          <a>Body</a>
+          <a>Auth <span class="c">Inherit</span></a>
+          <a>Pre-request</a>
+          <a>Post-response</a>
+        </div>
+
+        <div class="pane-pad" style="height:132px">
+          <div class="kvwrap">
+            <table class="kv">
+              <thead><tr><th class="ck"></th><th>Key</th><th>Value</th><th>Description</th><th class="acts"></th></tr></thead>
+              <tbody>
+                <tr><td class="ck"><span class="cb on"></span></td><td class="k">page</td><td class="v">1</td><td class="d"></td><td class="acts"><i data-i="trash" class="sm"></i></td></tr>
+                <tr class="ghost"><td class="ck"></td><td>Key</td><td>Value</td><td></td><td class="acts"></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="hsplit"></div>
+
+        <div class="resp">
+          <div class="resp-head">
+            <div class="subtabs">
+              <a class="on">Body</a>
+              <a>Headers <span class="c">7</span></a>
+              <a>Cookies</a>
+              <a>Console</a>
+            </div>
+            <div class="resp-meta">
+              <span class="status s2"><span class="dot"></span>200 OK</span>
+              <span>38 ms</span>
+              <span>430 B</span>
+            </div>
+          </div>
+          <div class="code">
+            <div class="l"><span class="g">1</span><span class="f"><i data-i="chevron-down" class="sm"></i></span><span class="u">{</span></div>
+            <div class="l"><span class="g">2</span><span class="f"><i data-i="chevron-down" class="sm"></i></span>  <span class="p">"data"</span><span class="u">: [</span></div>
+            <div class="l"><span class="g">3</span><span class="f"><i data-i="chevron-down" class="sm"></i></span>    <span class="u">{</span></div>
+            <div class="l"><span class="g">4</span><span class="f"></span>      <span class="p">"id"</span><span class="u">: </span><span class="n">4821</span><span class="u">,</span></div>
+            <div class="l"><span class="g">5</span><span class="f"></span>      <span class="p">"name"</span><span class="u">: </span><span class="s">"Priya Raman"</span><span class="u">,</span></div>
+            <div class="l"><span class="g">6</span><span class="f"></span>      <span class="p">"email"</span><span class="u">: </span><span class="s">"priya@northwind.dev"</span><span class="u">,</span></div>
+            <div class="l"><span class="g">7</span><span class="f"></span>      <span class="p">"role"</span><span class="u">: </span><span class="s">"admin"</span></div>
+          </div>
+        </div>
+      </section>
+      <div data-statusbar='{"saved":"Draft, not saved"}'></div>
+    </div>
+
+    <span class="pin pinno" style="left:258px;top:122px">1</span>
+    <span class="pin pinno" style="left:258px;top:151px">2</span>
+    <span class="pin pinno" style="left:392px;top:10px">3</span>
+    <span class="pin pinno" style="left:1066px;top:52px">4</span>
+  </div>
+
+  <div class="wcap">Cookies tab</div>
+  <div class="window">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app">
+      <div data-sidebar='{"dirty":["Create user"]}'></div>
+      <section class="main">
+        <div data-tabbar='{"tabs":[{"m":"POST","label":"Create user","dirty":true},{"kind":"COOKIES","label":"Cookies","on":true}]}'></div>
+        <div class="page">
+          <div class="page-head">
+            <div><h1>Cookies</h1><div class="meta"><span>6 cookies in 2 domains</span></div></div>
+          </div>
+
+          <div class="ck-bar">
+            <div class="filter"><i data-i="search" class="sm"></i><input class="input" placeholder="Filter by domain"></div>
+            <span class="btn ghost"><i data-i="refresh" class="sm"></i>Refresh</span>
+            <span class="btn ghost"><i data-i="plus" class="sm"></i>Add cookie</span>
+            <span class="grow"></span>
+            <span class="tag err">Click again to clear all</span>
+            <span class="btn ghost danger"><i data-i="trash" class="sm"></i>Clear all</span>
+          </div>
+
+          <div class="ck-group">
+            <div class="ck-gh"><span class="mono">127.0.0.1</span><span class="count">3 cookies</span></div>
+            <div class="kvwrap">
+              <table class="kv">
+                <thead><tr><th style="width:140px">Name</th><th>Value</th><th style="width:70px">Path</th><th style="width:170px">Expires</th><th style="width:240px">Flags</th><th class="acts2"></th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td class="add"><input class="input focus" value="theme"></td>
+                    <td class="add"><input class="input" value="dark"></td>
+                    <td class="add"><input class="input" value="/"></td>
+                    <td class="add"><span class="dtbtn tnum"><i data-i="calendar" class="sm"></i>Oct 17, 2026 15:30</span></td>
+                    <td class="add"><span class="fl"><span><span class="cb"></span>HttpOnly</span><span><span class="cb"></span>Secure</span><span><span class="cb on"></span>HostOnly</span></span></td>
+                    <td class="add acts2" style="background:var(--primary-tint)"><i data-i="check" class="sm"></i><i data-i="x" class="sm"></i></td>
+                  </tr>
+                  <tr><td class="k">sid</td><td class="v">s%3Ak4ZpQ1xN0vR9eLw2mT8…</td><td class="v">/</td><td class="tnum">Session</td><td><span class="flags"><span class="tag">HttpOnly</span><span class="tag">HostOnly</span></span></td><td class="acts2"><i data-i="save" class="sm"></i><i data-i="trash" class="sm"></i></td></tr>
+                  <tr class="hover"><td class="k">locale</td><td class="v">en-IN</td><td class="v">/</td><td class="tnum">Jan 12, 2027 09:00</td><td><span class="flags"><span class="tag">HostOnly</span></span></td><td class="acts2"><i data-i="save" class="sm"></i><i data-i="trash" class="sm"></i></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="ck-group">
+            <div class="ck-gh"><span class="mono">staging.northwind.dev</span><span class="count">3 cookies</span></div>
+            <div class="kvwrap">
+              <table class="kv">
+                <thead><tr><th style="width:140px">Name</th><th>Value</th><th style="width:70px">Path</th><th style="width:170px">Expires</th><th style="width:240px">Flags</th><th class="acts2"></th></tr></thead>
+                <tbody>
+                  <tr><td class="k">session_id</td><td class="v">eyJhbGciOiJIUzI1NiIsInR5cCI6…</td><td class="v">/</td><td class="tnum">Oct 4, 2026 08:12</td><td><span class="flags"><span class="tag">HttpOnly</span><span class="tag">Secure</span></span></td><td class="acts2"><i data-i="save" class="sm"></i><i data-i="trash" class="sm"></i></td></tr>
+                  <tr><td class="k">csrf_token</td><td class="v">9f2b7c1e4a8d0b3f65e1…</td><td class="v">/</td><td class="tnum">Session</td><td><span class="flags"><span class="tag">Secure</span></span></td><td class="acts2"><i data-i="save" class="sm"></i><i data-i="trash" class="sm"></i></td></tr>
+                  <tr><td class="k">tenant</td><td class="v">northwind</td><td class="v">/api</td><td class="tnum">Nov 2, 2026 00:00</td><td><span class="flags"></span></td><td class="acts2"><i data-i="save" class="sm"></i><i data-i="trash" class="sm"></i></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div data-statusbar='{"saved":"Auto-saved 4 s ago","cookies":6}'></div>
+    </div>
+
+    <!-- date-time picker, opened from the Expires cell of the new cookie -->
+    <div class="pop dt" style="left:672px;top:258px">
+      <div class="nav"><span class="btn icon sm"><span style="display:inline-flex;transform:scaleX(-1)"><i data-i="chevron-right" class="sm"></i></span></span><span>October 2026</span><span class="btn icon sm"><i data-i="chevron-right" class="sm"></i></span></div>
+      <div class="grid">
+        <span class="h">Su</span><span class="h">Mo</span><span class="h">Tu</span><span class="h">We</span><span class="h">Th</span><span class="h">Fr</span><span class="h">Sa</span>
+        <span class="d o">27</span><span class="d o">28</span><span class="d o">29</span><span class="d o">30</span><span class="d">1</span><span class="d">2</span><span class="d today">3</span>
+        <span class="d">4</span><span class="d">5</span><span class="d">6</span><span class="d">7</span><span class="d">8</span><span class="d">9</span><span class="d">10</span>
+        <span class="d">11</span><span class="d">12</span><span class="d">13</span><span class="d">14</span><span class="d">15</span><span class="d">16</span><span class="d sel">17</span>
+        <span class="d">18</span><span class="d">19</span><span class="d">20</span><span class="d">21</span><span class="d">22</span><span class="d">23</span><span class="d">24</span>
+        <span class="d">25</span><span class="d">26</span><span class="d">27</span><span class="d">28</span><span class="d">29</span><span class="d">30</span><span class="d">31</span>
+      </div>
+      <div class="time"><span>Hour</span><input class="input tnum" value="15"><span>Minute</span><input class="input tnum" value="30"></div>
+      <div class="sess"><span class="cb"></span>Session cookie</div>
+      <div class="foot"><span class="btn ghost">Now</span><span class="btn primary">Done</span></div>
+    </div>
+
+    <span class="pin pinno" style="left:760px;top:126px">5</span>
+    <span class="pin pinno" style="left:610px;top:330px">6</span>
+    <span class="pin pinno" style="left:1256px;top:228px">7</span>
+    <span class="pin pinno" style="left:646px;top:272px">8</span>
+  </div>
+
+  <div class="deck-notes">
+    <div class="n"><span class="pinno">1</span><div><b>History groups use quiet labels with a ghost Clear.</b><p>Today and Yesterday are small section labels, the same as Environments, and Clear sits on the right of the first one as a ghost button. The current list has a filled Clear button above plain text rows.</p></div></div>
+    <div class="n"><span class="pinno">2</span><div><b>Each row reads as method, path, status and time.</b><p>The path leads and the host is dimmed after it, the status is a colored tag with ERR for a connection failure, and the time is muted with tabular digits. WebSocket entries use the WS tag. Today the row shows a filled method badge and the URL as one string.</p></div></div>
+    <div class="n"><span class="pinno">3</span><div><b>Clicking an entry opens an unsaved draft tab.</b><p>The tab reads "GET /api/users" with the dirty dot in place of the close button, so it is clear nothing is stored yet. This is the same editable draft the app opens now, without a visual cue.</p></div></div>
+    <div class="n"><span class="pinno">4</span><div><b>The breadcrumb says "History draft" and offers Save to collection.</b><p>A ghost button in the request toolbar position, with its shortcut, replaces having to find Save in a menu. The rest of the request layout is the one from the request screen.</p></div></div>
+    <div class="n"><span class="pinno">5</span><div><b>Cookies toolbar is one line of ghost buttons.</b><p>Filter by domain, Refresh, Add cookie and a danger Clear all. The armed state "Click again to clear all" shown as a red tag next to the button is proposed. Today the two-step Clear all changes the button label only.</p></div></div>
+    <div class="n"><span class="pinno">6</span><div><b>One Flags column replaces three checkbox columns (proposed).</b><p>HttpOnly, Secure and HostOnly show as small tags only when set, so most rows are shorter and easier to scan. Each domain gets a header with its cookie count and its own hairline table. Value is mono and truncated, and Save and Delete appear on hover instead of on every row.</p></div></div>
+    <div class="n"><span class="pinno">7</span><div><b>Add cookie is an inline row at the top of the group.</b><p>Name, value, path, expiry and the three flags are edited in place with the row tinted. The current form is a separate block above the tables with a domain field and three checkboxes.</p></div></div>
+    <div class="n"><span class="pinno">8</span><div><b>The expiry picker is a compact popover.</b><p>Month navigation, a 7-column day grid with today outlined and the selected day filled, Hour and Minute inputs, a Session cookie option, and Now and Done buttons. It has the same fields as the current DateTimePicker with calmer styling.</p></div></div>
+  </div>
+</div>
+</body>
+</html>

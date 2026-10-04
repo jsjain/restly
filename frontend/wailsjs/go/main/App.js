@@ -142,6 +142,10 @@ export function SaveSettings(arg1) {
   return window['go']['main']['App']['SaveSettings'](arg1);
 }
 
+export function SaveTextFile(arg1, arg2) {
+  return window['go']['main']['App']['SaveTextFile'](arg1, arg2);
+}
+
 export function Send(arg1) {
   return window['go']['main']['App']['Send'](arg1);
 }

@@ -49,9 +49,12 @@ export default function FontPicker() {
 
   return (
     <div className="font-picker">
-      <div className="settings-row">
-        <label>UI font</label>
-        <div className="settings-control-group">
+      <div className="srow">
+        <div className="lbl">
+          <b>Interface font</b>
+          <span>Menus, sidebar, tabs and dialogs</span>
+        </div>
+        <div className="ctl wrap">
           <Select
             className="font-picker-select"
             ariaLabel="UI font"
@@ -68,16 +71,17 @@ export default function FontPicker() {
           {uiMode === "custom" ? (
             <input
               type="text"
-              className="mono"
+              className="mono font-custom"
               aria-label="Custom UI font family"
-              placeholder='"Helvetica Neue", sans-serif'
+              placeholder="Font family, for example Helvetica Neue"
               value={fonts.ui ?? ""}
               onChange={(e) => update({ ui: e.target.value })}
             />
           ) : null}
+          <span className="affix size-affix">
           <input
             type="number"
-            className="font-picker-size"
+            className="tnum"
             aria-label="UI font size in pixels"
             min={9}
             max={24}
@@ -85,11 +89,16 @@ export default function FontPicker() {
             defaultValue={fonts.uiSize ?? DEFAULT_UI_SIZE}
             onChange={(e) => update({ uiSize: size(e.target.value, DEFAULT_UI_SIZE) })}
           />
+            <span className="u">px</span>
+          </span>
         </div>
       </div>
-      <div className="settings-row">
-        <label>Editor font</label>
-        <div className="settings-control-group">
+      <div className="srow">
+        <div className="lbl">
+          <b>Editor font</b>
+          <span>Request body, response body and scripts</span>
+        </div>
+        <div className="ctl wrap">
           <Select
             className="font-picker-select"
             ariaLabel="Editor font"
@@ -106,16 +115,17 @@ export default function FontPicker() {
           {monoMode === "custom" ? (
             <input
               type="text"
-              className="mono"
+              className="mono font-custom"
               aria-label="Custom editor font family"
-              placeholder='"Cascadia Code", monospace'
+              placeholder="Font family, for example JetBrains Mono"
               value={fonts.mono ?? ""}
               onChange={(e) => update({ mono: e.target.value })}
             />
           ) : null}
+          <span className="affix size-affix">
           <input
             type="number"
-            className="font-picker-size"
+            className="tnum"
             aria-label="Editor font size in pixels"
             min={9}
             max={24}
@@ -123,6 +133,8 @@ export default function FontPicker() {
             defaultValue={fonts.monoSize ?? DEFAULT_MONO_SIZE}
             onChange={(e) => update({ monoSize: size(e.target.value, DEFAULT_MONO_SIZE) })}
           />
+            <span className="u">px</span>
+          </span>
         </div>
       </div>
     </div>

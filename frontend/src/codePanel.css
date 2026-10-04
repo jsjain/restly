@@ -36,9 +36,57 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px;
+  height: 36px;
+  padding: 0 8px 0 12px;
   border-bottom: 1px solid var(--border-subtle);
   flex: 0 0 auto;
+}
+
+.code-panel-title {
+  margin-right: auto;
+  font-weight: 600;
+}
+
+.code-panel-toolbar button:not(.icon) {
+  min-width: 76px;
+}
+
+.code-panel-toolbar .code-panel-lang {
+  min-width: 150px;
+}
+
+.code-panel-copied svg {
+  color: var(--success);
+}
+
+.code-panel-error {
+  flex: 1 1 auto;
+  align-self: flex-start;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--danger-tint);
+  color: var(--text);
+  font-size: var(--fs-small);
+  overflow-wrap: anywhere;
+}
+
+.code-panel-error svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--danger);
+}
+
+.code-panel-error b {
+  display: block;
+  font-weight: 600;
+}
+
+.code-panel-error span {
+  color: var(--text-subtle);
 }
 
 .code-panel-body {

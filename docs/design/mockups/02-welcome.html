@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Restly · First run and empty states</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="app.css">
+<script src="shell.js"></script>
+<style>
+  .cap { max-width: 1280px; margin: 56px auto 14px; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+
+  /* empty sidebar tree */
+  .sb-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 36px 14px 0; }
+  .sb-empty .i { color: var(--text-subtlest); margin-bottom: 4px; }
+  .sb-empty b { font-weight: 600; color: var(--text); }
+  .sb-empty p { margin: 0; color: var(--text-subtle); font-size: var(--fs-small); line-height: 1.5; }
+  .sb-empty .btns { display: flex; gap: 6px; margin-top: 10px; }
+
+  /* getting-started hint line and the two-column variant */
+  .hintline { margin: 16px 8px 0; font-size: var(--fs-small); color: var(--text-subtlest); display: flex; gap: 6px; align-items: center; }
+  .empty .box.start2 { width: 780px; }
+  .start2 .cols2 { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 40px; margin-top: 4px; }
+  .start2 .menu-label { padding-left: 8px; }
+  .rec { height: 32px; display: flex; align-items: center; gap: 8px; padding: 0 8px; border-radius: var(--radius-xs); color: var(--text); white-space: nowrap; }
+  .rec:hover { background: var(--surface-hover); }
+  .rec .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  .rec .tag { min-width: 32px; justify-content: center; }
+  .rec .tm { width: 78px; text-align: right; color: var(--text-subtlest); font-size: var(--fs-small); font-variant-numeric: tabular-nums; }
+
+  /* request states */
+  .sending { flex: 1; display: grid; place-items: center; }
+  .sending div { display: flex; align-items: baseline; gap: 10px; color: var(--text-subtle); }
+  .frames { max-width: 1280px; margin: 20px auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; position: relative; }
+  .fr .lab { font-size: 12px; font-weight: 500; margin-bottom: 8px; opacity: 0.7; }
+  .frame { background: var(--surface); color: var(--text); border: 1px solid var(--border-subtle); border-radius: var(--radius-large); overflow: hidden; height: 232px; display: flex; flex-direction: column; }
+  .frame .resp-head { gap: 18px; }
+  .frame .mid { flex: 1; display: grid; place-items: center; text-align: center; color: var(--text-subtle); }
+  .frame .mid .stack { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .banner { display: flex; gap: 10px; align-items: flex-start; margin: 14px 16px 0; padding: 12px 14px; border-radius: var(--radius); background: var(--danger-tint); border-left: 2px solid var(--danger); }
+  .banner > .i { color: var(--danger); margin-top: 2px; }
+  .banner .msg { color: var(--text); line-height: 1.5; }
+  .banner .msg span { color: var(--text-subtle); }
+  .banner .btns { display: flex; align-items: center; gap: 6px; margin-top: 10px; margin-left: -2px; }
+  .banner .btn.ghost.link { color: var(--primary); }
+</style>
+</head>
+<body data-screen="02-welcome.html">
+<div class="deck">
+
+  <!-- ============ Window 1: first run, empty workspace ============ -->
+  <div class="window">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="sb-head"><span class="ws">Restly <i data-i="chevrons-up-down" class="sm"></i></span>
+          <span class="btn icon sm" title="New"><i data-i="plus"></i></span><span class="btn icon sm" title="Import"><i data-i="import"></i></span></div>
+        <div class="sb-views"><a class="on">Collections</a><a>History</a></div>
+        <div class="sb-search"><i data-i="search" class="sm"></i><input placeholder="Search requests"><span class="kbd">⌘⇧F</span></div>
+        <div class="tree">
+          <div class="sb-empty">
+            <i data-i="folder" class="lg"></i>
+            <b>No collections yet</b>
+            <p>A collection groups related requests and shares auth and variables with them.</p>
+            <div class="btns">
+              <span class="btn"><i data-i="plus" class="sm"></i>New collection</span>
+              <span class="btn"><i data-i="import" class="sm"></i>Import</span>
+            </div>
+          </div>
+        </div>
+        <div class="sb-env"><div class="sb-section"><i data-i="chevron-down" class="sm"></i>Environments<span class="grow"></span><i data-i="plus" class="sm"></i></div>
+          <div class="row" style="padding-left:4px"><span class="chev"><i data-i="globe" class="sm"></i></span><span class="name">Globals</span></div>
+        </div>
+      </aside>
+      <section class="main">
+        <div data-tabbar='{"tabs":[],"env":"none"}'></div>
+        <div class="empty">
+          <div class="box">
+            <h2>Start a request</h2>
+            <p>Send an HTTP or WebSocket request, or bring in something you already have.</p>
+            <div class="acts">
+              <div class="menu-item"><i data-i="plus"></i>New HTTP request<span class="kbd">⌘N</span></div>
+              <div class="menu-item"><i data-i="plug"></i>New WebSocket request<span class="kbd">⌘⇧W</span></div>
+              <div class="menu-item"><i data-i="terminal"></i>Import cURL<span class="kbd">⌘O</span></div>
+              <div class="menu-item"><i data-i="import"></i>Import Postman collection</div>
+              <div class="menu-item"><i data-i="command"></i>Command palette<span class="kbd">⌘K</span></div>
+            </div>
+            <div class="hintline"><i data-i="info" class="sm"></i>Paste a cURL command into any URL field to convert it.</div>
+          </div>
+        </div>
+      </section>
+      <div data-statusbar='{"where":"No collection","saved":"Nothing open","cookies":0}'></div>
+    </div>
+
+    <span class="pin pinno" style="left:252px;top:204px">1</span>
+    <span class="pin pinno" style="left:1032px;top:10px">2</span>
+    <span class="pin pinno" style="left:526px;top:268px">3</span>
+  </div>
+
+  <div class="deck-notes">
+    <div class="n"><span class="pinno">1</span><div><b>The empty sidebar explains itself and offers two actions.</b><p>Instead of a blank tree it says what a collection is and puts New collection and Import within reach. Only Globals is listed under Environments, because nothing else exists yet. Today the tree area is simply empty.</p></div></div>
+    <div class="n"><span class="pinno">2</span><div><b>The environment picker says "No environment" with a hollow dot.</b><p>Same control as the populated screens, so it does not jump around once a workspace has data. The hollow dot already means "none selected" on the request screen.</p></div></div>
+    <div class="n"><span class="pinno">3</span><div><b>A getting-started list replaces the single line of text.</b><p>Each row is a real command with an icon and its shortcut, so the first screen also teaches the keyboard. The current UI shows only "Open a request from the sidebar to get started." The cURL tip sits below as a muted line.</p></div></div>
+  </div>
+
+  <!-- ============ Window 2: populated workspace, no tab open ============ -->
+  <h2 class="cap">Populated workspace, no tab open</h2>
+  <div class="window">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app">
+      <div data-sidebar='{}'></div>
+      <section class="main">
+        <div data-tabbar='{"tabs":[]}'></div>
+        <div class="empty">
+          <div class="box start2">
+            <h2>No request open</h2>
+            <p>Pick one from the sidebar or the recent list, or start a new request.</p>
+            <div class="cols2">
+              <div>
+                <div class="menu-label">Start</div>
+                <div class="acts">
+                  <div class="menu-item"><i data-i="plus"></i>New HTTP request<span class="kbd">⌘N</span></div>
+                  <div class="menu-item"><i data-i="plug"></i>New WebSocket request<span class="kbd">⌘⇧W</span></div>
+                  <div class="menu-item"><i data-i="terminal"></i>Import cURL<span class="kbd">⌘O</span></div>
+                  <div class="menu-item"><i data-i="import"></i>Import Postman collection</div>
+                  <div class="menu-item"><i data-i="command"></i>Command palette<span class="kbd">⌘K</span></div>
+                </div>
+              </div>
+              <div>
+                <div class="menu-label">Recent</div>
+                <div class="rec"><span data-m="POST"></span><span class="nm">Create user</span><span class="tag ok">201</span><span class="tm">2 min ago</span></div>
+                <div class="rec"><span data-m="GET"></span><span class="nm">List users</span><span class="tag ok">200</span><span class="tm">14 min ago</span></div>
+                <div class="rec"><span data-m="DELETE"></span><span class="nm mono">/api/users/4821</span><span class="tag warn">404</span><span class="tm">1 h ago</span></div>
+                <div class="rec"><span data-m="PATCH"></span><span class="nm">Update role</span><span class="tag ok">200</span><span class="tm">3 h ago</span></div>
+                <div class="rec"><span data-m="GET"></span><span class="nm mono">/api/orders?status=pending</span><span class="tag err">500</span><span class="tm">Yesterday</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div data-statusbar='{"saved":"All changes saved"}'></div>
+    </div>
+
+    <span class="pin pinno" style="left:690px;top:346px">4</span>
+  </div>
+
+  <div class="deck-notes">
+    <div class="n"><span class="pinno">4</span><div><b>With a workspace but no tab, the main area shows Start and Recent side by side.</b><p>Recent lists the last five history entries: method, the request name (or the URL path when the request was never saved), a status tag and a relative time. One click reopens it. Today the same situation shows only the one-line prompt, and history is hidden behind a sidebar tab.</p></div></div>
+  </div>
+
+  <!-- ============ Window 3: request states ============ -->
+  <h2 class="cap">Request states, POST Create user</h2>
+  <div class="window">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app">
+      <div data-sidebar='{"active":"Create user"}'></div>
+      <section class="main">
+        <div data-tabbar='{"tabs":[{"m":"GET","label":"List users"},{"m":"POST","label":"Create user","on":true}]}'></div>
+
+        <div class="reqname">
+          <span class="crumbs">Northwind API <i data-i="chevron-right" class="sm"></i> Users <i data-i="chevron-right" class="sm"></i> <b>Create user</b></span>
+          <span class="grow"></span>
+          <span class="btn ghost"><i data-i="code" class="sm"></i>Code <span class="kbd">⌥⌘C</span></span>
+          <span class="btn ghost"><i data-i="save" class="sm"></i>Save <span class="kbd">⌘S</span></span>
+        </div>
+
+        <div class="reqbar">
+          <div class="url">
+            <span class="meth m auto post">POST <i data-i="chevron-down" class="sm"></i></span>
+            <span class="text"><span class="var">{{baseUrl}}</span>/api/users</span>
+          </div>
+          <span class="btn lg"><i data-i="stop" class="sm"></i>Cancel <span class="kbd">Esc</span></span>
+        </div>
+        <div style="padding:6px 16px 0"><div class="progress" style="height:2px"><i style="width:30%;margin-left:48%;background:var(--primary)"></i></div></div>
+
+        <div class="subtabs" style="margin-top:6px">
+          <a>Params</a>
+          <a>Headers <span class="c">2</span></a>
+          <a class="on">Body</a>
+          <a>Auth <span class="c">Inherit</span></a>
+          <a>Pre-request</a>
+          <a>Post-response</a>
+        </div>
+
+        <div class="pane-pad" style="height:164px">
+          <div class="kvwrap" style="height:100%">
+            <div class="code" style="height:100%">
+              <div class="l"><span class="g">1</span><span class="f"></span><span class="u">{</span></div>
+              <div class="l"><span class="g">2</span><span class="f"></span>  <span class="p">"name"</span><span class="u">: </span><span class="s">"Ada Okafor"</span><span class="u">,</span></div>
+              <div class="l"><span class="g">3</span><span class="f"></span>  <span class="p">"email"</span><span class="u">: </span><span class="s">"ada@northwind.dev"</span><span class="u">,</span></div>
+              <div class="l"><span class="g">4</span><span class="f"></span>  <span class="p">"role"</span><span class="u">: </span><span class="s">"viewer"</span></div>
+              <div class="l"><span class="g">5</span><span class="f"></span><span class="u">}</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hsplit"></div>
+
+        <div class="resp">
+          <div class="resp-head">
+            <div class="subtabs">
+              <a class="on">Body</a>
+              <a>Headers</a>
+              <a>Cookies</a>
+              <a>Tests</a>
+              <a>Console</a>
+            </div>
+          </div>
+          <div class="sending"><div><span>Sending request…</span><span class="num subtlest">1.2 s</span></div></div>
+        </div>
+      </section>
+      <div data-statusbar='{"saved":"Unsaved changes"}'></div>
+    </div>
+
+    <span class="pin pinno" style="left:1100px;top:96px">5</span>
+    <span class="pin pinno" style="left:660px;top:565px">6</span>
+  </div>
+
+  <div class="frames">
+    <div class="fr">
+      <div class="lab">Empty, before the first send</div>
+      <div class="frame">
+        <div class="resp-head"><div class="subtabs"><a class="on">Body</a><a>Headers</a><a>Cookies</a><a>Tests</a><a>Console</a></div></div>
+        <div class="mid"><div class="stack"><i data-i="send" class="lg subtlest"></i><span>Send a request to see the response</span><span class="kbd">⌘↵</span></div></div>
+      </div>
+    </div>
+    <div class="fr">
+      <div class="lab">Error, connection refused</div>
+      <div class="frame">
+        <div class="resp-head"><div class="subtabs"><a class="on">Body</a><a>Headers</a><a>Cookies</a><a>Tests</a><a>Console</a></div></div>
+        <div class="banner">
+          <i data-i="alert"></i>
+          <div class="msg"><b>Could not connect to 127.0.0.1:8765.</b> <span>Connection refused.</span>
+            <div class="btns"><span class="btn"><i data-i="refresh" class="sm"></i>Retry</span><span class="btn ghost link">Check proxy settings</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fr">
+      <div class="lab">After Cancel</div>
+      <div class="frame">
+        <div class="resp-head"><div class="subtabs"><a class="on">Body</a><a>Headers</a><a>Cookies</a><a>Tests</a><a>Console</a></div></div>
+        <div class="mid"><div class="stack"><i data-i="minus-circle" class="lg subtlest"></i><span>Request cancelled</span><span class="subtlest" style="font-size:var(--fs-small)">Send again with <span class="kbd">⌘↵</span></span></div></div>
+      </div>
+    </div>
+    <span class="pin pinno" style="left:70px;top:148px">7</span>
+    <span class="pin pinno" style="left:424px;top:85px">8</span>
+  </div>
+
+  <div class="deck-notes">
+    <div class="n"><span class="pinno">5</span><div><b>While a request is in flight, Send becomes Cancel and shows Esc. A thin progress bar runs under the URL field (proposed).</b><p>The button stays in the same place and drops the filled style, so it reads as a way out and not as the next action. The bar confirms that something is running even when the response pane is hidden. Today Send already turns into Cancel, but there is no shortcut hint and no progress cue.</p></div></div>
+    <div class="n"><span class="pinno">6</span><div><b>The response pane says "Sending request…" with a live timer (proposed).</b><p>The timer counts up in tabular numerals so the text does not shift. Today the pane keeps showing the previous response or the empty hint while the request runs.</p></div></div>
+    <div class="n"><span class="pinno">7</span><div><b>The empty response keeps its prompt and adds a keycap.</b><p>It uses the same wording as today, "Send a request to see the response", with a send icon and the ⌘↵ keycap in place of the trailing hint text.</p></div></div>
+    <div class="n"><span class="pinno">8</span><div><b>Failures use a tinted banner with actions (proposed).</b><p>The message names the address that failed. Retry resends the same request and "Check proxy settings" opens Settings. The "Request cancelled" note stays small and neutral, because cancelling is not an error. Today failures show a plain error banner at the top of the response with no actions.</p></div></div>
+  </div>
+
+</div>
+</body>
+</html>

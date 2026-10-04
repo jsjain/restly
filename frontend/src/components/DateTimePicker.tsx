@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Calendar, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import "../dateTimePicker.css";
 
 interface Props {
@@ -19,7 +19,7 @@ function pad(n: number): string {
   return String(n).padStart(2, "0");
 }
 
-function formatDisplay(d: Date): string {
+export function formatDisplay(d: Date): string {
   return `${MONTHS[d.getMonth()].slice(0, 3)} ${d.getDate()}, ${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
@@ -51,14 +51,16 @@ function buildGrid(monthStart: Date): Date[] {
 // Themed replacement for a native datetime-local input: a trigger button showing the
 // formatted value (or placeholder when null) and a portaled popover with a month grid plus
 // hour/minute fields. Picking a day, editing the time, or clicking Now only updates the
-// popover's own draft; onChange only fires on Done (commits the draft) or Session cookie
-// (commits null), same as a native date picker only firing once a value is confirmed.
+// popover's own draft; onChange only fires on Done (commits the draft, or null when Session cookie is
+// checked), same as a native date picker only firing once a value is confirmed.
 export default function DateTimePicker({ value, onChange, placeholder = "Session" }: Props) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Date>(() => value ?? new Date());
   const [viewMonth, setViewMonth] = useState<Date>(() => startOfMonth(value ?? new Date()));
   const [focused, setFocused] = useState<Date>(() => value ?? new Date());
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  // A session cookie has no date: Done commits null while this is checked.
+  const [session, setSession] = useState(false);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -69,6 +71,7 @@ export default function DateTimePicker({ value, onChange, placeholder = "Session
     setDraft(base);
     setViewMonth(startOfMonth(base));
     setFocused(base);
+    setSession(value === null);
     setOpen(true);
   }
 
@@ -126,6 +129,7 @@ export default function DateTimePicker({ value, onChange, placeholder = "Session
   }, [open, pos, focused]);
 
   function pickDay(day: Date) {
+    setSession(false);
     setDraft((d) => {
       const next = new Date(d);
       next.setFullYear(day.getFullYear(), day.getMonth(), day.getDate());
@@ -140,6 +144,7 @@ export default function DateTimePicker({ value, onChange, placeholder = "Session
   function setHour(h: number) {
     // ponytail: Number("") is 0, so clearing the field snaps to 00 rather than staying blank;
     // upgrade to a string draft + separate parse step if that proves annoying in practice.
+    setSession(false);
     setDraft((d) => {
       const next = new Date(d);
       next.setHours(((h % 24) + 24) % 24);
@@ -148,6 +153,7 @@ export default function DateTimePicker({ value, onChange, placeholder = "Session
   }
 
   function setMinute(m: number) {
+    setSession(false);
     setDraft((d) => {
       const next = new Date(d);
       next.setMinutes(((m % 60) + 60) % 60);
@@ -157,18 +163,14 @@ export default function DateTimePicker({ value, onChange, placeholder = "Session
 
   function setNow() {
     const now = new Date();
+    setSession(false);
     setDraft(now);
     setFocused(now);
     setViewMonth(startOfMonth(now));
   }
 
   function commitDone() {
-    onChange(draft);
-    closeAndRefocus();
-  }
-
-  function commitSession() {
-    onChange(null);
+    onChange(session ? null : draft);
     closeAndRefocus();
   }
 
@@ -207,7 +209,14 @@ export default function DateTimePicker({ value, onChange, placeholder = "Session
 
   return (
     <>
-      <button type="button" ref={triggerRef} className="dtp-trigger" onClick={() => (open ? setOpen(false) : openPicker())}>
+      <button
+        type="button"
+        ref={triggerRef}
+        className="dtp-trigger"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={() => (open ? setOpen(false) : openPicker())}
+      >
         <Calendar size={13} aria-hidden="true" />
         <span className={value ? "" : "dtp-placeholder"}>{value ? formatDisplay(value) : placeholder}</span>
       </button>
@@ -215,7 +224,9 @@ export default function DateTimePicker({ value, onChange, placeholder = "Session
         ? createPortal(
             <div
               ref={popoverRef}
-              className="dtp-popover"
+              className={`dtp-popover${session ? " dtp-session-on" : ""}`}
+              role="dialog"
+              aria-label="Choose date and time"
               style={{ top: pos.top, left: pos.left }}
               onKeyDown={(e) => {
                 if (e.key === "Escape") {
@@ -225,14 +236,14 @@ export default function DateTimePicker({ value, onChange, placeholder = "Session
               }}
             >
               <div className="dtp-header">
-                <button type="button" className="icon" onClick={() => setViewMonth((m) => addMonths(m, -1))} aria-label="Previous month">
-                  <ChevronLeft size={15} />
+                <button type="button" className="icon dtp-nav" onClick={() => setViewMonth((m) => addMonths(m, -1))} aria-label="Previous month">
+                  <ChevronLeft size={14} />
                 </button>
                 <span className="dtp-month-label">
                   {MONTHS[viewMonth.getMonth()]} {viewMonth.getFullYear()}
                 </span>
-                <button type="button" className="icon" onClick={() => setViewMonth((m) => addMonths(m, 1))} aria-label="Next month">
-                  <ChevronRight size={15} />
+                <button type="button" className="icon dtp-nav" onClick={() => setViewMonth((m) => addMonths(m, 1))} aria-label="Next month">
+                  <ChevronRight size={14} />
                 </button>
               </div>
               <div className="dtp-weekdays">
@@ -273,38 +284,38 @@ export default function DateTimePicker({ value, onChange, placeholder = "Session
                 })}
               </div>
               <div className="dtp-time">
+                <label htmlFor="dtp-hour">Hour</label>
                 <input
+                  id="dtp-hour"
                   type="number"
-                  className="mono"
+                  className="tnum"
                   min={0}
                   max={23}
                   value={pad(draft.getHours())}
                   onChange={(e) => setHour(Number(e.target.value))}
-                  aria-label="Hour"
                 />
-                <span>:</span>
+                <label htmlFor="dtp-minute">Minute</label>
                 <input
+                  id="dtp-minute"
                   type="number"
-                  className="mono"
+                  className="tnum"
                   min={0}
                   max={59}
                   value={pad(draft.getMinutes())}
                   onChange={(e) => setMinute(Number(e.target.value))}
-                  aria-label="Minute"
                 />
               </div>
+              <label className="dtp-session">
+                <input type="checkbox" checked={session} onChange={(e) => setSession(e.target.checked)} />
+                Session cookie
+              </label>
               <div className="dtp-actions">
-                <button type="button" className="ghost dtp-session-btn" onClick={commitSession}>
-                  <X size={13} /> Session cookie
+                <button type="button" className="ghost" onClick={setNow}>
+                  Now
                 </button>
-                <div className="dtp-actions-right">
-                  <button type="button" className="ghost" onClick={setNow}>
-                    Now
-                  </button>
-                  <button type="button" className="primary" onClick={commitDone}>
-                    Done
-                  </button>
-                </div>
+                <button type="button" className="primary" onClick={commitDone}>
+                  Done
+                </button>
               </div>
             </div>,
             document.body

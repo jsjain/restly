@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Check, ChevronDown } from "lucide-react";
 import "../select.css";
@@ -7,6 +8,8 @@ export interface SelectOption {
   value: string;
   label: string;
   disabled?: boolean;
+  icon?: ReactNode;
+  indent?: number; // nesting level, drawn as left padding
 }
 
 interface Props {
@@ -242,11 +245,13 @@ export default function Select({ value, options, onChange, placeholder, classNam
                   aria-selected={opt.value === value}
                   disabled={opt.disabled}
                   className={`select-option ${highlighted === i ? "highlighted" : ""}`}
+                  style={opt.indent ? { paddingLeft: 8 + opt.indent * 14 } : undefined}
                   onMouseEnter={() => !opt.disabled && setHighlighted(i)}
                   onClick={() => !opt.disabled && pick(opt.value)}
                 >
-                  <span className="select-check">{opt.value === value ? <Check size={14} strokeWidth={2} /> : null}</span>
+                  {opt.icon ? <span className="select-option-icon">{opt.icon}</span> : null}
                   <span className="select-option-label">{opt.label}</span>
+                  <span className="select-check">{opt.value === value ? <Check size={14} strokeWidth={2} /> : null}</span>
                 </button>
               ))}
             </div>,

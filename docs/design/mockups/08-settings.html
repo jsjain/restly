@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Restly · Settings</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="app.css">
+<script src="shell.js"></script>
+<style>
+  .deck .window + .wcap { margin-top: 36px; }
+  .wcap { max-width: 1280px; margin: 0 auto 10px; font-size: 12px; opacity: 0.65; }
+
+  .set { flex: 1; display: grid; grid-template-columns: 200px 1fr; min-height: 0; }
+  .rail { border-right: 1px solid var(--border-subtle); padding: 12px 8px; display: flex; flex-direction: column; gap: 2px; }
+  .rail .sb-section { padding: 0 8px 6px; }
+  .rail .row { height: 28px; padding-left: 8px; gap: 8px; }
+  .rail .row .i { color: var(--text-subtlest); }
+  .rail .row.on .i { color: var(--text); }
+  .set-main { min-height: 0; overflow: hidden; display: flex; }
+  .set-col { width: 640px; margin: 0 auto; padding-top: 26px; display: flex; flex-direction: column; min-height: 0; flex: 1; max-width: 640px; }
+  .set-col h1 { margin: 0; font-size: var(--fs-display); font-weight: 600; letter-spacing: -0.015em; line-height: 1.25; }
+  .sset { margin-top: 24px; }
+  .sset h2 { margin: 0 0 8px; font-size: var(--fs-title); font-weight: 600; }
+  .sset .sub { margin: -4px 0 8px; font-size: var(--fs-small); color: var(--text-subtlest); }
+  .srow { display: flex; align-items: center; gap: 24px; padding: 12px 0; border-top: 1px solid var(--border-subtle); }
+  .srow .lbl { flex: 1; min-width: 0; }
+  .srow .lbl b { display: block; font-weight: 500; }
+  .srow .lbl span { display: block; color: var(--text-subtlest); font-size: var(--fs-small); }
+  .srow .ctl { display: flex; align-items: center; gap: 8px; }
+
+  .themes { display: flex; gap: 12px; padding: 10px 0 14px; border-top: 1px solid var(--border-subtle); }
+  .tc { width: 132px; position: relative; }
+  .tc .frame { border-radius: var(--radius); border: 1px solid var(--border-control); overflow: hidden; }
+  .tc.on .frame { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+  .tc .tl { display: flex; align-items: center; gap: 6px; padding-top: 8px; font-size: var(--fs-small); font-weight: 500; }
+  .tc .tl .i { color: var(--primary); }
+  .tc .rm { position: absolute; top: 5px; right: 5px; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-overlay); color: var(--text-subtle); box-shadow: var(--shadow-overlay); }
+  .tc .rm .i { width: 10px; height: 10px; }
+  .pv { display: flex; height: 78px; background: var(--pv-bg); }
+  .pv-side { width: 30px; background: var(--pv-side); padding: 9px 6px; display: flex; flex-direction: column; gap: 5px; }
+  .pv-side i { display: block; height: 3px; border-radius: 2px; background: var(--text-subtlest); opacity: 0.55; }
+  .pv-side i.a { background: var(--pv-a); opacity: 1; }
+  .pv-main { flex: 1; padding: 9px 8px; display: flex; flex-direction: column; gap: 6px; }
+  .pv-url { height: 13px; border-radius: 3px; background: var(--surface-input); border: 1px solid var(--border-control); display: flex; align-items: center; gap: 4px; padding: 0 3px; }
+  .pv-url b { width: 9px; height: 3px; border-radius: 2px; background: var(--pv-a); }
+  .pv-url i { width: 24px; height: 3px; border-radius: 2px; background: var(--text-subtlest); opacity: 0.55; }
+  .pv-url u { margin-left: auto; width: 12px; height: 7px; border-radius: 2px; background: var(--primary-button); }
+  .pv-main > i { display: block; height: 3px; border-radius: 2px; background: var(--text-subtlest); opacity: 0.55; }
+  .pv-main > i.b { background: var(--pv-b); opacity: 1; }
+  .pv-main > i.c { background: var(--pv-c); opacity: 1; }
+  .imp { display: flex; align-items: center; gap: 10px; padding-bottom: 4px; }
+  .imp .btn { padding-left: 0; }
+  .imp .note { font-size: var(--fs-small); color: var(--text-subtlest); display: flex; align-items: center; gap: 5px; }
+
+  .rd { display: inline-flex; align-items: center; gap: 6px; }
+  .reveal { margin: 0 0 12px; padding: 12px 14px 14px; background: var(--surface-raised); border: 1px solid var(--border-subtle); border-radius: var(--radius); display: grid; gap: 12px; }
+  .reveal .input { width: 100%; font-family: var(--font-mono); font-size: var(--fs-mono); }
+  .filechip { display: inline-flex; align-items: center; gap: 6px; height: var(--h-control); padding: 0 10px; border-radius: var(--radius-small); border: 1px solid var(--border-control); background: var(--surface-input); font-family: var(--font-mono); font-size: var(--fs-mono); }
+  .filechip .i { color: var(--text-subtlest); }
+  .set-foot { margin-top: auto; display: flex; align-items: center; gap: 12px; padding: 14px 0 18px; border-top: 1px solid var(--border-subtle); color: var(--text-subtlest); font-size: var(--fs-small); }
+</style>
+</head>
+<body data-screen="08-settings.html">
+<div class="deck">
+
+  <div class="wcap">Appearance</div>
+  <div class="window">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app">
+      <div data-sidebar='{"dirty":["Create user"]}'></div>
+      <section class="main">
+        <div data-tabbar='{"tabs":[{"m":"POST","label":"Create user","dirty":true},{"kind":"APP","label":"Settings","on":true}]}'></div>
+        <div class="set">
+          <nav class="rail">
+            <div class="sb-section">Settings</div>
+            <div class="row"><i data-i="settings"></i>General</div>
+            <div class="row on"><i data-i="palette"></i>Appearance</div>
+            <div class="row"><i data-i="globe"></i>Network</div>
+            <div class="row"><i data-i="keyboard"></i>Keyboard</div>
+            <div class="row"><i data-i="info"></i>About</div>
+          </nav>
+          <div class="set-main"><div class="set-col">
+            <h1>Appearance</h1>
+
+            <div class="sset">
+              <h2>Theme</h2>
+              <div class="themes">
+                <div class="tc on">
+                  <div class="frame"><div class="pv" data-theme="dark" style="--pv-bg:var(--surface);--pv-side:var(--surface-raised);--pv-a:var(--method-get);--pv-b:var(--primary);--pv-c:var(--syntax-string)">
+                    <div class="pv-side"><i class="a"></i><i></i><i></i><i></i></div>
+                    <div class="pv-main"><div class="pv-url"><b></b><i></i><u></u></div><i style="width:70%"></i><i class="b" style="width:46%"></i><i class="c" style="width:58%"></i><i style="width:34%"></i></div>
+                  </div></div>
+                  <div class="tl"><i data-i="check" class="sm"></i>Dark</div>
+                </div>
+                <div class="tc">
+                  <div class="frame"><div class="pv" data-theme="light" style="--pv-bg:var(--surface);--pv-side:var(--surface-raised);--pv-a:var(--method-get);--pv-b:var(--primary);--pv-c:var(--syntax-string)">
+                    <div class="pv-side"><i class="a"></i><i></i><i></i><i></i></div>
+                    <div class="pv-main"><div class="pv-url"><b></b><i></i><u></u></div><i style="width:70%"></i><i class="b" style="width:46%"></i><i class="c" style="width:58%"></i><i style="width:34%"></i></div>
+                  </div></div>
+                  <div class="tl">Light</div>
+                </div>
+                <div class="tc">
+                  <div class="frame"><div class="pv" data-theme="dark" style="--pv-bg:var(--surface-raised);--pv-side:var(--surface);--pv-a:var(--method-patch);--pv-b:var(--method-post);--pv-c:var(--method-get)">
+                    <div class="pv-side"><i class="a"></i><i></i><i></i><i></i></div>
+                    <div class="pv-main"><div class="pv-url"><b></b><i></i><u></u></div><i style="width:70%"></i><i class="b" style="width:46%"></i><i class="c" style="width:58%"></i><i style="width:34%"></i></div>
+                  </div></div>
+                  <div class="tl">One Dark</div>
+                </div>
+                <div class="tc">
+                  <div class="frame"><div class="pv" data-theme="dark" style="--pv-bg:var(--surface-overlay);--pv-side:var(--surface-raised);--pv-a:var(--method-put);--pv-b:var(--method-ws);--pv-c:var(--method-patch)">
+                    <div class="pv-side"><i class="a"></i><i></i><i></i><i></i></div>
+                    <div class="pv-main"><div class="pv-url"><b></b><i></i><u></u></div><i style="width:70%"></i><i class="b" style="width:46%"></i><i class="c" style="width:58%"></i><i style="width:34%"></i></div>
+                  </div></div>
+                  <span class="rm" title="Remove theme"><i data-i="x"></i></span>
+                  <div class="tl">Tokyo Night</div>
+                </div>
+              </div>
+              <div class="imp">
+                <span class="btn ghost"><i data-i="import" class="sm"></i>Import VS Code theme…</span>
+                <span class="note"><i data-i="info" class="sm"></i>1 color adjusted for contrast in Tokyo Night.</span>
+              </div>
+            </div>
+
+            <div class="sset">
+              <h2>Fonts</h2>
+              <div class="srow">
+                <div class="lbl"><b>Interface font</b><span>Menus, sidebar, tabs and dialogs</span></div>
+                <div class="ctl"><span class="select" style="width:190px">Inter (default)<i data-i="chevron-down" class="sm"></i></span><input class="input tnum" style="width:56px;text-align:right" value="13"><span class="subtlest">px</span></div>
+              </div>
+              <div class="srow">
+                <div class="lbl"><b>Editor font</b><span>Request body, response body and scripts</span></div>
+                <div class="ctl"><span class="select" style="width:190px">SF Mono / Menlo<i data-i="chevron-down" class="sm"></i></span><input class="input tnum" style="width:56px;text-align:right" value="12.5"><span class="subtlest">px</span></div>
+              </div>
+            </div>
+
+            <div class="sset">
+              <h2>Layout</h2>
+              <div class="srow">
+                <div class="lbl"><b>Density</b><span>Row height in the sidebar, tables and menus</span></div>
+                <div class="ctl"><span class="seg"><span>Compact</span><span class="on">Default</span><span>Comfortable</span></span></div>
+              </div>
+            </div>
+          </div></div>
+        </div>
+      </section>
+      <div data-statusbar='{"saved":"Auto-saved 4 s ago"}'></div>
+    </div>
+
+    <span class="pin pinno" style="left:440px;top:114px">1</span>
+    <span class="pin pinno" style="left:1212px;top:226px">2</span>
+    <span class="pin pinno" style="left:1212px;top:422px">3</span>
+    <span class="pin pinno" style="left:1212px;top:580px">4</span>
+  </div>
+
+  <div class="wcap">Network</div>
+  <div class="window">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app">
+      <div data-sidebar='{"dirty":["Create user"]}'></div>
+      <section class="main">
+        <div data-tabbar='{"tabs":[{"m":"POST","label":"Create user","dirty":true},{"kind":"APP","label":"Settings","on":true}]}'></div>
+        <div class="set">
+          <nav class="rail">
+            <div class="sb-section">Settings</div>
+            <div class="row"><i data-i="settings"></i>General</div>
+            <div class="row"><i data-i="palette"></i>Appearance</div>
+            <div class="row on"><i data-i="globe"></i>Network</div>
+            <div class="row"><i data-i="keyboard"></i>Keyboard</div>
+            <div class="row"><i data-i="info"></i>About</div>
+          </nav>
+          <div class="set-main"><div class="set-col">
+            <h1>Network</h1>
+
+            <div class="sset">
+              <h2>Proxy</h2>
+              <div class="srow">
+                <div class="lbl"><b>Proxy</b><span>Where requests leave this machine</span></div>
+                <div class="ctl" style="gap:16px">
+                  <span class="rd"><span class="radio"></span>None</span>
+                  <span class="rd"><span class="radio"></span>Environment variables</span>
+                  <span class="rd"><span class="radio on"></span>Custom</span>
+                </div>
+              </div>
+              <div class="reveal">
+                <div class="field"><label>Proxy URL</label><input class="input" value="http://proxy.northwind.dev:3128"></div>
+                <div class="field"><label>Bypass</label><input class="input" value="localhost, 127.0.0.1, *.internal"><span class="help">Comma separated hosts that skip the proxy.</span></div>
+              </div>
+            </div>
+
+            <div class="sset" style="margin-top:12px">
+              <h2>Security</h2>
+              <div class="srow">
+                <div class="lbl"><b>Verify TLS certificates</b><span>Turn off only for local servers with self-signed certificates</span></div>
+                <div class="ctl"><span class="switch on"></span></div>
+              </div>
+              <div class="srow">
+                <div class="lbl"><b>CA bundle</b><span>Extra trusted certificate authorities, PEM format</span></div>
+                <div class="ctl"><span class="filechip"><i data-i="file" class="sm"></i>northwind-ca.pem</span><span class="btn">Change</span><span class="btn ghost">Remove</span></div>
+              </div>
+            </div>
+
+            <div class="sset" style="margin-top:12px">
+              <h2>Client certificates</h2>
+              <div class="kvwrap">
+                <table class="kv">
+                  <thead><tr><th style="width:200px">Host</th><th>Certificate</th><th>Key</th><th class="acts"></th></tr></thead>
+                  <tbody>
+                    <tr class="hover"><td class="k">api.northwind.dev</td><td class="v">client.pem</td><td class="v">client-key.pem</td><td class="acts"><i data-i="trash" class="sm"></i></td></tr>
+                    <tr class="ghost"><td>Host</td><td>Choose file…</td><td>Choose file…</td><td class="acts"></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="set-foot"><span class="btn primary">Save</span><span>Saving reconnects open connections</span></div>
+          </div></div>
+        </div>
+      </section>
+      <div data-statusbar='{"saved":"Auto-saved 4 s ago","proxy":"proxy.northwind.dev:3128"}'></div>
+    </div>
+
+    <span class="pin pinno" style="left:1212px;top:128px">5</span>
+    <span class="pin pinno" style="left:1212px;top:352px">6</span>
+    <span class="pin pinno" style="left:1212px;top:520px">7</span>
+    <span class="pin pinno" style="left:1212px;top:700px">8</span>
+  </div>
+
+  <div class="deck-notes">
+    <div class="n"><span class="pinno">1</span><div><b>A left rail with icons replaces the stacked form.</b><p>General, Appearance, Network, Keyboard and About each get an icon and the active page uses the same selected-row style as the sidebar. Today the same five sections exist but read as one long form with plain labels.</p></div></div>
+    <div class="n"><span class="pinno">2</span><div><b>Theme cards are small previews, not swatches.</b><p>Each card draws a mini request screen from that theme's own colors, with a focus ring on the selected one and an x on imported themes. The current ThemePicker shows a single swatch, so you had to apply a theme to see it. The Light preview nests the light tokens, and One Dark and Tokyo Night would render their own token sets in the app.</p></div></div>
+    <div class="n"><span class="pinno">3</span><div><b>Each setting is a row: label and help left, control right.</b><p>Hairlines separate rows and sections get a 15 px title. The interface and editor fonts keep their select and size input, now aligned on one right edge. The current FontPicker stacks the same fields without help text. Importing a theme sits under the cards and reports any color adjusted for contrast.</p></div></div>
+    <div class="n"><span class="pinno">4</span><div><b>Density control (proposed).</b><p>Compact, Default and Comfortable change the row heights already defined as tokens. This does not exist in the app today.</p></div></div>
+    <div class="n"><span class="pinno">5</span><div><b>Proxy is a radio group that reveals its fields.</b><p>Choosing Custom shows Proxy URL and Bypass in a tinted panel under the row, and None or Environment variables hide it. Today the two inputs sit in the same flow as everything else whatever the choice.</p></div></div>
+    <div class="n"><span class="pinno">6</span><div><b>TLS verification and the CA bundle are single-line rows.</b><p>The verify checkbox becomes a switch, and the CA bundle is a file chip with Change and Remove buttons. The current file picker is a plain field with a separate browse button.</p></div></div>
+    <div class="n"><span class="pinno">7</span><div><b>Client certificates use the shared hairline table.</b><p>Host, Certificate and Key columns, a trash icon on hover and a ghost row to add the next entry, the same pattern as the request parameters table.</p></div></div>
+    <div class="n"><span class="pinno">8</span><div><b>One primary Save, pinned to the bottom, with its consequence stated.</b><p>The note "Saving reconnects open connections" replaces a surprise. General (not shown) holds a single row, Auto-save, with a switch and an "Every 5 seconds" input from 1 to 600. Keyboard keeps the Open Keybindings File button, and About keeps the version details and Copy.</p></div></div>
+  </div>
+</div>
+</body>
+</html>

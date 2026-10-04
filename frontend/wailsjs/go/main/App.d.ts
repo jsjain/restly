@@ -76,6 +76,8 @@ export function SaveLastBody():Promise<string>;
 
 export function SaveSettings(arg1:main.Settings):Promise<void>;
 
+export function SaveTextFile(arg1:string,arg2:string):Promise<string>;
+
 export function Send(arg1:main.SendInput):Promise<main.SendResult>;
 
 export function SetHistoryLimit(arg1:number):Promise<number>;

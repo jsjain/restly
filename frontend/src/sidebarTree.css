@@ -1,8 +1,124 @@
-/* Keyboard-focus ring for the Collections tree (roving tabindex), distinct from the
-   existing .tree-row.active highlight used for the open tab's row. */
+/* Collections tree rows. */
+
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--h-row);
+  padding: 0 6px;
+  border-radius: var(--radius-small);
+  color: var(--text-subtle);
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+}
+
+.tree-row:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.tree-row.active {
+  background: var(--surface-active);
+  color: var(--text);
+}
+
+.tree-row[data-kind="collection"] {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* Keyboard-focus ring for the tree (roving tabindex), distinct from the .active row of the open tab. */
 .tree-row:focus-visible {
   outline: 1px solid var(--border-focus);
   outline-offset: -1px;
+}
+
+.tree-row .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1 1 auto;
+}
+
+.tree-row input.name {
+  height: calc(var(--h-row) - 6px);
+  min-width: 0;
+  padding: 0 6px;
+}
+
+.tree-row .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-subtle);
+  flex: 0 0 auto;
+}
+
+.tree-row .row-icon {
+  flex: 0 0 auto;
+  display: flex;
+  color: var(--text-subtle);
+  width: 14px;
+}
+
+.tree-row .row-icon svg {
+  width: 13px;
+  height: 13px;
+}
+
+.tree-row .caret {
+  width: 12px;
+  flex: 0 0 auto;
+  color: var(--text-subtlest);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 120ms ease;
+}
+
+.tree-row .caret.expanded {
+  transform: rotate(90deg);
+}
+
+/* Row actions show on hover, keyboard focus on the row or its button, the open tab's row and an open menu.
+   Hidden with display so the name keeps the room; a focused row shows the button, so Tab still reaches it. */
+.tree-row .menu-btn {
+  display: none;
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+}
+
+.tree-row:hover .menu-btn,
+.tree-row:focus-visible .menu-btn,
+.tree-row:has(.menu-btn:focus-visible) .menu-btn,
+.tree-row.active .menu-btn,
+.tree-row .menu-btn.menu-open {
+  display: inline-flex;
+}
+
+.tree-row.drop-into {
+  outline: 1px dashed var(--primary);
+  outline-offset: -1px;
+  background: var(--surface-active);
+}
+
+.tree-row.drop-before::before,
+.tree-row.drop-after::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--primary);
+}
+
+.tree-row.drop-before::before {
+  top: -1px;
+}
+
+.tree-row.drop-after::after {
+  bottom: -1px;
 }
 
 /* Collections scroll in their own area; Environments is pinned below as a separate block
@@ -20,6 +136,7 @@
   flex: 1 1 auto;
   overflow-y: auto;
   min-height: 0;
+  padding: 2px 6px 8px;
 }
 
 .sidebar-env-section {
@@ -34,6 +151,7 @@
 .sidebar-env-list {
   overflow-y: auto;
   min-height: 0;
+  padding: 0 6px 8px;
 }
 
 /* History view has no Environments block, so it scrolls the whole list itself. */

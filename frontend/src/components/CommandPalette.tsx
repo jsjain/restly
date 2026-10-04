@@ -7,15 +7,44 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
+import {
+  AlignLeft,
+  ArrowLeft,
+  ArrowRight,
+  Code,
+  Command as CommandIcon,
+  Compass,
+  Cookie,
+  Copy,
+  CircleHelp,
+  FileJson,
+  Globe,
+  Keyboard,
+  PanelLeft,
+  PanelTop,
+  Plug,
+  Plus,
+  RefreshCw,
+  RotateCcw,
+  Save,
+  Search,
+  Send,
+  Settings,
+  SlidersHorizontal,
+  Square,
+  Terminal,
+  X,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { state, ensureCollection, getCollection, setSelectedEnv, selectedEnv, envOwner, usableEnvs, openRequestTab, openDraftTab, toast } from "../store";
 import type { Item } from "../types";
 import { listCommands } from "../commands";
 import type { PaletteMode } from "../commands";
-import { formatKeys } from "../shortcuts";
 import { fuzzyFilter, highlight } from "../fuzzy";
 import { methodClass } from "../method";
 import { isWebSocket } from "../websocket";
 import { urlRaw } from "../urlutil";
+import { Kbd } from "./Kbd";
 
 interface Props {
   mode: PaletteMode;
@@ -24,10 +53,10 @@ interface Props {
 
 interface Row {
   id: string;
-  badge?: ReactNode;
+  icon: ReactNode;
   title: ReactNode;
   subtitle?: ReactNode;
-  keys?: string;
+  right?: ReactNode;
   onSelect(): void;
 }
 
@@ -58,9 +87,65 @@ function flattenRequests(): RequestEntry[] {
   return rows;
 }
 
-function methodBadge(item: Item): ReactNode {
-  const label = isWebSocket(item) ? "WS" : item.request!.method;
-  return <span className={`method-badge method-${isWebSocket(item) ? "WS" : methodClass(item.request!.method)}`}>{label}</span>;
+const SHORT_METHOD: Record<string, string> = { DELETE: "DEL", OPTIONS: "OPT" };
+
+function methodBadge(method: string, ws: boolean): ReactNode {
+  return <span className={`method-badge method-${ws ? "ws" : methodClass(method)}`}>{ws ? "WS" : SHORT_METHOD[method] ?? method}</span>;
+}
+
+// Commands with an obvious glyph get their own; the rest fall back to their group's icon.
+const COMMAND_ICONS: Record<string, LucideIcon> = {
+  send: Send,
+  "cancel-request": Square,
+  save: Save,
+  "copy-curl": Copy,
+  "format-body": AlignLeft,
+  find: Search,
+  "new-http-request": Plus,
+  "import-curl": Terminal,
+  "new-websocket-request": Plug,
+  "close-tab": X,
+  "close-all-tabs": X,
+  "close-other-tabs": X,
+  "reopen-closed-tab": RotateCcw,
+  "next-tab": ArrowRight,
+  "prev-tab": ArrowLeft,
+  "duplicate-tab": Copy,
+  "command-palette": CommandIcon,
+  "quick-open-request": Search,
+  "switch-environment": Globe,
+  "toggle-sidebar": PanelLeft,
+  "focus-sidebar-search": Search,
+  "toggle-code-panel": Code,
+  "keyboard-shortcuts": Keyboard,
+  "open-settings": SlidersHorizontal,
+  "open-cookies": Cookie,
+  "open-keybindings": FileJson,
+  "reload-keybindings": RefreshCw,
+};
+
+const GROUP_ICONS: Record<string, LucideIcon> = {
+  Request: Send,
+  Tabs: PanelTop,
+  Navigation: Compass,
+  View: PanelLeft,
+  Help: CircleHelp,
+  Settings: Settings,
+};
+
+function relativeTime(ts: number): string {
+  const min = Math.floor((Date.now() - ts) / 60000);
+  if (min < 1) return "just now";
+  if (min < 60) return `${min} min ago`;
+  if (min < 1440) return `${Math.floor(min / 60)} h ago`;
+  if (min < 2880) return "Yesterday";
+  return new Date(ts).toLocaleDateString();
+}
+
+function statusTag(code: number, error: string): ReactNode {
+  if (code === 0) return error ? <span className="tag err">ERR</span> : null;
+  const kind = code >= 500 ? "err" : code >= 400 ? "warn" : code >= 300 ? "info" : "ok";
+  return <span className={`tag ${kind} tnum`}>{code}</span>;
 }
 
 export default function CommandPalette({ mode, onClose }: Props) {
@@ -88,9 +173,13 @@ export default function CommandPalette({ mode, onClose }: Props) {
     const rows = fuzzyFilter(visible, effectiveQuery, (c) => c.title).map(
       (m): Row => ({
         id: `cmd:${m.item.id}`,
+        icon: (() => {
+          const Icon = COMMAND_ICONS[m.item.id] ?? GROUP_ICONS[m.item.group] ?? CommandIcon;
+          return <Icon size={15} strokeWidth={1.75} aria-hidden="true" />;
+        })(),
         title: highlight(m.item.title, m.indices),
         subtitle: m.item.group,
-        keys: m.item.keys?.[0] ? formatKeys(m.item.keys[0].split("+")) : undefined,
+        right: <Kbd command={m.item.id} />,
         onSelect: () => {
           m.item.run();
           onClose();
@@ -108,11 +197,12 @@ export default function CommandPalette({ mode, onClose }: Props) {
         const breadcrumb = [e.collName, ...e.folderPath].join(" › ");
         return {
           id: `req:${e.file}:${e.path.join(",")}`,
-          badge: methodBadge(e.item),
+          icon: methodBadge(e.item.request!.method, isWebSocket(e.item)),
           title: m.field === 0 ? highlight(e.item.name, m.indices) : e.item.name,
           subtitle: (
             <>
-              {m.field === 2 ? highlight(breadcrumb, m.indices) : breadcrumb} · {m.field === 1 ? highlight(e.url, m.indices) : e.url}
+              {m.field === 2 ? highlight(breadcrumb, m.indices) : breadcrumb}
+              {e.url ? <> · {m.field === 1 ? highlight(e.url, m.indices) : e.url}</> : null}
             </>
           ),
           onSelect: () => {
@@ -132,8 +222,9 @@ export default function CommandPalette({ mode, onClose }: Props) {
     const rows = fuzzyFilter(envs, effectiveQuery, (e) => e.name).map(
       (m): Row => ({
         id: `env:${m.item.file}`,
+        icon: <span className={`pal-dot${m.item.file !== "" && m.item.file === current ? " on" : ""}`} />,
         title: highlight(m.item.name, m.indices),
-        subtitle: m.item.file === current ? "current" : undefined,
+        right: m.item.file === current ? <span className="tag info">Current</span> : undefined,
         onSelect: () => {
           setSelectedEnv(owner, m.item.file);
           onClose();
@@ -148,9 +239,15 @@ export default function CommandPalette({ mode, onClose }: Props) {
     const rows = fuzzyFilter(recent, effectiveQuery, [(h) => h.item.name || h.url, (h) => h.url]).map(
       (m): Row => ({
         id: `hist:${m.item.id}`,
-        badge: <span className={`method-badge method-${methodClass(m.item.method)}`}>{m.item.method}</span>,
+        icon: methodBadge(m.item.method, m.item.method === "WS" || isWebSocket(m.item.item)),
         title: m.field === 0 ? highlight(m.item.item.name || m.item.url, m.indices) : m.item.item.name || m.item.url,
-        subtitle: m.field === 1 ? highlight(m.item.url, m.indices) : m.item.url,
+        subtitle: m.item.item.name && m.item.url ? (m.field === 1 ? highlight(m.item.url, m.indices) : m.item.url) : undefined,
+        right: (
+          <>
+            {statusTag(m.item.code, m.item.error)}
+            <span className="pal-time tnum">{relativeTime(m.item.time)}</span>
+          </>
+        ),
         onSelect: () => {
           openDraftTab(structuredClone(m.item.item));
           onClose();
@@ -193,12 +290,14 @@ export default function CommandPalette({ mode, onClose }: Props) {
   }
 
   const placeholder =
-    mode === "requests" ? "Search requests…" : mode === "environments" ? "Switch environment…" : "Type a command or search… (> for commands only)";
+    mode === "requests" ? "Search requests…" : mode === "environments" ? "Switch environment…" : "Search requests, commands and environments";
 
   return createPortal(
     <div className="overlay-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="overlay-panel" role="dialog" aria-modal="true" aria-label="Command Palette">
-        <div className="overlay-input-row">
+      <div className="overlay-panel palette" role="dialog" aria-modal="true" aria-label="Command Palette">
+        <div className="palette-query">
+          <Search size={16} strokeWidth={1.75} aria-hidden="true" />
+          {mode !== "all" ? <span className="tag info">{mode === "requests" ? "Requests" : "Environments"}</span> : null}
           <input
             ref={inputRef}
             role="combobox"
@@ -210,13 +309,12 @@ export default function CommandPalette({ mode, onClose }: Props) {
             onKeyDown={onKeyDown}
             placeholder={placeholder}
           />
-          {mode !== "all" ? <span className="overlay-mode">{mode === "requests" ? "Requests" : "Environments"}</span> : null}
         </div>
         <div className="overlay-list" role="listbox" id="palette-listbox">
           {flatRows.length === 0 ? <div className="overlay-empty">No results</div> : null}
           {rendered.map((group) => (
-            <div key={group.label}>
-              <div className="overlay-group-title">{group.label}</div>
+            <div key={group.label} role="group" aria-label={group.label}>
+              <div className="overlay-group-title" aria-hidden="true">{group.label}</div>
               {group.rows.map((row) => {
                 const idx = flatRows.indexOf(row);
                 return (
@@ -229,15 +327,21 @@ export default function CommandPalette({ mode, onClose }: Props) {
                     onMouseEnter={() => setActiveIndex(idx)}
                     onClick={() => row.onSelect()}
                   >
-                    {row.badge}
+                    <span className="pal-ico">{row.icon}</span>
                     <span className="overlay-title">{row.title}</span>
                     {row.subtitle ? <span className="overlay-subtitle">{row.subtitle}</span> : null}
-                    {row.keys ? <span className="overlay-keys">{row.keys}</span> : null}
+                    {row.right ? <span className="pal-right">{row.right}</span> : null}
                   </div>
                 );
               })}
             </div>
           ))}
+        </div>
+        <div className="palette-foot" aria-hidden="true">
+          <span><Kbd keys="up" /><Kbd keys="down" />navigate</span>
+          <span><Kbd keys="enter" />open</span>
+          {mode === "all" ? <span><Kbd keys=">" />commands only</span> : null}
+          <span className="pal-esc"><Kbd keys="escape" />close</span>
         </div>
       </div>
     </div>,

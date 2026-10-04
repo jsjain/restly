@@ -150,6 +150,11 @@ export function saveLastBody(): Promise<string> {
   return Backend.SaveLastBody();
 }
 
+// Returns the chosen path, or "" when the user cancels.
+export function saveTextFile(defaultName: string, content: string): Promise<string> {
+  return Backend.SaveTextFile(defaultName, content);
+}
+
 export function onRunResult(cb: (result: RunResult) => void): () => void {
   return EventsOn("run:result", (result: RunResult) => {
     result.tests ??= [];

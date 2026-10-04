@@ -1,10 +1,33 @@
 import { useEffect, useRef, useState } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Trash2 } from "lucide-react";
 import * as api from "../api";
 import { state, openDraftTab, notifyChange, toast } from "../store";
 import { isWebSocket } from "../websocket";
-import { methodClass } from "../method";
 import type { HistoryEntry } from "../types";
+
+const SHORT_METHOD: Record<string, string> = { DELETE: "DEL", OPTIONS: "OPT" };
+const COLORED = new Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]);
+
+// Method (or WS) tag shared by the tree and history rows. DELETE and OPTIONS are shortened to fit the column.
+export function MethodTag({ method, ws }: { method: string; ws?: boolean }) {
+  if (ws) return <span className="method-badge method-ws">WS</span>;
+  const m = method.toUpperCase();
+  return <span className={`method-badge method-${COLORED.has(m) ? m : "OTHER"}`}>{SHORT_METHOD[m] ?? method}</span>;
+}
+
+// Splits a URL into its path (with query) and host. A leading {{variable}} counts as the host.
+function splitUrl(url: string): { path: string; host: string } {
+  const m = /^(?:[a-z][a-z0-9+.-]*:\/\/)?([^/?#]*)(.*)$/i.exec(url.trim());
+  if (!m) return { path: url, host: "" };
+  const rest = m[2];
+  return { path: rest === "" ? "/" : rest.startsWith("/") ? rest : `/${rest}`, host: m[1] };
+}
+
+function statusTag(entry: HistoryEntry): { text: string; cls: string } | null {
+  if (entry.code === 0) return entry.error !== "" ? { text: "ERR", cls: "err" } : null;
+  const cls = entry.code >= 500 ? "err" : entry.code >= 400 ? "warn" : entry.code >= 300 ? "info" : "ok";
+  return { text: String(entry.code), cls };
+}
 
 function dayLabel(ts: number): string {
   const d = new Date(ts);
@@ -85,38 +108,39 @@ export default function HistoryList({ search, menuKey, setMenuKey }: Props) {
 
   return (
     <div className="history-list">
-      <div className="history-actions">
-        <button onClick={clearHistory} disabled={state.history.length === 0}>
-          {clearArmed ? "Click again to clear" : "Clear history"}
-        </button>
-      </div>
-      {entries.length === 0 ? <div className="empty-state">No history yet.</div> : null}
-      {groups.map((g) => (
+      {entries.length === 0 ? <div className="empty-state">{query ? "No matching history." : "No history yet."}</div> : null}
+      {groups.map((g, gi) => (
         <div key={g.label}>
-          <div className="sidebar-section-title">{g.label}</div>
+          <div className="sidebar-section-title">
+            <span className="grow">{g.label}</span>
+            {gi === 0 ? (
+              <button className="ghost" onClick={clearHistory} disabled={state.history.length === 0}>
+                {clearArmed ? "Click again to clear" : "Clear"}
+              </button>
+            ) : null}
+          </div>
           {g.entries.map((entry) => {
             const key = `hist:${entry.id}`;
-            const label = entry.url || entry.item.name;
-            const isErr = entry.code === 0 && entry.error !== "";
-            const statusClass = isErr || entry.code >= 400 ? "status-5xx" : entry.code >= 200 && entry.code < 300 ? "status-2xx" : "";
-            const statusText = isErr ? "ERR" : entry.code === 0 ? "" : String(entry.code);
+            const { path, host } = entry.url ? splitUrl(entry.url) : { path: entry.item.name, host: "" };
+            const status = statusTag(entry);
             return (
               <div
                 className="tree-row history-row"
                 key={entry.id}
-                title={entry.error || undefined}
+                title={[entry.url || entry.item.name, entry.error].filter(Boolean).join("\n")}
                 onClick={() => openDraftTab(structuredClone(entry.item))}
               >
-                {entry.method === "WS" || isWebSocket(entry.item) ? (
-                  <span className="method-badge method-ws">WS</span>
-                ) : (
-                  <span className={`method-badge method-${methodClass(entry.method)}`}>{entry.method}</span>
-                )}
-                <span className="name">{label}</span>
-                {statusText ? <span className={`history-status ${statusClass}`}>{statusText}</span> : null}
+                <MethodTag method={entry.method} ws={entry.method === "WS" || isWebSocket(entry.item)} />
+                <span className="name">
+                  <span>{path}</span>
+                  {host ? <span className="host">{host}</span> : null}
+                </span>
+                {status ? <span className={`tag tnum ${status.cls}`}>{status.text}</span> : null}
                 <span className="history-time">{timeLabel(entry.time)}</span>
                 <button
                   className={`icon menu-btn${menuKey === key ? " menu-open" : ""}`}
+                  aria-label="History entry actions"
+                  title="More actions"
                   onClick={(e) => {
                     e.stopPropagation();
                     setMenuKey(menuKey === key ? null : key);
@@ -126,7 +150,12 @@ export default function HistoryList({ search, menuKey, setMenuKey }: Props) {
                 </button>
                 {menuKey === key ? (
                   <div className="menu" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={() => deleteEntry(entry.id)}>Delete</button>
+                    <button className="danger" onClick={() => deleteEntry(entry.id)}>
+                      <span className="menu-item-main">
+                        <Trash2 size={14} strokeWidth={1.75} aria-hidden="true" />
+                        Delete
+                      </span>
+                    </button>
                   </div>
                 ) : null}
               </div>

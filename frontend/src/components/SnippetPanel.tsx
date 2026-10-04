@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Copy, Check, X } from "lucide-react";
+import { Copy, Check, TriangleAlert, X } from "lucide-react";
 import CodeEditor from "./CodeEditor";
 import type { CodeLang } from "./CodeEditor";
 import Select from "./Select";
@@ -13,6 +13,14 @@ const WIDTH_KEY = "restly.codePanelWidth";
 const MIN_WIDTH = 280;
 const DEFAULT_WIDTH = 420;
 const DEBOUNCE_MS = 200;
+
+// Backend ids from internal/snippet.Langs; anything else is shown as-is.
+const LANG_LABEL: Record<string, string> = {
+  curl: "cURL",
+  fetch: "JavaScript fetch",
+  python: "Python requests",
+  go: "Go net/http",
+};
 
 function clampWidth(px: number): number {
   return Math.min(Math.max(px, MIN_WIDTH), window.innerWidth * 0.7);
@@ -36,6 +44,7 @@ export default function SnippetPanel({ tab, buildInput, onChange, onClose }: Pro
   const [langs, setLangs] = useState<string[]>([]);
   const [width, setWidth] = useState(loadWidth);
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState("");
   // Mirrors `width` but updated synchronously inside the drag handler below, so a pointerup
   // that fires before React re-renders from the preceding pointermove still saves the final
   // value instead of a stale one.
@@ -65,10 +74,13 @@ export default function SnippetPanel({ tab, buildInput, onChange, onClose }: Pro
         .snippet(buildInput(), tab.snippetLang)
         .then((code) => {
           if (seq.current !== mySeq) return;
+          setError("");
           tab.snippetCode = code;
           onChange();
         })
-        .catch((err) => toast(String(err), "error"));
+        .catch((err) => {
+          if (seq.current === mySeq) setError(String(err).replace(/^Error: /, ""));
+        });
     }, DEBOUNCE_MS);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -96,16 +108,19 @@ export default function SnippetPanel({ tab, buildInput, onChange, onClose }: Pro
     <div className="code-panel" style={{ width }}>
       <div className="code-panel-divider" onPointerDown={startDrag} />
       <div className="code-panel-toolbar">
+        <b className="code-panel-title">Code</b>
         <Select
+          className="code-panel-lang"
           value={tab.snippetLang}
           onChange={(v) => {
             tab.snippetLang = v;
             onChange();
           }}
           ariaLabel="Snippet language"
-          options={(langs.length ? langs : [tab.snippetLang]).map((l) => ({ value: l, label: l }))}
+          options={(langs.length ? langs : [tab.snippetLang]).map((l) => ({ value: l, label: LANG_LABEL[l] ?? l }))}
         />
         <button
+          className={copied ? "code-panel-copied" : undefined}
           onClick={() => {
             api.ClipboardSetText(tab.snippetCode).then(() => {
               toast("Copied");
@@ -114,15 +129,25 @@ export default function SnippetPanel({ tab, buildInput, onChange, onClose }: Pro
             });
           }}
         >
-          {copied ? <Check size={14} strokeWidth={1.75} aria-hidden="true" /> : <Copy size={14} strokeWidth={1.75} aria-hidden="true" />}
-          Copy
+          {copied ? <Check size={13} strokeWidth={1.75} aria-hidden="true" /> : <Copy size={13} strokeWidth={1.75} aria-hidden="true" />}
+          {copied ? "Copied" : "Copy"}
         </button>
-        <button className="icon" title="Close" aria-label="Close" onClick={onClose}>
+        <button className="icon code-panel-close" title="Close" aria-label="Close" onClick={onClose}>
           <X size={16} strokeWidth={1.75} aria-hidden="true" />
         </button>
       </div>
       <div className="code-panel-body">
-        <CodeEditor value={tab.snippetCode} language={tab.snippetLang as CodeLang} readOnly />
+        {error ? (
+          <div className="code-panel-error" role="alert">
+            <TriangleAlert size={15} strokeWidth={1.75} aria-hidden="true" />
+            <div>
+              <b>Couldn't generate the code</b>
+              <span>{error}</span>
+            </div>
+          </div>
+        ) : (
+          <CodeEditor value={tab.snippetCode} language={tab.snippetLang as CodeLang} readOnly />
+        )}
       </div>
     </div>
   );

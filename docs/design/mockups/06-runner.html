@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Restly · Collection runner</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="app.css">
+<script src="shell.js"></script>
+<style>
+  .btn.disabled { opacity: 0.45; }
+  .opts { display: flex; align-items: flex-end; gap: 16px; padding: 16px 28px 0; }
+  .opts .input, .opts .select { min-width: 0; }
+  .opts .w-num { width: 84px; }
+  .opts .w-ms { width: 104px; display: flex; align-items: center; }
+  .opts .w-ms .u { margin-left: auto; color: var(--text-subtlest); font-size: var(--fs-small); }
+  .opts .w-scope { width: 190px; }
+  .opts .help-r { margin-left: auto; color: var(--text-subtlest); font-size: var(--fs-small); padding-bottom: 6px; }
+
+  .sum { display: flex; align-items: center; gap: 28px; margin: 16px 28px 0; padding: 12px 16px; }
+  .sum .bar { flex: 1; min-width: 0; }
+  .sum .bar .progress { height: 6px; border-radius: 3px; }
+  .sum .bar .progress i { border-right: 2px solid var(--surface); }
+  .sum .bar .cap { display: flex; gap: 14px; margin-top: 8px; font-size: var(--fs-micro); color: var(--text-subtlest); }
+  .sum .bar .cap span { display: inline-flex; align-items: center; gap: 5px; }
+  .sum .stat .v { font-size: var(--fs-title); }
+  .sum .stat-row { gap: 24px; }
+  .sum .ok { color: var(--success); }
+  .sum .bad { color: var(--danger); }
+
+  .results { margin: 16px 28px 0; }
+  .results .kv td.n { text-align: right; color: var(--text-subtlest); font-variant-numeric: tabular-nums; }
+  .results .kv th.r, .results .kv td.r { text-align: right; font-variant-numeric: tabular-nums; }
+  .results .kv td.name { color: var(--text); }
+  .results .kv td.u { font-family: var(--font-mono); font-size: var(--fs-mono); color: var(--text); }
+  .results .kv td.u .host { color: var(--text-subtlest); }
+  .results .kv td .m { width: auto; }
+  .results .kv td.t { color: var(--text-subtle); }
+  .results .kv tr.fail td { background: var(--danger-tint); }
+  .results .kv tr.skip td { color: var(--text-subtlest); }
+  .results .kv tr.skip td.name { color: var(--text-subtle); }
+  .results .kv tr.detail td { height: auto; padding: 0; background: var(--surface-raised); white-space: normal; border-right: 0; }
+  .results .kv tr.detail .in { padding: 10px 14px 12px 114px; border-left: 2px solid var(--danger); display: flex; flex-direction: column; gap: 6px; }
+  .results .kv .tl { display: flex; align-items: flex-start; gap: 8px; color: var(--text); }
+  .results .kv .tl .i { margin-top: 3px; }
+  .results .kv .tl.ok .i { color: var(--success); }
+  .results .kv .tl.no .i { color: var(--danger); }
+  .results .kv .tl .err { display: block; margin-top: 1px; font-family: var(--font-mono); font-size: var(--fs-mono); color: var(--danger); white-space: normal; }
+  .results .kv .con { display: flex; align-items: center; gap: 8px; margin-top: 2px; padding-top: 8px; border-top: 1px solid var(--border-subtle); font-family: var(--font-mono); font-size: var(--fs-mono); color: var(--text-subtle); }
+  .results .kv .con .i { color: var(--text-subtlest); }
+  .tests { display: inline-flex; align-items: center; gap: 6px; }
+  .tests.ok .i { color: var(--success); }
+  .tests.no { color: var(--danger); }
+  .spin { display: inline-block; width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--surface-active); border-top-color: var(--primary); vertical-align: -1px; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .results .kv tr.run td { color: var(--text-subtle); }
+
+  /* finished run window */
+  .window.crop { width: 1016px; height: 520px; }
+  .app.solo { grid-template-columns: 1fr; }
+  .fin-tools { display: flex; align-items: center; gap: 12px; padding: 16px 28px 0; }
+  .fin-tools .grow { flex: 1; }
+  .fin-tools .note { color: var(--text-subtlest); font-size: var(--fs-small); }
+  .seg span .c { margin-left: 5px; color: var(--text-subtlest); font-variant-numeric: tabular-nums; }
+  .seg span.on .c { color: var(--text-subtle); }
+  .page-head h1 .ok { color: var(--success); }
+  .page-head h1 .bad { color: var(--danger); }
+  .page-head h1 .dim { color: var(--text-subtle); font-weight: 500; }
+  .dur { display: block; height: 4px; border-radius: 2px; background: var(--surface-active); overflow: hidden; }
+  .dur i { display: block; height: 100%; border-radius: 2px; background: var(--text-subtlest); }
+  .dur.bad i { background: var(--danger); }
+  .dur.slow i { background: var(--warning); }
+  .results .kv td.d2 { padding-right: 14px; }
+</style>
+</head>
+<body data-screen="06-runner.html">
+<div class="deck">
+  <div class="window">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app">
+      <div data-sidebar='{"active":"Northwind API"}'></div>
+      <section class="main">
+        <div data-tabbar='{"tabs":[{"m":"GET","label":"List users"},{"kind":"RUN","label":"Northwind API","on":true}]}'></div>
+
+        <div class="page">
+          <div class="page-head">
+            <div>
+              <h1>Run Northwind API</h1>
+              <div class="meta"><span>Iteration 2 of 3</span><span class="tnum">Started 22:41:07</span></div>
+            </div>
+            <div class="acts">
+              <span class="btn ghost"><i data-i="stop" class="sm"></i>Stop</span>
+              <span class="btn primary disabled"><i data-i="play" class="sm"></i>Run</span>
+            </div>
+          </div>
+
+          <div class="opts">
+            <div class="field"><label>Iterations</label><div class="input w-num tnum" style="display:flex;align-items:center">3</div></div>
+            <div class="field"><label>Delay</label><div class="input w-ms tnum"><span>200</span><span class="u">ms</span></div></div>
+            <div class="field"><label>Folder scope</label><div class="select w-scope">Whole collection <i data-i="chevron-down" class="sm"></i></div></div>
+            <span class="help-r">Unsaved changes are saved before the run</span>
+          </div>
+
+          <div class="card sum">
+            <div class="bar">
+              <div class="progress"><i style="width:41.7%;background:var(--success)"></i><i style="width:4.2%;background:var(--danger)"></i></div>
+              <div class="cap">
+                <span><span class="dot" style="color:var(--success)"></span>Passed</span>
+                <span><span class="dot" style="color:var(--danger)"></span>Failed</span>
+                <span><span class="dot" style="color:var(--border-control)"></span>Pending</span>
+              </div>
+            </div>
+            <div class="stat-row tnum">
+              <div class="stat"><div class="v">11<span class="subtlest">/24</span></div><div class="l">Requests</div></div>
+              <div class="stat"><div class="v ok">19</div><div class="l">Tests passed</div></div>
+              <div class="stat"><div class="v bad">1</div><div class="l">Tests failed</div></div>
+              <div class="stat"><div class="v">0</div><div class="l">Errors</div></div>
+              <div class="stat"><div class="v">2.4 s</div><div class="l">Elapsed</div></div>
+            </div>
+          </div>
+
+          <div class="results">
+            <div class="kvwrap">
+              <table class="kv">
+                <colgroup><col style="width:44px"><col style="width:70px"><col style="width:160px"><col><col style="width:76px"><col style="width:76px"><col style="width:86px"></colgroup>
+                <thead><tr><th class="r">#</th><th>Method</th><th>Name</th><th>URL</th><th>Code</th><th class="r">Time</th><th>Tests</th></tr></thead>
+                <tbody>
+                  <tr><td class="n">3</td><td><span data-m="POST"></span></td><td class="name">Login</td><td class="u"><span class="host">http://127.0.0.1:8765</span>/api/auth/login</td><td><span class="status s2">200</span></td><td class="r t">142 ms</td><td><span class="tests ok"><i data-i="check" class="sm"></i>2/2</span></td></tr>
+                  <tr><td class="n">4</td><td><span data-m="POST"></span></td><td class="name">Refresh token</td><td class="u"><span class="host">http://127.0.0.1:8765</span>/api/auth/refresh</td><td><span class="status s2">200</span></td><td class="r t">61 ms</td><td><span class="tests ok"><i data-i="check" class="sm"></i>1/1</span></td></tr>
+                  <tr><td class="n">5</td><td><span data-m="GET"></span></td><td class="name">List users</td><td class="u"><span class="host">http://127.0.0.1:8765</span>/api/users?page=1</td><td><span class="status s2">200</span></td><td class="r t">38 ms</td><td><span class="tests ok"><i data-i="check" class="sm"></i>3/3</span></td></tr>
+                  <tr><td class="n">6</td><td><span data-m="GET"></span></td><td class="name">Get user</td><td class="u"><span class="host">http://127.0.0.1:8765</span>/api/users/4821</td><td><span class="status s2">200</span></td><td class="r t">44 ms</td><td><span class="tests ok"><i data-i="check" class="sm"></i>2/2</span></td></tr>
+                  <tr><td class="n">7</td><td><span data-m="POST"></span></td><td class="name">Create user</td><td class="u"><span class="host">http://127.0.0.1:8765</span>/api/users</td><td><span class="status s2">201</span></td><td class="r t">87 ms</td><td><span class="tests ok"><i data-i="check" class="sm"></i>2/2</span></td></tr>
+                  <tr class="fail"><td class="n">8</td><td><span data-m="PATCH"></span></td><td class="name">Update role</td><td class="u"><span class="host">http://127.0.0.1:8765</span>/api/users/4821/role</td><td><span class="status s4">403</span></td><td class="r t">52 ms</td><td><span class="tests no"><i data-i="x" class="sm"></i>1/2</span></td></tr>
+                  <tr class="detail"><td colspan="7"><div class="in">
+                    <div class="tl no"><i data-i="x-circle" class="sm"></i><div>role is updated<span class="err">AssertionError: expected 403 to equal 200</span></div></div>
+                    <div class="tl ok"><i data-i="check-circle" class="sm"></i><div>responds in under 500 ms</div></div>
+                    <div class="con"><i data-i="terminal" class="sm"></i><span>PATCH /api/users/4821 {"role":"viewer"} returned 403 Forbidden</span></div>
+                  </div></td></tr>
+                  <tr><td class="n">9</td><td><span data-m="DELETE"></span></td><td class="name">Delete user</td><td class="u"><span class="host">http://127.0.0.1:8765</span>/api/users/4821</td><td><span class="status s2">204</span></td><td class="r t">31 ms</td><td><span class="tests ok"><i data-i="check" class="sm"></i>1/1</span></td></tr>
+                  <tr><td class="n">10</td><td><span data-m="GET"></span></td><td class="name">Health</td><td class="u"><span class="host">http://127.0.0.1:8765</span>/health</td><td><span class="status s2">200</span></td><td class="r t">9 ms</td><td><span class="tests ok"><i data-i="check" class="sm"></i>1/1</span></td></tr>
+                  <tr class="skip"><td class="n">11</td><td><span data-m="WS"></span></td><td class="name">Order events</td><td class="u"><span class="host">ws://127.0.0.1:8765</span>/ws/orders</td><td>skipped</td><td class="r">-</td><td>-</td></tr>
+                  <tr class="run"><td class="n">12</td><td><span data-m="GET"></span></td><td class="name">List orders</td><td class="u"><span class="host">http://127.0.0.1:8765</span>/api/orders?status=open</td><td><span class="spin"></span></td><td class="r">running</td><td class="subtlest">-</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div data-statusbar='{"saved":"Saved"}'></div>
+    </div>
+
+    <span class="pin pinno" style="left:1092px;top:64px">1</span>
+    <span class="pin pinno" style="left:712px;top:148px">2</span>
+    <span class="pin pinno" style="left:270px;top:204px">3</span>
+    <span class="pin pinno" style="left:1256px;top:274px">4</span>
+    <span class="pin pinno" style="left:270px;top:530px">5</span>
+    <span class="pin pinno" style="left:1256px;top:681px">6</span>
+  </div>
+
+  <div class="deck-head" style="margin-top:44px"><h1 style="font-size:13px;font-weight:500">The same run when it has finished</h1><span class="crumb">Main area only</span></div>
+
+  <div class="window crop">
+    <div class="app no-status solo">
+      <section class="main">
+        <div data-tabbar='{"tabs":[{"m":"GET","label":"List users"},{"kind":"RUN","label":"Northwind API","on":true}]}'></div>
+
+        <div class="page">
+          <div class="page-head">
+            <div>
+              <h1>Finished in 6.8 s. <span class="dim">72 requests,</span> <span class="ok">69 tests passed</span><span class="dim">,</span> <span class="bad">3 failed</span><span class="dim">, 0 errors.</span></h1>
+              <div class="meta"><span>3 iterations</span><span class="tnum">Started 22:41:07</span><span>Runs are not kept after the tab closes</span></div>
+            </div>
+            <div class="acts">
+              <span class="btn ghost"><i data-i="export" class="sm"></i>Export results</span>
+              <span class="btn primary"><i data-i="play" class="sm"></i>Run again</span>
+            </div>
+          </div>
+
+          <div class="fin-tools">
+            <span class="seg"><span class="on">All</span><span>Failed<span class="c">3</span></span><span>Skipped<span class="c">3</span></span></span>
+            <span class="grow"></span>
+            <span class="note tnum">Showing 72 of 72</span>
+          </div>
+
+          <div class="results">
+            <div class="kvwrap">
+              <table class="kv">
+                <colgroup><col style="width:44px"><col style="width:70px"><col style="width:130px"><col><col style="width:76px"><col style="width:76px"><col style="width:110px"><col style="width:86px"></colgroup>
+                <thead><tr><th class="r">#</th><th>Method</th><th>Name</th><th>URL</th><th>Code</th><th class="r">Time</th><th>Duration</th><th>Tests</th></tr></thead>
+                <tbody>
+                  <tr><td class="n">1</td><td><span data-m="POST"></span></td><td class="name">Login</td><td class="u"><span class="host">http://127.0.0.1:8765</span>/api/auth/login</td><td><span class="status s2">200</span></td><td class="r t">142 ms</td><td class="d2"><span class="dur slow"><i style="width:100%"></i></span></td><td><span class="tests ok"><i data-i="check" class="sm"></i>2/2</span></td></tr>
+                  <tr><td class="n">2</td><td><span data-m="POST"></span></td><td class="name">Refresh token</td><td class="u"><span class="host">http://127.0.0.1:8765</span>/api/auth/refresh</td><td><span class="status s2">200</span></td><td class="r t">61 ms</td><td class="d2"><span class="dur"><i style="width:43%"></i></span></td><td><span class="tests ok"><i data-i="check" class="sm"></i>1/1</span></td></tr>
+                  <tr><td class="n">3</td><td><span data-m="GET"></span></td><td class="name">List users</td><td class="u"><span class="host">http://127.0.0.1:8765</span>/api/users?page=1</td><td><span class="status s2">200</span></td><td class="r t">38 ms</td><td class="d2"><span class="dur"><i style="width:27%"></i></span></td><td><span class="tests ok"><i data-i="check" class="sm"></i>3/3</span></td></tr>
+                  <tr><td class="n">4</td><td><span data-m="GET"></span></td><td class="name">Get user</td><td class="u"><span class="host">http://127.0.0.1:8765</span>/api/users/4821</td><td><span class="status s2">200</span></td><td class="r t">44 ms</td><td class="d2"><span class="dur"><i style="width:31%"></i></span></td><td><span class="tests ok"><i data-i="check" class="sm"></i>2/2</span></td></tr>
+                  <tr><td class="n">5</td><td><span data-m="POST"></span></td><td class="name">Create user</td><td class="u"><span class="host">http://127.0.0.1:8765</span>/api/users</td><td><span class="status s2">201</span></td><td class="r t">87 ms</td><td class="d2"><span class="dur"><i style="width:61%"></i></span></td><td><span class="tests ok"><i data-i="check" class="sm"></i>2/2</span></td></tr>
+                  <tr class="fail"><td class="n">6</td><td><span data-m="PATCH"></span></td><td class="name">Update role</td><td class="u"><span class="host">http://127.0.0.1:8765</span>/api/users/4821/role</td><td><span class="status s4">403</span></td><td class="r t">52 ms</td><td class="d2"><span class="dur bad"><i style="width:37%"></i></span></td><td><span class="tests no"><i data-i="x" class="sm"></i>1/2</span></td></tr>
+                  <tr><td class="n">7</td><td><span data-m="DELETE"></span></td><td class="name">Delete user</td><td class="u"><span class="host">http://127.0.0.1:8765</span>/api/users/4821</td><td><span class="status s2">204</span></td><td class="r t">31 ms</td><td class="d2"><span class="dur"><i style="width:22%"></i></span></td><td><span class="tests ok"><i data-i="check" class="sm"></i>1/1</span></td></tr>
+                  <tr><td class="n">8</td><td><span data-m="GET"></span></td><td class="name">Health</td><td class="u"><span class="host">http://127.0.0.1:8765</span>/health</td><td><span class="status s2">200</span></td><td class="r t">9 ms</td><td class="d2"><span class="dur"><i style="width:6%"></i></span></td><td><span class="tests ok"><i data-i="check" class="sm"></i>1/1</span></td></tr>
+                  <tr class="skip"><td class="n">9</td><td><span data-m="WS"></span></td><td class="name">Order events</td><td class="u"><span class="host">ws://127.0.0.1:8765</span>/ws/orders</td><td>skipped</td><td class="r">-</td><td class="d2"></td><td>-</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <span class="pin pinno" style="left:4px;top:61px">7</span>
+    <span class="pin pinno" style="left:4px;top:124px">8</span>
+  </div>
+
+  <div class="deck-notes">
+    <div class="n"><span class="pinno">1</span><div><b>One header with Stop and a disabled Run.</b><p>The title, iteration and start time sit on the left. While a run is active, Stop is a ghost button and Run is a dimmed primary. Today the same two buttons sit in a plain toolbar and the button text changes to "Running…".</p></div></div>
+    <div class="n"><span class="pinno">2</span><div><b>Run options become labeled fields (folder scope is proposed).</b><p>Iterations and Delay get labels above them, and the delay unit sits inside the field. A folder scope select lets you run one folder. The note about saving first explains why a dirty collection is written to disk.</p></div></div>
+    <div class="n"><span class="pinno">3</span><div><b>A summary strip replaces the text line at the bottom.</b><p>One progress bar splits into passed, failed and pending, and the counts sit beside it in tabular numerals. Today the totals are one plain text line after the table: "N requests, N tests passed, N failed, N errors".</p></div></div>
+    <div class="n"><span class="pinno">4</span><div><b>Results use the same hairline table as the rest of the app.</b><p>Method is plain colored text and the host in each URL is dimmed so the path reads first. The code takes its status color and the time is right-aligned. Tests show a check or an x with passed over total.</p></div></div>
+    <div class="n"><span class="pinno">5</span><div><b>A failed row stays open under itself.</b><p>The row is tinted, and the failed test, the passing test and the console output sit in a recessed block. Today rows expand on click, so a failure stays hidden until you open it.</p></div></div>
+    <div class="n"><span class="pinno">6</span><div><b>Skipped and in-flight rows are distinct.</b><p>A WebSocket item shows "skipped" in muted text, since the runner never connects it. The request in flight shows a spinner and "running" instead of a dash.</p></div></div>
+    <div class="n"><span class="pinno">7</span><div><b>The finished run opens with a colored sentence, plus Export results (proposed).</b><p>Passed counts are green and failures are red, so the outcome reads at a glance. It is the same summary the text line gives today, moved to the top. Run again is the only filled button, and Export results is a ghost button, since runs are not kept after the tab closes.</p></div></div>
+    <div class="n"><span class="pinno">8</span><div><b>A segmented filter with counts, and duration bars (proposed).</b><p>All, Failed and Skipped switch the table in place. Today every row is always listed, so a 72-row run means scrolling to find 3 failures. A thin bar beside the time shows each request against the slowest, using the time the runner already records.</p></div></div>
+  </div>
+</div>
+</body>
+</html>

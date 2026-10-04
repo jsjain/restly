@@ -29,17 +29,18 @@ export default function ConfirmCloseModal({ tab }: Props) {
 
   return (
     <div className="modal-overlay" onClick={cancel}>
-      <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-panel" role="dialog" aria-modal="true" aria-label="Unsaved changes" onClick={(e) => e.stopPropagation()}>
         <div className="modal-title">Save changes to “{name}”?</div>
         <p>Your changes will be lost if you don't save them.</p>
         <div className="modal-actions">
           <button
+            className="ghost modal-actions-left"
             onClick={() => {
               state.confirmClose = null;
               closeTab(tab);
             }}
           >
-            Don't Save
+            Don't save
           </button>
           <button onClick={cancel}>Cancel</button>
           <button
@@ -50,7 +51,7 @@ export default function ConfirmCloseModal({ tab }: Props) {
               openSaveDraftModal(tab);
             }}
           >
-            Save…
+            Save
           </button>
         </div>
       </div>

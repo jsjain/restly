@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Folder, Layers } from "lucide-react";
 import { requestTitle } from "../requestName";
 import * as api from "../api";
 import {
@@ -17,6 +18,7 @@ import { isFolder } from "../types";
 import type { Item } from "../types";
 import { closeAfterSave } from "./ConfirmCloseModal";
 import Select from "./Select";
+import { Kbd } from "./Kbd";
 
 interface Props {
   tab: RequestTab;
@@ -144,12 +146,25 @@ export default function SaveRequestModal({ tab }: Props) {
 
   return (
     <div className="modal-overlay" onClick={cancel}>
-      <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Save request"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            handleSave();
+          }
+        }}
+      >
         <div className="modal-title">Save request</div>
 
-        <div className="field-row">
-          <label>Name</label>
+        <div className="modal-field">
+          <label htmlFor="save-request-name">Name</label>
           <input
+            id="save-request-name"
             autoFocus
             type="text"
             value={name}
@@ -160,7 +175,7 @@ export default function SaveRequestModal({ tab }: Props) {
           />
         </div>
 
-        <div className="field-row">
+        <div className="modal-field">
           <label>Collection</label>
           <Select
             value={creatingNew ? NEW_COLLECTION : collectionFile}
@@ -175,31 +190,39 @@ export default function SaveRequestModal({ tab }: Props) {
         </div>
 
         {creatingNew ? (
-          <div className="field-row">
-            <label>New name</label>
-            <input
-              autoFocus
-              type="text"
-              value={newCollName}
-              onChange={(e) => setNewCollName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") createCollection();
-              }}
-            />
-            <button onClick={createCollection}>Create</button>
+          <div className="modal-field">
+            <label htmlFor="save-request-new-collection">New collection name</label>
+            <div className="modal-field-inline">
+              <input
+                id="save-request-new-collection"
+                autoFocus
+                type="text"
+                value={newCollName}
+                onChange={(e) => setNewCollName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") createCollection();
+                }}
+              />
+              <button onClick={createCollection}>Create</button>
+            </div>
           </div>
         ) : null}
 
         {collectionFile ? (
-          <div className="field-row">
+          <div className="modal-field">
             <label>Folder</label>
             <Select
               value={folderPath.join(",")}
               onChange={(v) => setFolderPath(v ? v.split(",").map(Number) : [])}
               ariaLabel="Folder"
               options={[
-                { value: "", label: "Collection root" },
-                ...folders.map((f) => ({ value: f.path.join(","), label: "  ".repeat(f.depth) + f.name })),
+                { value: "", label: "Collection root", icon: <Layers size={14} strokeWidth={1.75} /> },
+                ...folders.map((f) => ({
+                  value: f.path.join(","),
+                  label: f.name,
+                  indent: f.depth + 1,
+                  icon: <Folder size={14} strokeWidth={1.75} />,
+                })),
               ]}
             />
           </div>
@@ -209,6 +232,7 @@ export default function SaveRequestModal({ tab }: Props) {
           <button onClick={cancel}>Cancel</button>
           <button className="primary" disabled={!collectionFile || saving} onClick={handleSave}>
             Save
+            <Kbd keys="mod+enter" />
           </button>
         </div>
       </div>

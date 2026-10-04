@@ -1,0 +1,516 @@
+/* App shell, tab strip, environment picker, status bar, welcome view and window-drag rules. */
+
+/* --- app layout --- */
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-raised);
+  flex: 0 0 auto;
+}
+
+.topbar .brand {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.app-body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* --- tab strip --- */
+
+/* The strip's bottom line is an inset shadow so the active tab's opaque fill covers it and joins the page. */
+.tabbar {
+  display: flex;
+  align-items: stretch;
+  height: var(--h-bar);
+  flex: 0 0 auto;
+  background: var(--surface-raised);
+  box-shadow: inset 0 -1px 0 var(--border-subtle);
+  overflow: visible;
+}
+
+.tabbar-tabs {
+  display: flex;
+  align-self: stretch;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px 0 12px;
+  flex: 0 0 auto;
+  min-width: 140px;
+  max-width: 220px;
+  border-right: 1px solid var(--border-subtle);
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--text-subtle);
+}
+
+.tab.active {
+  color: var(--text);
+  background: var(--surface);
+}
+
+.tab.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: var(--primary);
+}
+
+/* The label takes the spare width so the close button sits at the tab's right edge. */
+.tab .tab-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-badge {
+  font-size: var(--fs-tag);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  flex: 0 0 auto;
+}
+
+.tab .tab-kind {
+  flex: 0 0 auto;
+  color: var(--text-subtlest);
+}
+
+/* The dot and the close button share one slot: the dot shows until the tab is hovered. */
+.tab-end {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+}
+
+.tab-end > * {
+  grid-area: 1 / 1;
+}
+
+.tab .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-subtle);
+}
+
+.tab .close {
+  visibility: hidden;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-xs);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-subtlest);
+}
+
+.tab:hover .close,
+.tab.active:not(.dirty) .close {
+  visibility: visible;
+}
+
+.tab:hover .dot {
+  visibility: hidden;
+}
+
+.tab .close:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.tab-new {
+  align-self: center;
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  margin: 0 6px;
+  color: var(--text-subtlest);
+}
+
+.tab-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Wails drags the window from elements whose computed --wails-draggable is "drag". Custom
+   properties inherit, so every control opts back out. */
+.sidebar-actions,
+.tabbar {
+  --wails-draggable: drag;
+}
+
+button,
+input,
+select,
+textarea,
+.tab,
+.menu {
+  --wails-draggable: no-drag;
+}
+
+.platform-mac.sidebar-hidden .tabbar {
+  padding-left: 92px;
+}
+
+/* --- environment picker --- */
+
+.tabbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  padding: 0 8px;
+  flex: 0 0 auto;
+}
+
+.tabbar-actions-sep {
+  width: 1px;
+  height: 16px;
+  background: var(--border-subtle);
+  margin: 0 6px;
+}
+
+.env-picker-trigger {
+  gap: 6px;
+  padding: 0 8px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.env-picker-trigger[aria-expanded="true"] {
+  background: var(--surface-hover);
+}
+
+.env-picker-label {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Hollow when no environment is selected, filled when one is. */
+.env-dot {
+  width: 7px;
+  height: 7px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--text-subtlest);
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.env-dot-active {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.env-picker-menu {
+  min-width: 240px;
+}
+
+.env-picker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: -4px -4px 4px;
+  padding: 8px 12px 8px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-subtle);
+}
+
+.env-picker-menu .menu-label {
+  padding: 8px 8px 4px;
+  font-size: var(--fs-micro);
+}
+
+.menu-check {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+}
+
+/* --- status bar --- */
+
+.statusbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: var(--h-status);
+  flex: 0 0 auto;
+  padding: 0 10px;
+  background: var(--surface-raised);
+  border-top: 1px solid var(--border-subtle);
+  font-size: var(--fs-micro);
+  color: var(--text-subtlest);
+  white-space: nowrap;
+}
+
+.statusbar > span,
+.statusbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.statusbar-grow {
+  flex: 1;
+}
+
+.statusbar-btn {
+  height: 100%;
+  padding: 0 6px;
+  border: none;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+  font-weight: 400;
+}
+
+.statusbar-btn:hover:not(:disabled) {
+  color: var(--text);
+}
+
+/* --- welcome view --- */
+/* Spacing follows an 8px rhythm: 24px between header and tiles, 32px between sections. */
+
+.welcome {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+  padding: 32px 24px;
+}
+
+.welcome-box {
+  width: 720px;
+  max-width: 100%;
+}
+
+.welcome-head {
+  margin-bottom: 24px;
+}
+
+.welcome-head h1 {
+  margin: 0;
+  font-size: var(--fs-display);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+.welcome-head p {
+  margin: 6px 0 0;
+  color: var(--text-subtle);
+}
+
+.welcome-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.welcome-tile {
+  height: auto;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  padding: 14px 14px 14px 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  background: transparent;
+  text-align: left;
+  font-weight: 400;
+  white-space: normal;
+  transition: background-color var(--dur, 120ms) ease, border-color var(--dur, 120ms) ease;
+}
+
+.welcome-tile:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--border);
+}
+
+.welcome-tile-icon {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-small);
+  background: var(--surface-hover);
+  color: var(--text-subtle);
+}
+
+.welcome-tile:hover .welcome-tile-icon {
+  background: var(--surface-active);
+  color: var(--text);
+}
+
+.welcome-tile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.welcome-tile-title {
+  font-weight: 500;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.welcome-tile-desc {
+  font-size: var(--fs-small);
+  color: var(--text-subtlest);
+  line-height: 1.45;
+}
+
+.welcome-section {
+  margin-top: 32px;
+}
+
+.welcome-section h2 {
+  margin: 0 0 8px;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-subtle);
+}
+
+.welcome-recent {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.recent-row {
+  width: 100%;
+  height: 36px;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  font-weight: 400;
+  text-align: left;
+}
+
+.recent-row + .recent-row {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.recent-row:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.welcome-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recent-row .tag {
+  min-width: 34px;
+  justify-content: center;
+}
+
+.recent-row .tab-badge {
+  width: 38px;
+  flex: 0 0 auto;
+}
+
+.recent-time {
+  width: 72px;
+  flex: 0 0 auto;
+  text-align: right;
+  color: var(--text-subtlest);
+  font-size: var(--fs-small);
+}
+
+.welcome-foot {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.welcome-tips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+
+.welcome-tip {
+  height: 24px;
+  gap: 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-subtle);
+  font-size: var(--fs-small);
+  font-weight: 400;
+}
+
+.welcome-tip:hover:not(:disabled) {
+  background: transparent;
+  color: var(--text);
+}
+
+.welcome-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-small);
+  color: var(--text-subtlest);
+}
+
+@media (max-width: 760px) {
+  .welcome-tiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+

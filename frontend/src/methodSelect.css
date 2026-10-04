@@ -1,19 +1,21 @@
-/* MethodSelect: trigger button joins the URL input on its right into one control with a
-   shared border. Consumers wrap both in `.method-url-group`. */
+/* MethodSelect: the trigger sits inside the URL field at its left, divided from the URL by a rule.
+   Consumers wrap the trigger and the URL in `.method-url-group`, which is the field: one border, one
+   focus ring. The WebSocket tab uses the same group. */
 
 .method-url-group {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   flex: 1 1 auto;
   min-width: 0;
+  height: var(--h-url);
   background: var(--surface-input);
   border: 1px solid var(--border-control);
-  border-radius: var(--radius);
+  border-radius: var(--radius-small);
 }
 
 .method-url-group:focus-within {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 1px;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 1px var(--border-focus);
 }
 
 .method-select-trigger {
@@ -22,15 +24,16 @@
   justify-content: space-between;
   gap: 4px;
   align-self: stretch;
-  width: 96px;
-  flex: 0 0 96px;
-  padding: 0 10px;
+  height: auto;
+  min-width: 80px;
+  flex: 0 0 auto;
+  padding: 0 8px 0 10px;
   background: transparent;
   border: none;
-  border-right: 1px solid var(--border);
+  border-right: 1px solid var(--border-control);
+  border-radius: var(--radius-small) 0 0 var(--radius-small);
   color: var(--text);
   cursor: pointer;
-  font-family: var(--font-mono);
 }
 
 /* Non-interactive segment used by the WebSocket tab, which has no method to pick. */
@@ -39,17 +42,28 @@
   justify-content: center;
 }
 
-/* Shares the group's border/radius; the visible border now lives on the group itself. */
-.method-select-trigger + .url-field .url-input {
-  border: none;
-  border-radius: 0 var(--radius) var(--radius) 0;
+/* The URL input and its mirror drop their own box: the group draws it. The mirror has to keep the
+   input's box exactly, so a {{variable}} tint stays under its text (see variables.css). */
+.method-url-group .varinput-wrap {
+  height: 100%;
+}
+
+.method-url-group .varinput-input,
+.method-url-group .varinput-mirror {
+  height: 100%;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 0 var(--radius-small) var(--radius-small) 0;
   background: transparent;
 }
 
-.method-select-trigger + .url-field .varinput-mirror {
-  border-radius: 0;
-  border-color: transparent;
+.method-url-group .varinput-mirror {
+  line-height: calc(var(--h-url) - 2px);
+}
+
+.method-url-group .varinput-wrap .varinput-input:focus {
   background: transparent;
+  box-shadow: none;
 }
 
 .method-select-trigger:hover:not(:disabled):not(.method-select-static) {
@@ -67,8 +81,8 @@
 }
 
 .method-select-label {
-  font-weight: 700;
-  font-size: 12px;
+  font-size: var(--fs-small);
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -77,7 +91,7 @@
 .method-select-chevron {
   display: inline-flex;
   align-items: center;
-  color: var(--text-subtle);
+  color: var(--text-subtlest);
   flex: 0 0 auto;
   transition: transform 0.1s ease;
 }
@@ -86,60 +100,81 @@
   transform: rotate(180deg);
 }
 
+/* No border: --shadow-overlay draws a 1px ring. */
 .method-select-popover {
   position: fixed;
   z-index: 1000;
+  width: 210px;
   background: var(--surface-overlay);
-  border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-overlay);
   padding: 4px;
   display: flex;
   flex-direction: column;
-  gap: 1px;
 }
 
 .method-select-option {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 8px;
-  padding: 6px 10px;
+  height: var(--h-row);
+  padding: 0 8px;
   background: none;
   border: none;
-  border-radius: calc(var(--radius) - 2px);
+  border-radius: var(--radius-xs);
   color: var(--text);
   text-align: left;
   cursor: pointer;
-  font-family: var(--font-mono);
+  font-weight: 400;
+}
+
+.method-select-option[aria-selected="true"] {
+  background: var(--primary-tint);
 }
 
 .method-select-option.highlighted,
-.method-select-option:hover {
-  background: var(--surface-hover);
+.method-select-option:hover:not(:disabled) {
+  background: var(--surface-active);
 }
 
 .method-select-check {
-  display: inline-flex;
-  align-items: center;
-  width: 14px;
+  margin-left: auto;
   flex: 0 0 auto;
-  color: var(--primary);
-}
-
-.method-select-option-label {
-  font-weight: 700;
-  font-size: 12px;
-}
-
-.method-select-custom-label {
   color: var(--text-subtle);
 }
 
+/* The method as a colored tag in a fixed column, like the tags in the sidebar. */
+.method-select-option-label {
+  width: 64px;
+  font-size: var(--fs-tag);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.method-select-custom-label {
+  color: var(--text);
+}
+
+.method-select-sep {
+  height: 1px;
+  margin: 4px -4px;
+  background: var(--border-subtle);
+}
+
+.method-select-hint {
+  padding: 2px 8px 4px;
+  color: var(--text-subtlest);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+}
+
 .method-select-custom-input {
-  padding: 6px 10px;
+  height: var(--h-row);
+  padding: 0 8px;
   background: var(--surface-input);
   border: 1px solid var(--border-focus);
-  border-radius: calc(var(--radius) - 2px);
+  border-radius: var(--radius-xs);
   color: var(--text);
 }
 

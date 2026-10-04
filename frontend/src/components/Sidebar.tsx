@@ -1,7 +1,29 @@
 import { useEffect, useRef, useState } from "react";
 import type { DragEvent, KeyboardEvent as ReactKeyboardEvent } from "react";
 import { createPortal } from "react-dom";
-import { Plus, Import as ImportIconGlyph, Search, ChevronRight, Folder, FolderOpen, X, MoreHorizontal, Globe } from "lucide-react";
+import {
+  Plus,
+  Import as ImportIconGlyph,
+  Search,
+  ChevronRight,
+  Folder,
+  FolderOpen,
+  FolderPlus,
+  X,
+  MoreHorizontal,
+  Globe,
+  Plug,
+  Pencil,
+  Copy,
+  Play,
+  SlidersHorizontal,
+  Upload,
+  Trash2,
+  LayoutDashboard,
+  Terminal,
+  Download,
+  type LucideIcon,
+} from "lucide-react";
 import * as api from "../api";
 import {
   state,
@@ -28,12 +50,12 @@ import {
   isEnvironmentDirty,
   remapTabsAfter,
   sidebarEnvs,
+  selectedEnv,
   deleteEnvironmentFile,
   confirmDelete,
   toast,
 } from "../store";
 import { itemAt } from "../tree";
-import { methodClass } from "../method";
 import type { FileRef, Item } from "../types";
 import { isWebSocket, newWebSocketItem } from "../websocket";
 import {
@@ -46,7 +68,8 @@ import {
   siblingList,
   type DropPos,
 } from "../treeEdit";
-import HistoryList from "./HistoryList";
+import HistoryList, { MethodTag } from "./HistoryList";
+import { Kbd } from "./Kbd";
 import { FOCUS_SIDEBAR, FOCUS_SIDEBAR_SEARCH, FOCUS_URL, IMPORT_CURL, REVEAL_IN_SIDEBAR, TOGGLE_SIDEBAR } from "../commands";
 import "../sidebarTree.css";
 
@@ -62,6 +85,25 @@ const ChevronRightIcon = ({ className }: { className?: string }) => (
 
 const FolderIcon = ({ open }: { open?: boolean }) =>
   open ? <FolderOpen size={14} strokeWidth={1.75} aria-hidden="true" /> : <Folder size={14} strokeWidth={1.75} aria-hidden="true" />;
+
+// A row-menu item: icon, label, and optionally a shortcut keycap.
+function MenuItem({ icon: Icon, label, onClick, danger, command }: {
+  icon: LucideIcon;
+  label: string;
+  onClick: () => void;
+  danger?: boolean;
+  command?: string;
+}) {
+  return (
+    <button className={danger ? "danger" : undefined} onClick={onClick}>
+      <span className="menu-item-main">
+        <Icon size={14} strokeWidth={1.75} aria-hidden="true" />
+        {label}
+      </span>
+      {command ? <Kbd command={command} /> : null}
+    </button>
+  );
+}
 
 function newRequestItem(): Item {
   return { name: "New Request", request: { method: "GET", header: [], url: { raw: "" } } };
@@ -722,9 +764,13 @@ export default function Sidebar() {
     }
   }
 
+  const envList = sidebarEnvs();
+  const activeEnv = selectedEnv();
+
   return (
     <div className="sidebar">
       <div className="sidebar-actions">
+        <span className="sidebar-title">Restly</span>
         <div className="menu-anchor">
           <button
             className="icon"
@@ -739,9 +785,9 @@ export default function Sidebar() {
           </button>
           {menuKey === "new" ? (
             <div className="menu" onClick={(e) => e.stopPropagation()}>
-              <button onClick={() => { closeMenu(); openDraftTab(); }}>HTTP Request</button>
-              <button onClick={() => { closeMenu(); openDraftTab(newWebSocketItem()); }}>WebSocket Request</button>
-              <button onClick={() => { closeMenu(); setAddingCollection(true); }}>Collection</button>
+              <MenuItem icon={Plus} label="HTTP request" command="new-http-request" onClick={() => { closeMenu(); openDraftTab(); }} />
+              <MenuItem icon={Plug} label="WebSocket request" command="new-websocket-request" onClick={() => { closeMenu(); openDraftTab(newWebSocketItem()); }} />
+              <MenuItem icon={FolderPlus} label="Collection" onClick={() => { closeMenu(); setAddingCollection(true); }} />
             </div>
           ) : null}
         </div>
@@ -759,30 +805,29 @@ export default function Sidebar() {
           </button>
           {menuKey === "import" ? (
             <div className="menu" onClick={(e) => e.stopPropagation()}>
-              <button onClick={handleImport}>Postman files</button>
-              <button
+              <MenuItem icon={Download} label="Postman files" onClick={handleImport} />
+              <MenuItem
+                icon={Terminal}
+                label="cURL"
+                command="import-curl"
                 onClick={() => {
                   closeMenu();
                   setCurlText("");
                   setCurlError("");
                   setShowImportCurl(true);
                 }}
-              >
-                cURL
-              </button>
+              />
             </div>
           ) : null}
         </div>
       </div>
       <div className="sidebar-view-switch">
-        <div className="segmented">
-          <button className={view === "collections" ? "active" : ""} onClick={() => setView("collections")}>
-            Collections
-          </button>
-          <button className={view === "history" ? "active" : ""} onClick={() => setView("history")}>
-            History
-          </button>
-        </div>
+        <button className={view === "collections" ? "active" : ""} aria-pressed={view === "collections"} onClick={() => setView("collections")}>
+          Collections
+        </button>
+        <button className={view === "history" ? "active" : ""} aria-pressed={view === "history"} onClick={() => setView("history")}>
+          History
+        </button>
       </div>
       <div className="sidebar-search">
         <span className="sidebar-search-icon">
@@ -791,7 +836,7 @@ export default function Sidebar() {
         <input
           ref={searchInputRef}
           type="text"
-          placeholder={view === "history" ? "Search history" : "Search collections"}
+          placeholder={view === "history" ? "Search history" : "Search requests"}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => {
@@ -810,10 +855,12 @@ export default function Sidebar() {
           }}
         />
         {search ? (
-          <button className="icon" title="Clear search" onClick={() => setSearch("")}>
+          <button className="icon" title="Clear search" aria-label="Clear search" onClick={() => setSearch("")}>
             <X size={14} strokeWidth={1.75} aria-hidden="true" />
           </button>
-        ) : null}
+        ) : (
+          <Kbd command="focus-sidebar-search" />
+        )}
       </div>
       {/* Portaled so Cmd+O still shows it while the sidebar is hidden with display: none. */}
       {showImportCurl ? createPortal(
@@ -864,6 +911,24 @@ export default function Sidebar() {
                     if (e.key === "Escape") setAddingCollection(false);
                   }}
                 />
+              </div>
+            ) : null}
+
+            {state.workspace && state.workspace.collections.length === 0 && !addingCollection ? (
+              <div className="sidebar-empty">
+                <Folder size={20} strokeWidth={1.5} aria-hidden="true" />
+                <div className="sidebar-empty-title">No collections yet</div>
+                <p>A collection groups related requests and shares auth and variables with them.</p>
+                <div className="sidebar-empty-actions">
+                  <button onClick={() => setAddingCollection(true)}>
+                    <Plus size={14} strokeWidth={1.75} aria-hidden="true" />
+                    New collection
+                  </button>
+                  <button onClick={handleImport}>
+                    <Download size={14} strokeWidth={1.75} aria-hidden="true" />
+                    Import
+                  </button>
+                </div>
               </div>
             ) : null}
 
@@ -947,8 +1012,7 @@ export default function Sidebar() {
                       openEnvironmentTab(globals);
                     }}
                   >
-                    <span className="caret" />
-                    <span className="row-icon">
+                    <span className="row-icon env-icon">
                       <Globe size={14} strokeWidth={1.75} aria-hidden="true" />
                     </span>
                     <span className="name">Globals</span>
@@ -969,7 +1033,7 @@ export default function Sidebar() {
                     />
                   </div>
                 ) : null}
-                {sidebarEnvs()
+                {envList
                   .filter((ref) => {
                     const q = search.trim().toLowerCase();
                     if (!q) return true;
@@ -977,6 +1041,7 @@ export default function Sidebar() {
                   })
                   .map((ref) => {
                     const key = `env:${ref.file}`;
+                    const selected = ref.file === activeEnv;
                     return (
                       <div
                         className="tree-row"
@@ -991,13 +1056,15 @@ export default function Sidebar() {
                         onFocus={() => setFocusedKey(key)}
                         onClick={() => { ensureEnvironment(ref.file).catch((e) => toast(String(e), "error")); openEnvironmentTab(ref.file); }}
                       >
-                        <span className="caret" />
-                        <span className="row-icon">
-                          <Globe size={14} strokeWidth={1.75} aria-hidden="true" />
+                        <span className="row-icon env-icon">
+                          <span className={`env-status-dot${selected ? " on" : ""}`} />
                         </span>
                         <span className="name">{getEnvironment(ref.file)?.name ?? ref.name}</span>
+                        {selected ? <span className="env-active-label">active</span> : null}
                         <button
                           className={`icon menu-btn${menuKey === key ? " menu-open" : ""}`}
+                          aria-label="More actions"
+                          title="More actions"
                           onClick={(e) => {
                             e.stopPropagation();
                             setMenuKey(menuKey === key ? null : key);
@@ -1007,8 +1074,9 @@ export default function Sidebar() {
                         </button>
                         {menuKey === key ? (
                           <div className="menu" onClick={(e) => e.stopPropagation()}>
-                            <button onClick={() => handleExportEnvironment(ref.file)}>Export</button>
-                            <button onClick={() => handleDeleteEnvironment(ref.file)}>Delete</button>
+                            <MenuItem icon={Upload} label="Export" onClick={() => handleExportEnvironment(ref.file)} />
+                            <div className="menu-sep" />
+                            <MenuItem icon={Trash2} label="Delete" danger onClick={() => handleDeleteEnvironment(ref.file)} />
                           </div>
                         ) : null}
                       </div>
@@ -1193,6 +1261,8 @@ function CollectionNode(
         {dirty ? <span className="dot" /> : null}
         <button
           className={`icon menu-btn${menuKey === key ? " menu-open" : ""}`}
+          aria-label="More actions"
+          title="More actions"
           onClick={(e) => {
             e.stopPropagation();
             setMenuKey(menuKey === key ? null : key);
@@ -1202,37 +1272,19 @@ function CollectionNode(
         </button>
         {menuKey === key ? (
           <div className="menu" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => addChild(file, [], newRequestItem())}>Add Request</button>
-            <button onClick={() => addChild(file, [], newWebSocketItem())}>Add WebSocket</button>
-            <button onClick={() => addChild(file, [], newFolderItem())}>Add Folder</button>
-            <button onClick={() => startRename(key, coll?.info.name ?? fileRef.name)}>Rename</button>
-            <button
-              onClick={() => {
-                closeMenu();
-                openRunnerTab(file, []);
-              }}
-            >
-              Run
-            </button>
-            <button
-              onClick={() => {
-                closeMenu();
-                openCollectionTab(file);
-              }}
-            >
-              Overview
-            </button>
-            <button
-              onClick={() => {
-                closeMenu();
-                openCollectionTab(file, "environments");
-              }}
-            >
-              Environments
-            </button>
-            <button onClick={() => onDuplicate(file)}>Clone</button>
-            <button onClick={() => onExport(file)}>Export</button>
-            <button onClick={() => onDelete(file)}>Delete</button>
+            <MenuItem icon={Plus} label="Add request" onClick={() => addChild(file, [], newRequestItem())} />
+            <MenuItem icon={Plug} label="Add WebSocket" onClick={() => addChild(file, [], newWebSocketItem())} />
+            <MenuItem icon={FolderPlus} label="Add folder" onClick={() => addChild(file, [], newFolderItem())} />
+            <div className="menu-sep" />
+            <MenuItem icon={Pencil} label="Rename" onClick={() => startRename(key, coll?.info.name ?? fileRef.name)} />
+            <MenuItem icon={Copy} label="Clone" onClick={() => onDuplicate(file)} />
+            <MenuItem icon={Play} label="Run" onClick={() => { closeMenu(); openRunnerTab(file, []); }} />
+            <MenuItem icon={Upload} label="Export" onClick={() => onExport(file)} />
+            <div className="menu-sep" />
+            <MenuItem icon={LayoutDashboard} label="Overview" onClick={() => { closeMenu(); openCollectionTab(file); }} />
+            <MenuItem icon={Globe} label="Environments" onClick={() => { closeMenu(); openCollectionTab(file, "environments"); }} />
+            <div className="menu-sep" />
+            <MenuItem icon={Trash2} label="Delete" danger onClick={() => onDelete(file)} />
           </div>
         ) : null}
       </div>
@@ -1337,7 +1389,7 @@ function ItemRow(props: NodeShared & { file: string; path: number[]; item: Item;
         data-expanded={isFolder ? expanded : undefined}
         tabIndex={focusedKey === key ? 0 : -1}
         onFocus={() => onRowFocus(key)}
-        style={{ paddingLeft: 8 + depth * 14 }}
+        style={{ paddingLeft: 6 + depth * 14 }}
         onClick={handleClick}
         draggable={!renaming}
         onDragStart={(e) => onDragStart(e, file, path)}
@@ -1367,13 +1419,7 @@ function ItemRow(props: NodeShared & { file: string; path: number[]; item: Item;
         ) : (
           <span className="caret" />
         )}
-        {!isFolder ? (
-          isWebSocket(item) ? (
-            <span className="method-badge method-ws">WS</span>
-          ) : (
-            <span className={`method-badge method-${methodClass(item.request!.method)}`}>{item.request!.method}</span>
-          )
-        ) : null}
+        {!isFolder ? <MethodTag method={item.request!.method} ws={isWebSocket(item)} /> : null}
         {renaming ? (
           <input
             autoFocus
@@ -1391,6 +1437,8 @@ function ItemRow(props: NodeShared & { file: string; path: number[]; item: Item;
         )}
         <button
           className={`icon menu-btn${menuKey === key ? " menu-open" : ""}`}
+          aria-label="More actions"
+          title="More actions"
           onClick={(e) => {
             e.stopPropagation();
             setMenuKey(menuKey === key ? null : key);
@@ -1400,32 +1448,24 @@ function ItemRow(props: NodeShared & { file: string; path: number[]; item: Item;
         </button>
         {menuKey === key ? (
           <div className="menu" onClick={(e) => e.stopPropagation()}>
-            {isFolder ? <button onClick={() => addChild(file, path, newRequestItem())}>Add Request</button> : null}
-            {isFolder ? <button onClick={() => addChild(file, path, newWebSocketItem())}>Add WebSocket</button> : null}
-            {isFolder ? <button onClick={() => addChild(file, path, newFolderItem())}>Add Folder</button> : null}
-            <button onClick={() => startRename(key, item.name)}>Rename</button>
-            <button onClick={() => duplicateRow(file, path)}>Duplicate</button>
             {isFolder ? (
-              <button
-                onClick={() => {
-                  closeMenu();
-                  openRunnerTab(file, path);
-                }}
-              >
-                Run
-              </button>
+              <>
+                <MenuItem icon={Plus} label="Add request" onClick={() => addChild(file, path, newRequestItem())} />
+                <MenuItem icon={Plug} label="Add WebSocket" onClick={() => addChild(file, path, newWebSocketItem())} />
+                <MenuItem icon={FolderPlus} label="Add folder" onClick={() => addChild(file, path, newFolderItem())} />
+                <div className="menu-sep" />
+              </>
             ) : null}
+            <MenuItem icon={Pencil} label="Rename" onClick={() => startRename(key, item.name)} />
+            <MenuItem icon={Copy} label="Duplicate" onClick={() => duplicateRow(file, path)} />
             {isFolder ? (
-              <button
-                onClick={() => {
-                  closeMenu();
-                  openFolderTab(file, path);
-                }}
-              >
-                Settings
-              </button>
+              <>
+                <MenuItem icon={Play} label="Run" onClick={() => { closeMenu(); openRunnerTab(file, path); }} />
+                <MenuItem icon={SlidersHorizontal} label="Settings" onClick={() => { closeMenu(); openFolderTab(file, path); }} />
+              </>
             ) : null}
-            <button onClick={() => deleteItem(file, path, item.name)}>Delete</button>
+            <div className="menu-sep" />
+            <MenuItem icon={Trash2} label="Delete" danger onClick={() => deleteItem(file, path, item.name)} />
           </div>
         ) : null}
       </div>

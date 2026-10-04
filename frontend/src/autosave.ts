@@ -26,6 +26,19 @@ export interface AutosaveDeps {
   onSettingsChanged?: (cb: () => void) => () => void;
 }
 
+// When each file last saved successfully by auto-save, for the status bar.
+const lastSaved = new Map<string, number>();
+const savedListeners = new Set<() => void>();
+
+export function lastAutosaveAt(file: string): number | undefined {
+  return lastSaved.get(file);
+}
+
+export function onAutosaved(cb: () => void): () => void {
+  savedListeners.add(cb);
+  return () => savedListeners.delete(cb);
+}
+
 // startAutosave runs getSettings().seconds apart, saving whatever listDirty() reports as dirty
 // at that moment. Returns a cleanup function that stops the timer.
 export function startAutosave(deps: AutosaveDeps): () => void {
@@ -41,7 +54,11 @@ export function startAutosave(deps: AutosaveDeps): () => void {
       if (inFlight.has(file)) continue;
       inFlight.add(file);
       save()
-        .then(() => failed.delete(file))
+        .then(() => {
+          failed.delete(file);
+          lastSaved.set(file, Date.now());
+          savedListeners.forEach((cb) => cb());
+        })
         .catch((err) => {
           if (!failed.has(file)) {
             failed.add(file);

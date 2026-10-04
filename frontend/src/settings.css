@@ -1,17 +1,15 @@
-/* App Settings tab layout: a fixed-width rail of sections on the left, independently
-   scrolling content on the right. Section content itself still uses .settings-page /
-   .settings-section from panels.css. */
+/* App Settings tab: a rail of sections on the left, an independently scrolling content column on the
+   right. Every setting is one row: label and help on the left, controls on the right. */
 
 .settings-shell {
-  display: flex;
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
   flex: 1 1 auto;
   min-height: 0;
   height: 100%;
 }
 
 .settings-rail {
-  flex: 0 0 190px;
-  width: 190px;
   overflow-y: auto;
   padding: 12px 8px;
   display: flex;
@@ -21,20 +19,34 @@
   background: var(--surface-raised);
 }
 
+.rail-label {
+  padding: 0 8px 6px;
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  color: var(--text-subtlest);
+}
+
 .settings-rail-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
   width: 100%;
-  padding: 7px 10px;
+  height: calc(var(--h-row) + 2px);
+  padding: 0 8px;
   border: none;
   border-radius: var(--radius-small);
   background: transparent;
   color: var(--text-subtle);
-  font-size: var(--font-size-ui);
+  font-weight: 400;
   text-align: left;
-  cursor: pointer;
 }
 
-.settings-rail-item:hover {
+.settings-rail-item svg {
+  color: var(--text-subtlest);
+}
+
+.settings-rail-item:hover:not(:disabled) {
   background: var(--surface-hover);
   color: var(--text);
 }
@@ -42,20 +54,364 @@
 .settings-rail-item[aria-current="true"] {
   background: var(--surface-active);
   color: var(--text);
-  font-weight: 600;
 }
 
-.settings-rail-item:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: -2px;
+.settings-rail-item[aria-current="true"] svg {
+  color: var(--text);
 }
 
 .settings-content {
-  flex: 1 1 auto;
   min-width: 0;
   overflow-y: auto;
 }
 
-.settings-seconds-input {
-  width: 70px;
+.set-col {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 640px;
+  min-height: 100%;
+  margin: 0 auto;
+  padding: 26px 24px 0;
+}
+
+.set-title {
+  margin: 0;
+  font-size: var(--fs-display);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+.sset {
+  margin-top: 28px;
+}
+
+.sset h2 {
+  margin: 0 0 8px;
+  font-size: var(--fs-title);
+  font-weight: 600;
+}
+
+.sset .sub {
+  margin: -4px 0 8px;
+  font-size: var(--fs-small);
+  color: var(--text-subtlest);
+}
+
+.srow {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.srow .lbl {
+  flex: 1 1 200px;
+  min-width: 200px;
+}
+
+.srow .lbl b {
+  display: block;
+  font-weight: 500;
+}
+
+.srow .lbl span {
+  display: block;
+  font-size: var(--fs-small);
+  color: var(--text-subtlest);
+  overflow-wrap: anywhere;
+}
+
+.srow .ctl {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.srow .ctl.wrap {
+  flex-wrap: wrap;
+  max-width: 330px;
+}
+
+.srow.stack .ctl {
+  flex-direction: column;
+  align-items: stretch;
+  width: 320px;
+}
+
+.srow .ctl input[type="text"] {
+  min-width: 0;
+}
+
+.font-picker-select {
+  width: 200px;
+}
+
+.srow .ctl .font-custom {
+  order: 3;
+  flex: 1 1 100%;
+}
+
+.size-affix {
+  width: 72px;
+}
+
+.size-affix input {
+  text-align: right;
+}
+
+.num-in {
+  width: 72px;
+  text-align: right;
+}
+
+.unit {
+  font-size: var(--fs-small);
+  color: var(--text-subtlest);
+}
+
+/* No native spinners: they eat the digits at these widths. */
+.srow input[type="number"],
+.affix input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+  height: var(--h-control);
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.srow input[type="number"]::-webkit-outer-spin-button,
+.srow input[type="number"]::-webkit-inner-spin-button,
+.affix input[type="number"]::-webkit-outer-spin-button,
+.affix input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+  margin: 0;
+}
+
+/* --- switch: a checkbox underneath, drawn as a track and a knob --- */
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 26px;
+  height: 15px;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+
+.switch input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.switch .track {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--surface-active);
+  pointer-events: none;
+}
+
+.switch .track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--text-subtle);
+}
+
+.switch input:checked + .track {
+  background: var(--primary-button);
+}
+
+.switch input:checked + .track::after {
+  left: 13px;
+  background: var(--primary-button-text);
+}
+
+.switch input:focus-visible + .track {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+
+.switch input:disabled + .track {
+  opacity: 0.5;
+}
+
+/* --- radios --- */
+
+.radios {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.rd {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.rd input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-grid;
+  place-content: center;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  flex: 0 0 auto;
+  border: 1.5px solid var(--text-subtlest);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.rd input[type="radio"]:checked {
+  border-color: var(--primary);
+}
+
+.rd input[type="radio"]:checked::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.reveal {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 12px 14px 14px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+}
+
+.reveal .field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.reveal .field label {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-subtle);
+}
+
+.reveal .field .help {
+  font-size: var(--fs-small);
+  color: var(--text-subtlest);
+}
+
+.reveal input {
+  width: 100%;
+}
+
+.reveal-note {
+  margin: 0 0 12px;
+}
+
+.filechip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 200px;
+  height: var(--h-control);
+  padding: 0 10px;
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-small);
+  background: var(--surface-input);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filechip svg {
+  flex: 0 0 auto;
+  color: var(--text-subtlest);
+}
+
+.cert-table td.file {
+  padding: 0 2px;
+}
+
+.cert-table td.file button {
+  max-width: 100%;
+  justify-content: flex-start;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+
+.cert-table .pg-add svg {
+  margin-right: 2px;
+}
+
+/* Pinned to the bottom of the column. */
+.set-foot {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0 18px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--surface);
+  color: var(--text-subtlest);
+  font-size: var(--fs-small);
+}
+
+.settings-error {
+  color: var(--danger);
+}
+
+/* --- keyboard: the shortcut list --- */
+.skeys-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.skeys-filter {
+  width: 220px;
+}
+
+.skeys {
+  margin-top: 16px;
+}
+
+.skeys h3 {
+  margin: 0 0 4px;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-subtle);
+}
+
+.skeys .shortcuts-help-row {
+  min-height: 36px;
+  border-bottom: 1px solid var(--border-subtle);
 }

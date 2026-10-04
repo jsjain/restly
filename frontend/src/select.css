@@ -1,6 +1,6 @@
 /* Select: generic custom dropdown replacing the native select element, styled to match
-   the text-input/select look from styles.css. See methodSelect.css for the sibling
-   pattern this was copied from. */
+   the text-input look from styles.css. The popover uses the shared menu look (styles.css .menu).
+   See methodSelect.css for the sibling pattern this was copied from. */
 
 .select-trigger {
   display: inline-flex;
@@ -8,8 +8,8 @@
   justify-content: space-between;
   gap: 8px;
   min-width: 60px;
-  height: 30px;
-  padding: 5px 8px;
+  height: var(--h-control);
+  padding: 0 8px;
   background: var(--surface-input);
   border: 1px solid var(--border-control);
   border-radius: var(--radius-small);
@@ -17,13 +17,6 @@
   font-weight: 400;
   cursor: pointer;
   text-align: left;
-}
-
-/* In dialog forms the dropdown fills the row like the text fields beside it. */
-.modal-panel .field-row > .select-trigger,
-.modal-panel .field-row > input[type="text"] {
-  flex: 1 1 auto;
-  min-width: 0;
 }
 
 .select-trigger:hover:not(:disabled) {
@@ -56,8 +49,9 @@
 }
 
 .select-trigger:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 1px;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 1px var(--border-focus);
+  outline: none;
 }
 
 .select-value {
@@ -84,11 +78,11 @@
   transform: rotate(180deg);
 }
 
+/* No border: --shadow-overlay draws a 1px ring. */
 .select-popover {
   position: fixed;
   z-index: 1000;
   background: var(--surface-overlay);
-  border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-overlay);
   padding: 4px;
@@ -104,12 +98,13 @@
   align-items: center;
   gap: 8px;
   flex: 0 0 auto;
-  height: auto;
-  padding: 6px 10px;
+  height: var(--h-row);
+  padding: 0 8px;
   background: none;
   border: none;
-  border-radius: calc(var(--radius-small) - 2px);
+  border-radius: var(--radius-xs);
   color: var(--text);
+  font-weight: 400;
   text-align: left;
   /* The global button rule centers content. */
   justify-content: flex-start;
@@ -118,7 +113,13 @@
 
 .select-option.highlighted,
 .select-option:hover:not(:disabled) {
-  background: var(--surface-hover);
+  background: var(--surface-active);
+}
+
+.select-option[aria-selected="true"],
+.select-option[aria-selected="true"].highlighted,
+.select-option[aria-selected="true"]:hover:not(:disabled) {
+  background: var(--primary-tint);
 }
 
 .select-option:disabled {
@@ -126,11 +127,19 @@
   cursor: default;
 }
 
+.select-option-icon {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  color: var(--text-subtle);
+}
+
 .select-check {
   display: inline-flex;
   align-items: center;
   width: 14px;
   flex: 0 0 auto;
+  margin-left: auto;
   color: var(--primary);
 }
 
@@ -138,4 +147,5 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: pre;
+  min-width: 0;
 }

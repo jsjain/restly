@@ -11,7 +11,7 @@
 .kv-empty-hint {
   margin: 0;
   color: var(--text-subtle);
-  font-size: 12px;
+  font-size: var(--fs-small);
 }
 
 .kv-add-btn {
@@ -19,21 +19,29 @@
   margin-top: 6px;
 }
 
-/* Delete button: a red x, visible at rest (not just on hover), with a tinted hover fill. */
+/* Row delete: shown while the row is hovered or has focus, so a tab stop on it is never invisible. */
 .kv-delete {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   padding: 0;
   background: transparent;
   border: 1px solid transparent;
   border-radius: var(--radius-small);
-  color: var(--danger);
+  color: var(--text-subtlest);
   flex: 0 0 auto;
+  opacity: 0;
 }
 
-.kv-delete:hover {
-  background: color-mix(in srgb, var(--danger) 16%, transparent);
+tr:hover .kv-delete,
+tr:focus-within .kv-delete,
+.kv-delete:focus-visible {
+  opacity: 1;
+}
+
+.kv-delete:hover:not(:disabled) {
+  background: var(--danger-tint);
+  color: var(--danger);
 }

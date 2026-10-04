@@ -11,6 +11,7 @@ const STORAGE_KEY = "restly.theme";
 // The active imported theme, already converted, so initTheme() can apply it before api.listThemes() resolves.
 const IMPORTED_CACHE_KEY = "restly.theme.imported";
 const FONTS_KEY = "restly.fonts";
+const DENSITY_KEY = "restly.density";
 const IMPORTED_PREFIX = "vscode:";
 
 const registry = new Map<string, Theme>(builtinThemes.map((t) => [t.id, t]));
@@ -124,6 +125,7 @@ export function initTheme(): void {
     if (cached?.id === id) registry.set(id, cached);
   }
   applyTheme(id);
+  applyDensity();
   loadImportedThemes().catch((err) => console.error("Failed to load imported themes:", err));
 }
 
@@ -186,4 +188,25 @@ function fontOverrides(): Partial<ThemeTokens> {
   if (fonts.uiSize) out.fontSizeUi = `${fonts.uiSize}px`;
   if (fonts.monoSize) out.fontSizeMono = `${fonts.monoSize}px`;
   return out;
+}
+
+// --- density ---
+
+export type Density = "compact" | "default" | "comfortable";
+
+export function getDensity(): Density {
+  const d = localStorage.getItem(DENSITY_KEY);
+  return d === "compact" || d === "comfortable" ? d : "default";
+}
+
+// "default" has no attribute, so styles.css [data-density] rules only describe the changes.
+function applyDensity(): void {
+  const d = getDensity();
+  if (d === "default") delete document.documentElement.dataset.density;
+  else document.documentElement.dataset.density = d;
+}
+
+export function setDensity(d: Density): void {
+  localStorage.setItem(DENSITY_KEY, d);
+  applyDensity();
 }

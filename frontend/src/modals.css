@@ -1,0 +1,146 @@
+/* Toasts and modals. The modal classes are also used by Sidebar's Import cURL dialog. */
+
+/* --- toasts --- */
+
+.toasts {
+  position: fixed;
+  right: 16px;
+  bottom: calc(var(--h-status) + 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 100;
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  padding: 10px 12px;
+  background: var(--surface-overlay);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-overlay);
+  cursor: pointer;
+}
+
+.toast-icon {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--text-subtle);
+}
+
+.toast.error .toast-icon {
+  color: var(--danger);
+}
+
+.toast-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.toast button.icon {
+  width: 22px;
+  height: 22px;
+  margin: -1px -4px 0 0;
+  color: var(--text-subtlest);
+}
+
+/* --- modals --- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay-backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 90;
+}
+
+/* No border: --shadow-overlay draws a 1px ring. */
+.modal-panel {
+  background: var(--surface-overlay);
+  border-radius: var(--radius-large);
+  padding: 18px 20px;
+  width: 440px;
+  max-width: 90vw;
+  box-shadow: var(--shadow-overlay);
+}
+
+.modal-panel:has(.curl-textarea) {
+  width: 480px;
+}
+
+.modal-title {
+  font-size: var(--fs-title);
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.modal-panel p {
+  margin: 0;
+  color: var(--text-subtle);
+  line-height: 1.5;
+}
+
+.modal-panel .hint {
+  margin: 8px 0 0;
+  font-size: var(--fs-small);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+/* "Don't save" sits apart from the Cancel and Save pair. */
+.modal-actions .modal-actions-left {
+  margin-right: auto;
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 14px;
+}
+
+.modal-field > label {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-subtle);
+}
+
+.modal-field > input[type="text"],
+.modal-field > .select-trigger {
+  width: 100%;
+  min-width: 0;
+}
+
+.modal-field-inline {
+  display: flex;
+  gap: 8px;
+}
+
+.modal-field-inline > input[type="text"] {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.curl-textarea {
+  display: block;
+  width: 100%;
+  min-height: 118px;
+  background: var(--surface-input);
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-small);
+  padding: 8px 10px;
+  line-height: 19px;
+  resize: vertical;
+}

@@ -1,0 +1,13 @@
+# Testing and performance
+
+How Restly is tested and its performance targets. Part of the [Restly spec](README.md).
+
+## D8 Testing
+
+Round-trip real Postman collections, listed in the `RESTLY_REAL_COLLECTIONS` environment variable, with a semantic JSON diff. Every script in those collections also runs against a fake `{}` response and fails only on a missing API (`TestRealCollectionScriptsRun`, 2026-09-15). Script tests against `httptest`. Body mode and auth tests. Run generated cURL, Go, and fetch snippets against `httptest`. Not done: validating exports against the v2.1 JSON schema.
+
+Verified 2026-09-13: `go test ./...` passes for all seven packages, and httpx also passes under the race detector. A headless Chrome smoke run against `wails dev` checked the workspace list, a send with a test script that stores a token, a send using that token through folder bearer auth, the cURL snippet panel, and a raw open-and-save of a real collection that came back byte-identical. The production bundle launched and stayed up, but its WKWebView window was not inspected. A second run on 2026-09-14 against a local echo server checked Import cURL, sending a standalone request (method, headers, JSON body), pasting a cURL command into the URL field (basic auth reached the server), and saving the draft into a collection created from the save dialog, which wrote the auth to `request.auth`. A third run on 2026-09-14 checked the D12 to D24 work end to end: the collection overview and clone, the command palette opening a request, method badges on tabs, variable highlighting in the URL, fuzzy sidebar search, a standalone send setting a cookie that the Cookies tab lists and that history records, middle click on an edited draft asking to save, the tab context menu's Close Other Tabs, a WebSocket connect, echo, and disconnect against a local server, the shortcuts help, theme switching, and saving settings. Go packages `httpx` (proxy, TLS, client certificates, cookie jar), `ws`, and `history` have their own tests under the race detector. Not checked: a real proxy or mTLS server through the UI, and the quit prompt in the native window. The runner tab, environment tab, import and export dialogs, and non-raw body modes were checked only by Go tests, not in the UI.
+
+## D9 Performance targets
+
+Cold start under 1 s, idle memory under 150 MB, 5 MB collection opens under 200 ms, under 20 ms overhead per send beyond network time. Measured on an M4 Pro, 2026-09-13: Go model decode of a 5 MB collection 124 ms, encode about 220 ms (used only when scripts change collection variables), script run 0.15 ms without Chai and 0.7 ms with Chai.

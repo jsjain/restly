@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Check, ChevronDown } from "lucide-react";
 import "../methodSelect.css";
@@ -203,7 +203,7 @@ export default function MethodSelect({ value, onChange, disabled }: Props) {
       >
         <span className={`method-select-label ${colorClass(value)}`}>{value}</span>
         <span className="method-select-chevron" aria-hidden="true">
-          <ChevronDown size={15} strokeWidth={1.75} />
+          <ChevronDown size={12} strokeWidth={2} />
         </span>
       </button>
       {open && pos
@@ -218,33 +218,35 @@ export default function MethodSelect({ value, onChange, disabled }: Props) {
             >
               {options.map((opt, i) => {
                 if ("customEntry" in opt) {
-                  return customEditing ? (
-                    <input
-                      key="custom-input"
-                      ref={customInputRef}
-                      type="text"
-                      className="method-select-custom-input mono"
-                      value={customText}
-                      placeholder="Custom method"
-                      onChange={(e) => setCustomText(e.target.value)}
-                      onBlur={() => {
-                        setCustomEditing(false);
-                        setCustomText("");
-                      }}
-                    />
-                  ) : (
-                    <button
-                      key="custom-entry"
-                      type="button"
-                      role="option"
-                      aria-selected={false}
-                      className={`method-select-option ${highlighted === i ? "highlighted" : ""}`}
-                      onMouseEnter={() => setHighlighted(i)}
-                      onClick={() => setCustomEditing(true)}
-                    >
-                      <span className="method-select-check" />
-                      <span className="method-select-custom-label">Custom…</span>
-                    </button>
+                  return (
+                    <Fragment key="custom">
+                      <div className="method-select-sep" role="separator" />
+                      {customEditing ? (
+                        <input
+                          ref={customInputRef}
+                          type="text"
+                          className="method-select-custom-input mono"
+                          value={customText}
+                          placeholder="Custom method"
+                          onChange={(e) => setCustomText(e.target.value)}
+                          onBlur={() => {
+                            setCustomEditing(false);
+                            setCustomText("");
+                          }}
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={false}
+                          className={`method-select-option ${highlighted === i ? "highlighted" : ""}`}
+                          onMouseEnter={() => setHighlighted(i)}
+                          onClick={() => setCustomEditing(true)}
+                        >
+                          <span className="method-select-custom-label">Custom…</span>
+                        </button>
+                      )}
+                    </Fragment>
                   );
                 }
                 const selected = opt.method === value;
@@ -258,11 +260,15 @@ export default function MethodSelect({ value, onChange, disabled }: Props) {
                     onMouseEnter={() => setHighlighted(i)}
                     onClick={() => pick(opt.method)}
                   >
-                    <span className="method-select-check">{selected ? <Check size={14} strokeWidth={2} /> : null}</span>
                     <span className={`method-select-option-label ${colorClass(opt.method)}`}>{opt.method}</span>
+                    {selected ? <Check className="method-select-check" size={14} strokeWidth={2} aria-hidden="true" /> : null}
                   </button>
                 );
               })}
+              <div className="method-select-sep" role="separator" />
+              <div className="method-select-hint" role="presentation">
+                Type g, p or d to pick
+              </div>
             </div>,
             document.body
           )

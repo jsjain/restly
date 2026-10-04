@@ -1,5 +1,4 @@
 import { useEffect, useRef, useSyncExternalStore } from "react";
-import "../dialog.css";
 import { getSnapshot, respond, subscribe } from "../dialog";
 
 // Renders whatever confirmDialog() in dialog.ts currently has open, or nothing. Mount once
@@ -43,14 +42,14 @@ export default function ConfirmDialog() {
 
   return (
     <div className="modal-overlay" onClick={cancel} onKeyDown={onKeyDown}>
-      <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-panel" role="alertdialog" aria-modal="true" aria-label={options.title} onClick={(e) => e.stopPropagation()}>
         <div className="modal-title">{options.title}</div>
         <p>{options.message}</p>
         <div className="modal-actions">
           <button ref={cancelRef} onClick={cancel}>
             {options.cancelLabel ?? "Cancel"}
           </button>
-          <button ref={confirmRef} className={options.danger ? "danger" : "primary"} onClick={confirm}>
+          <button ref={confirmRef} className={options.danger ? "primary danger" : "primary"} onClick={confirm}>
             {options.confirmLabel}
           </button>
         </div>

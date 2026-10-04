@@ -1,0 +1,170 @@
+/* Proposed Restly tokens. Names match ThemeTokens in frontend/src/theme/tokens.ts so each value
+   maps 1:1 to themes.ts (or to a restly.<token> key in a VS Code theme). Layout tokens below the
+   colors are new: a type scale, control heights, and three radii instead of one. */
+
+@font-face {
+  font-family: "Inter Variable";
+  src: url("inter.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: block;
+}
+
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  /* Surfaces: one neutral ramp, no warm/cool mix. Editor surface stays #262626. */
+  --surface: #262626;
+  --surface-raised: #1e1e1e; /* sidebar, tab strip, status bar */
+  --surface-overlay: #2b2b2b; /* menus, palette, popovers */
+  --surface-hover: #2f2f2f;
+  --surface-active: #383838;
+  --surface-input: #2c2c2c;
+
+  --text: #e3e3e3;
+  --text-subtle: #a6a6a6;
+  --text-subtlest: #8d8d8d;
+
+  --border: #3d3d3d; /* 1.41:1 on surface, the guard's floor */
+  --border-subtle: #333333; /* dividers on the raised surface */
+  --border-control: #3d3d3d;
+  --border-focus: #4d8ef7;
+
+  /* One accent. */
+  --primary: #6aa3ff;
+  --primary-button: #2d6fdb;
+  --primary-button-hover: #2862c4;
+  --primary-button-text: #ffffff;
+  --primary-tint: rgba(77, 142, 247, 0.14);
+
+  --info: #6aa3ff;
+  --success: #4cc38a;
+  --success-tint: rgba(76, 195, 138, 0.13);
+  --notice: #e0b25c;
+  --warning: #e0b25c;
+  --warning-tint: rgba(224, 178, 92, 0.13);
+  --danger: #f07a7a;
+  --danger-tint: rgba(240, 122, 122, 0.13);
+
+  /* Methods: same lightness, saturation held under ~55%. POST is amber, not neon yellow. */
+  --method-get: #5fbf8f;
+  --method-post: #e0b25c;
+  --method-put: #6aa3e8;
+  --method-patch: #b99be8;
+  --method-delete: #e88080;
+  --method-head: #9aa0a6;
+  --method-options: #d99a6c;
+  --method-ws: #5cc0d0;
+
+  --var-defined: #5fbf8f;
+  --var-defined-bg: rgba(95, 191, 143, 0.14);
+  --var-undefined: #f07a7a;
+  --var-undefined-bg: rgba(240, 122, 122, 0.14);
+
+  --selection: #264f78;
+  --line-highlight: rgba(255, 255, 255, 0.025);
+  --line-highlight-border: transparent;
+
+  --syntax-string: #ce9178;
+  --syntax-number: #b5cea8;
+  --syntax-keyword: #569cd6;
+  --syntax-property: #9cdcfe;
+  --syntax-comment: #6a9955;
+  --syntax-punctuation: #a6a6a6;
+  --syntax-boolean: #569cd6;
+
+  --shadow-overlay: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 12px 32px rgba(0, 0, 0, 0.45);
+  --overlay-backdrop: rgba(0, 0, 0, 0.42);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --surface: #ffffff;
+  --surface-raised: #f6f6f7;
+  --surface-overlay: #ffffff;
+  --surface-hover: #efeff1;
+  --surface-active: #e6e6e9;
+  --surface-input: #ffffff;
+
+  --text: #1d1d1f;
+  --text-subtle: #5a5a60;
+  --text-subtlest: #6e6e74;
+
+  --border: #d6d6da;
+  --border-subtle: #e4e4e7;
+  --border-control: #d6d6da;
+  --border-focus: #1f63d1;
+
+  --primary: #1f63d1;
+  --primary-button: #1f63d1;
+  --primary-button-hover: #1b57b8;
+  --primary-button-text: #ffffff;
+  --primary-tint: rgba(31, 99, 209, 0.1);
+
+  --info: #1f63d1;
+  --success: #17804d;
+  --success-tint: rgba(23, 128, 77, 0.1);
+  --notice: #8f5f00;
+  --warning: #8f5f00;
+  --warning-tint: rgba(143, 95, 0, 0.1);
+  --danger: #c23b3b;
+  --danger-tint: rgba(194, 59, 59, 0.09);
+
+  --method-get: #17804d;
+  --method-post: #8f5f00;
+  --method-put: #1f5fbf;
+  --method-patch: #7447bd;
+  --method-delete: #c23b3b;
+  --method-head: #5a5a60;
+  --method-options: #a24f17;
+  --method-ws: #0f7385;
+
+  --var-defined: #17804d;
+  --var-defined-bg: rgba(23, 128, 77, 0.1);
+  --var-undefined: #c23b3b;
+  --var-undefined-bg: rgba(194, 59, 59, 0.09);
+
+  --selection: #add6ff;
+  --line-highlight: rgba(0, 0, 0, 0.025);
+  --line-highlight-border: transparent;
+
+  --syntax-string: #a31515;
+  --syntax-number: #098658;
+  --syntax-keyword: #0000ff;
+  --syntax-property: #0451a5;
+  --syntax-comment: #008000;
+  --syntax-punctuation: #5a5a60;
+  --syntax-boolean: #0000ff;
+
+  --shadow-overlay: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 12px 32px rgba(0, 0, 0, 0.14);
+  --overlay-backdrop: rgba(0, 0, 0, 0.18);
+}
+
+:root {
+  --font-ui: "Inter Variable", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Type scale: 11 / 12 / 13 / 15 / 20. Weights 400, 500, 600 only. */
+  --fs-micro: 11px;
+  --fs-small: 12px;
+  --fs-ui: 13px;
+  --fs-title: 15px;
+  --fs-display: 20px;
+  --fs-mono: 12.5px;
+
+  /* Heights */
+  --h-bar: 40px; /* tab strip and sidebar header: the drag region */
+  --h-control: 28px;
+  --h-url: 34px;
+  --h-row: 26px; /* tree, menus */
+  --h-table-row: 30px;
+  --h-status: 24px;
+
+  /* Radii: tight inside, softer on containers */
+  --radius-xs: 3px; /* badges, keycaps */
+  --radius-small: 5px; /* controls */
+  --radius: 7px; /* panels, popovers */
+  --radius-large: 10px; /* palette, dialogs */
+
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur: 120ms;
+}

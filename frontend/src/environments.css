@@ -1,8 +1,8 @@
-/* Environment picker groups and the collection overview's Environments sub-tab. */
+/* Environment picker groups, the environment editor and the collection overview's Environments sub-tab. */
 
 .menu-label {
   padding: 8px 10px 4px;
-  font-size: 11px;
+  font-size: var(--fs-micro);
   color: var(--text-subtlest);
   white-space: nowrap;
   overflow: hidden;
@@ -21,8 +21,8 @@
 
 .ov-envs {
   display: grid;
-  grid-template-columns: minmax(200px, 260px) 1fr;
-  gap: 16px;
+  grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
+  gap: 28px;
   min-height: 0;
   flex: 1 1 auto;
 }
@@ -31,8 +31,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  border-right: 1px solid var(--border-subtle);
-  padding-right: 12px;
+  align-self: start;
 }
 
 .ov-env-new {
@@ -44,25 +43,35 @@
 .ov-env-new input {
   flex: 1 1 auto;
   min-width: 0;
+  height: var(--h-control);
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .ov-env-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 8px;
-  border-radius: 6px;
+  min-height: var(--h-row);
+  padding: 0 6px;
+  border-radius: var(--radius-small);
   cursor: pointer;
   color: var(--text-subtle);
 }
 
 .ov-env-row:hover {
   background: var(--surface-hover);
+  color: var(--text);
 }
 
 .ov-env-row.selected {
   background: var(--surface-active);
   color: var(--text);
+}
+
+.ov-env-row:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: -2px;
 }
 
 .ov-env-name {
@@ -73,31 +82,90 @@
   white-space: nowrap;
 }
 
-.ov-env-active {
-  font-size: 11px;
-  color: var(--primary);
-}
-
-.ov-link-btn {
-  font-size: 11px;
-  padding: 0 4px;
-  height: auto;
-  background: none;
-  border: none;
-  color: var(--text-subtlest);
+/* Row actions appear on hover or focus. */
+.ov-env-row .ov-link-btn,
+.ov-env-row .ov-row-del {
+  height: 20px;
   opacity: 0;
+  color: var(--text-subtlest);
 }
 
-.ov-env-row:hover .ov-link-btn {
+.ov-env-row .ov-link-btn {
+  padding: 0 6px;
+  font-size: var(--fs-micro);
+}
+
+.ov-env-row .ov-row-del {
+  width: 20px;
+}
+
+.ov-env-row:hover .ov-link-btn,
+.ov-env-row:hover .ov-row-del,
+.ov-env-row:focus-within .ov-link-btn,
+.ov-env-row:focus-within .ov-row-del {
   opacity: 1;
 }
 
-.ov-link-btn:hover {
-  color: var(--primary);
+.ov-env-row .ov-row-del:hover:not(:disabled) {
+  color: var(--danger);
 }
 
 .ov-env-editor {
   min-width: 0;
   min-height: 0;
-  overflow: auto;
+}
+
+/* Embedded editor: the sub-tab already provides the page padding. */
+.ov-env-editor .page {
+  flex: none;
+}
+
+.ov-env-editor .page-head {
+  padding: 0;
+}
+
+.ov-env-editor .page-body {
+  padding: 12px 0 0;
+  overflow: visible;
+}
+
+/* --- environment editor --- */
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 6px 8px 6px 12px;
+  border-radius: var(--radius);
+  background: var(--warning-tint);
+  color: var(--text);
+}
+
+.banner svg {
+  flex: 0 0 auto;
+  color: var(--warning);
+}
+
+.banner button {
+  margin-left: 8px;
+  flex: 0 0 auto;
+}
+
+.vcell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.vcell > input,
+.vcell > .varinput-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.vcell .pg-eye {
+  width: 24px;
+  height: 24px;
+  color: var(--text-subtlest);
 }

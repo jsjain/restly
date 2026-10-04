@@ -1,58 +1,103 @@
-.ov-page {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 24px;
+/* Full-page tabs: the page header, the key-value table used by collection variables, environments and
+   settings, and the collection overview. Runner, cookies and settings add their own rules in panels.css
+   and settings.css on top of these. */
+
+/* --- page chrome --- */
+
+.page {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  width: 100%;
 }
 
-.ov-empty {
-  padding: 24px;
-  color: var(--text-subtle);
-}
-
-.ov-header {
+.page-head {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-start;
   gap: 12px;
+  padding: 20px 28px 0;
+  flex: 0 0 auto;
 }
 
-.ov-title-row {
+.page-titles {
+  min-width: 0;
+}
+
+.page-title-row {
   display: flex;
   align-items: center;
   gap: 10px;
   min-width: 0;
 }
 
-.ov-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text);
+.page-title {
   margin: 0;
-  cursor: text;
-  padding: 2px 6px;
-  border-radius: var(--radius);
+  font-size: var(--fs-display);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  color: var(--text);
+}
+
+.page-title .ok {
+  color: var(--success);
+}
+
+.page-title .bad {
+  color: var(--danger);
+}
+
+.page-title .dim {
+  color: var(--text-subtle);
+  font-weight: 500;
+}
+
+/* Click to rename: plain text that gets a soft background on hover. */
+.page-title.rename {
+  display: inline-block;
+  margin-left: -6px;
+  padding: 0 6px;
+  border-radius: var(--radius-small);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: text;
 }
 
-.ov-title:hover {
+.page-title.rename:hover {
   background: var(--surface-hover);
 }
 
-.ov-title-input {
-  font-size: 20px;
-  font-weight: 600;
+.page-title.rename:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+
+.page-title-input,
+.page-title-field {
+  margin-left: -7px;
+  padding: 0 6px;
+  height: auto;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-small);
+  font-family: inherit;
+  min-width: 120px;
+  max-width: 100%;
+}
+
+.page-title-input {
   background: var(--surface-input);
-  border: 1px solid var(--border-focus);
-  border-radius: var(--radius);
-  color: var(--text);
-  padding: 2px 6px;
+  border-color: var(--border-focus);
   min-width: 240px;
+}
+
+.page-title-field:hover {
+  background: var(--surface-hover);
+}
+
+.page-title-field:focus {
+  background: var(--surface-input);
 }
 
 .ov-dirty-dot {
@@ -63,165 +108,585 @@
   flex: 0 0 auto;
 }
 
-.ov-header-actions {
+.page-meta {
   display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: var(--fs-small);
+  color: var(--text-subtlest);
+}
+
+.page-meta .mono {
+  font-size: var(--fs-small);
+}
+
+.page-meta svg {
+  flex: 0 0 auto;
+}
+
+.dotsep {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--text-subtlest);
+  flex: 0 0 auto;
+}
+
+.page-acts {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
   gap: 8px;
   flex: 0 0 auto;
 }
 
-.ov-subtabs {
-  display: flex;
-  gap: 4px;
-  border-bottom: 1px solid var(--border-subtle);
+.page > .subtabs {
+  padding: 0 28px;
+  margin-top: 14px;
 }
 
-.ov-subtab {
-  background: none;
-  border: none;
-  border-radius: var(--radius) var(--radius) 0 0;
-  padding: 8px 14px;
+.page-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 20px 28px;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-body > * {
+  flex-shrink: 0;
+}
+
+.ov-hint {
+  margin: 0;
+  color: var(--text-subtlest);
+  font-size: var(--fs-small);
+}
+
+/* --- shared bits --- */
+
+.subtle {
   color: var(--text-subtle);
+}
+
+.subtlest {
+  color: var(--text-subtlest);
+}
+
+.stat-row {
+  display: flex;
+  gap: 24px;
+}
+
+.stat .v {
+  font-size: var(--fs-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat .l {
+  font-size: var(--fs-small);
+  color: var(--text-subtlest);
+}
+
+.card {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+}
+
+.progress {
+  display: flex;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--surface-active);
+  overflow: hidden;
+}
+
+.progress i {
+  display: block;
+  height: 100%;
+}
+
+.filter {
+  position: relative;
+  width: 240px;
+  flex: 0 0 auto;
+}
+
+.filter svg {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-subtlest);
+  pointer-events: none;
+}
+
+.filter input {
+  width: 100%;
+  height: var(--h-control);
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 28px;
+}
+
+.toolrow,
+.hintrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.hintrow {
+  color: var(--text-subtle);
+  font-size: var(--fs-small);
+}
+
+.toolrow .grow,
+.hintrow .grow,
+.secthead .grow {
+  flex: 1;
+}
+
+/* --- key-value table: hairline grid, quiet checkbox, actions on hover, trailing ghost row --- */
+
+.pg-wrap {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.pg-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.pg-table th {
+  height: 28px;
+  padding: 0 10px;
+  text-align: left;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-subtlest);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+}
+
+.pg-table th.r,
+.pg-table td.r {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.pg-table td {
+  height: var(--h-table-row);
+  padding: 0 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+}
+
+.pg-table th:last-child,
+.pg-table td:last-child {
+  border-right: 0;
+}
+
+.pg-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.pg-table tbody tr:hover td {
+  background: var(--surface-hover);
+}
+
+.pg-table .w-var {
+  width: 240px;
+}
+
+.pg-table .w-val {
+  width: 300px;
+}
+
+.pg-table .w-type {
+  width: 130px;
+}
+
+.pg-table .w-method {
+  width: 62px;
+}
+
+.pg-table .w-name {
+  width: 160px;
+}
+
+.pg-table .w-folder {
+  width: 120px;
+}
+
+.pg-table .ck {
+  width: 34px;
+  padding: 0;
+  text-align: center;
+}
+
+.pg-table .ck input {
+  vertical-align: middle;
+}
+
+.pg-table .acts {
+  width: 36px;
+  padding: 0;
+  text-align: center;
+}
+
+.pg-table td.in {
+  padding: 0 2px;
+}
+
+.pg-table td.d input {
+  color: var(--text-subtle);
+}
+
+.pg-table td.t {
+  padding: 0 8px;
+}
+
+.pg-table td.t .segmented button {
+  height: 20px;
+  padding: 0 7px;
+}
+
+/* Cells edit in place: no frame until the pointer or focus is on them. */
+.pg-table td.in input:not([type="checkbox"]) {
+  width: 100%;
+  background: transparent;
+  border-color: transparent;
+}
+
+.pg-table td.in input:not([type="checkbox"]):hover {
+  background: var(--surface-input);
+  border-color: var(--border-control);
+}
+
+.pg-table td.in input:not([type="checkbox"]):focus {
+  background: var(--surface-input);
+  border-color: var(--border-focus);
+}
+
+.pg-table tr.off td.in input:not([type="checkbox"]),
+.pg-table tr.off .varinput-mirror {
+  opacity: 0.45;
+}
+
+.pg-table .method-badge {
+  display: inline-block;
+  width: auto;
+  padding: 0;
+  text-align: left;
+}
+
+.pg-table .pg-del {
+  width: 24px;
+  height: 24px;
+  opacity: 0;
+  color: var(--text-subtlest);
+}
+
+.pg-table tr:hover .pg-del,
+.pg-table tr:focus-within .pg-del,
+.pg-table .pg-del:focus-visible {
+  opacity: 1;
+}
+
+.pg-table .pg-del:hover:not(:disabled) {
+  color: var(--danger);
+}
+
+.pg-table tr.pg-ghost td {
+  color: var(--text-subtlest);
   cursor: pointer;
 }
 
-.ov-subtab:hover {
+.pg-table .pg-add {
+  width: 100%;
+  height: 100%;
+  justify-content: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-weight: 400;
+}
+
+.pg-table .pg-add:hover:not(:disabled) {
+  background: none;
+}
+
+.pg-table tr.pg-empty td {
+  color: var(--text-subtlest);
+  cursor: default;
+}
+
+.pg-table tr.pg-open {
+  cursor: pointer;
+}
+
+.pg-table tr.pg-open:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: -2px;
+}
+
+.pg-bulk {
+  width: 100%;
+  min-height: 260px;
+  padding: 10px 12px;
+  background: var(--surface-input);
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius);
+  line-height: 1.6;
+  resize: vertical;
+  white-space: pre;
+}
+
+/* --- overview --- */
+
+.cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 32px;
+}
+
+.ov-main,
+.ov-side {
+  min-width: 0;
+}
+
+.secthead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  margin-bottom: 6px;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-subtle);
+}
+
+.secthead .c {
+  color: var(--text-subtlest);
+  font-variant-numeric: tabular-nums;
+}
+
+.secthead button {
+  height: 24px;
+  padding: 0 8px;
+}
+
+.requests-head {
+  margin-top: 14px;
+}
+
+.descbox {
+  margin: 0 -8px;
+  padding: 4px 8px 2px;
+  border-radius: var(--radius);
+  cursor: text;
+}
+
+.descbox:hover {
+  background: var(--surface-hover);
+}
+
+.descempty {
+  margin: 0 0 6px;
+}
+
+.prose {
+  max-width: 68ch;
+  line-height: 1.6;
+  color: var(--text-subtle);
+}
+
+.prose p {
+  margin: 0 0 8px;
+  white-space: pre-line;
+}
+
+.prose code {
+  padding: 1px 4px;
+  border-radius: var(--radius-xs);
   background: var(--surface-hover);
   color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
 }
 
-.ov-subtab.active {
-  background: var(--surface-raised);
-  color: var(--text);
-  font-weight: 600;
-}
-
-.ov-body {
-  padding-top: 4px;
+.descbox:hover .prose code {
+  background: var(--surface-active);
 }
 
 .ov-description {
   width: 100%;
+  min-height: 90px;
   resize: none;
   overflow: hidden;
-  min-height: 60px;
+  padding: 10px 12px;
   background: var(--surface-input);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-control);
   border-radius: var(--radius);
   color: var(--text);
-  padding: 10px 12px;
   font-family: inherit;
+  line-height: 1.6;
 }
 
-.ov-description::placeholder {
-  color: var(--text-subtlest);
+.reqs td.name {
+  color: var(--text);
 }
 
-.ov-stats {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  flex-wrap: wrap;
-}
-
-.ov-chip {
-  background: var(--surface-raised);
-  border: 1px solid var(--border-subtle);
-  border-radius: 999px;
-  padding: 4px 12px;
-  font-size: 12px;
+.reqs td.path,
+.reqs td.fold {
   color: var(--text-subtle);
 }
 
-.ov-filename {
-  margin-top: 12px;
-  font-size: 12px;
-  color: var(--text-subtlest);
-  font-family: var(--font-mono);
+.reqs td.path {
+  font-size: var(--fs-small);
 }
 
+.blk {
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.blk:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.blk .lbl {
+  margin-bottom: 6px;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-subtle);
+}
+
+.blk .li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+  color: var(--text);
+}
+
+.blk .li .sub {
+  margin-left: auto;
+  font-size: var(--fs-small);
+  color: var(--text-subtlest);
+}
+
+.blk .li .li-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.blk .li .tag {
+  margin-left: auto;
+}
+
+/* --- scripts, runs --- */
+
 .ov-scripts {
+  flex: 1 0 320px;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-height: 0;
-}
-
-.ov-hint {
-  color: var(--text-subtle);
-  font-size: 12px;
-  margin: 0;
 }
 
 .ov-script-editor {
-  height: 260px;
+  flex: 1 1 0;
+  min-height: 260px;
   display: flex;
 }
 
-.ov-var-table {
-  width: 100%;
-  border-collapse: collapse;
+/* The editor fills the page, so it needs a frame to show how far it reaches when the script is empty. */
+.ov-script-editor .cm-wrapper {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius);
-  overflow: hidden;
 }
 
-.ov-var-table th {
-  text-align: left;
-  font-weight: 500;
-  font-size: 11px;
+.ov-auth {
+  max-width: 900px;
+}
+
+.ov-auth > .ov-hint {
+  margin-bottom: 14px;
   color: var(--text-subtle);
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--surface-raised);
 }
 
-.ov-var-table td {
-  padding: 4px 10px;
-  vertical-align: middle;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.ov-var-table tr:last-child td {
-  border-bottom: none;
-}
-
-.ov-var-table input[type="text"] {
-  width: 100%;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  padding: 4px 6px;
-  color: var(--text);
-}
-
-.ov-var-table input[type="text"]:hover,
-.ov-var-table input[type="text"]:focus {
-  background: var(--surface-input);
-  border-color: var(--border);
-  outline: none;
-}
-
-.ov-var-table input[type="text"]::placeholder {
-  color: var(--text-subtlest);
-}
-
-.ov-icon-btn {
-  background: none;
-  border: none;
-  color: var(--text-subtle);
-  cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.ov-icon-btn:hover {
-  background: var(--surface-hover);
-  color: var(--text);
-}
-
+/* Empty state for the Runs sub-tab. */
 .ov-runs {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  align-items: flex-start;
+  align-items: center;
+  gap: 8px;
+  max-width: 420px;
+  margin: 64px auto 0;
+  text-align: center;
+}
+
+.ov-runs-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 4px;
+  border-radius: var(--radius);
+  background: var(--surface-hover);
+  color: var(--text-subtle);
+}
+
+.ov-runs h2 {
+  margin: 0;
+  font-size: var(--fs-title);
+  font-weight: 600;
+}
+
+.ov-runs p {
+  margin: 0 0 8px;
+  color: var(--text-subtle);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+}
+
+/* Environments list column. */
+.ov-env-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--h-row);
+  padding: 0 2px 0 6px;
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  color: var(--text-subtlest);
+}
+
+.ov-env-head button {
+  width: 22px;
+  height: 22px;
+}
+
+.ov-env-active {
+  font-size: var(--fs-micro);
+  color: var(--text-subtlest);
 }

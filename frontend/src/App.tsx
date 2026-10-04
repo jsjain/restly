@@ -1,6 +1,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import Sidebar from "./components/Sidebar";
 import Tabs from "./components/Tabs";
+import StatusBar from "./components/StatusBar";
 import Toasts from "./components/Toasts";
 import SaveRequestModal from "./components/SaveRequestModal";
 import ConfirmCloseModal from "./components/ConfirmCloseModal";
@@ -72,6 +73,7 @@ export default function App() {
         <Sidebar />
         <Tabs />
       </div>
+      <StatusBar />
       <Toasts />
       <Overlays />
       {state.savingDraft ? <SaveRequestModal tab={state.savingDraft} /> : null}

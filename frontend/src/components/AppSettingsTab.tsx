@@ -1,25 +1,74 @@
 import { useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
+import { File, Globe, Info, Keyboard, Palette, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import * as api from "../api";
 import { toast, setHistoryLimit } from "../store";
 import type { AppInfo, ClientCert, Settings } from "../types";
+import { listCommands, SETTINGS_SAVED } from "../commands";
+import { effectiveKeys, isCustomized } from "../shortcuts";
+import { fuzzyFilter, highlight } from "../fuzzy";
 import { type AutosaveSettings, loadAutosaveSettings, saveAutosaveSettings } from "../autosave";
 import { loadWrap, saveWrap } from "../editorPrefs";
 import ThemePicker from "../theme/ThemePicker";
 import FontPicker from "../theme/FontPicker";
+import { type Density, getDensity, setDensity } from "../theme/theme";
 import Select from "./Select";
+import { Kbd } from "./Kbd";
+import { ShortcutRow } from "./ShortcutsHelp";
 import logo from "../assets/logo.png";
+import "../overview.css";
 import "../about.css";
 import "../settings.css";
 
 const SECTIONS = [
-  { id: "general", label: "General" },
-  { id: "appearance", label: "Appearance" },
-  { id: "network", label: "Network" },
-  { id: "keyboard", label: "Keyboard" },
-  { id: "about", label: "About" },
-] as const;
+  { id: "general", label: "General", icon: SlidersHorizontal },
+  { id: "appearance", label: "Appearance", icon: Palette },
+  { id: "network", label: "Network", icon: Globe },
+  { id: "keyboard", label: "Keyboard", icon: Keyboard },
+  { id: "about", label: "About", icon: Info },
+] as const satisfies readonly { id: string; label: string; icon: LucideIcon }[];
 
 type SectionId = (typeof SECTIONS)[number]["id"];
+
+const DENSITIES: { value: Density; label: string }[] = [
+  { value: "compact", label: "Compact" },
+  { value: "default", label: "Default" },
+  { value: "comfortable", label: "Comfortable" },
+];
+
+const PROXY_MODES = [
+  { mode: "none", label: "None" },
+  { mode: "environment", label: "Environment variables" },
+  { mode: "custom", label: "Custom" },
+] as const;
+
+function baseName(path: string): string {
+  return path.split(/[\\/]/).pop() || path;
+}
+
+// A switch is a checkbox underneath, so it keeps its keyboard and screen reader behavior.
+function Switch({ checked, onChange, label, disabled }: { checked: boolean; onChange: (v: boolean) => void; label: string; disabled?: boolean }) {
+  return (
+    <label className="switch">
+      <input type="checkbox" role="switch" aria-label={label} checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
+      <span className="track" aria-hidden="true" />
+    </label>
+  );
+}
+
+// One setting: label and help on the left, the control on the right.
+function Row({ title, help, children, stack }: { title: string; help?: string; children: ReactNode; stack?: boolean }) {
+  return (
+    <div className={`srow${stack ? " stack" : ""}`}>
+      <div className="lbl">
+        <b>{title}</b>
+        {help ? <span>{help}</span> : null}
+      </div>
+      <div className="ctl">{children}</div>
+    </div>
+  );
+}
 
 const USER_AGENT_PRESETS = [
   { label: "Restly (default)", value: "" },
@@ -63,6 +112,7 @@ export default function AppSettingsTab() {
   const [historyText, setHistoryText] = useState("");
   const [logPath, setLogPath] = useState("");
   const uaInputRef = useRef<HTMLInputElement>(null);
+  const [density, setDensityChoice] = useState<Density>(getDensity);
 
   useEffect(() => {
     api
@@ -138,6 +188,7 @@ export default function AppSettingsTab() {
     setError("");
     try {
       await api.saveSettings(settings!);
+      window.dispatchEvent(new Event(SETTINGS_SAVED));
       toast("Settings saved");
     } catch (err) {
       setError(String(err));
@@ -199,10 +250,12 @@ export default function AppSettingsTab() {
 
   if (!settings) return <div className="empty-state">Loading…</div>;
   const net = settings.network;
+  const current = SECTIONS.find((s) => s.id === section)!;
 
   return (
     <div className="settings-shell">
       <nav className="settings-rail" aria-label="Settings sections">
+        <div className="rail-label">Settings</div>
         {SECTIONS.map((s) => (
           <button
             key={s.id}
@@ -211,138 +264,134 @@ export default function AppSettingsTab() {
             aria-current={section === s.id ? "true" : undefined}
             onClick={() => setSection(s.id)}
           >
+            <s.icon size={15} aria-hidden="true" />
             {s.label}
           </button>
         ))}
       </nav>
 
       <div className="settings-content">
-        <div className="settings-page">
+        <div className="set-col">
+          <h1 className="set-title">{current.label}</h1>
+
           {section === "appearance" ? (
-            <div className="settings-section">
-              <div className="settings-section-head">
-                <h3>Appearance</h3>
-                <p>Choose a theme and fonts. Any VS Code color theme file can be imported. Changes apply immediately.</p>
-              </div>
-              <ThemePicker />
-              <FontPicker />
-            </div>
+            <>
+              <section className="sset">
+                <h2>Theme</h2>
+                <p className="sub">Any VS Code color theme file can be imported. Changes apply immediately.</p>
+                <ThemePicker />
+              </section>
+              <section className="sset">
+                <h2>Fonts</h2>
+                <FontPicker />
+              </section>
+              <section className="sset">
+                <h2>Layout</h2>
+                <Row title="Density" help="Row height in the sidebar, tables and menus">
+                  <div className="segmented" role="group" aria-label="Density">
+                    {DENSITIES.map((d) => (
+                      <button
+                        key={d.value}
+                        type="button"
+                        className={density === d.value ? "active" : ""}
+                        aria-pressed={density === d.value}
+                        onClick={() => {
+                          setDensity(d.value);
+                          setDensityChoice(d.value);
+                        }}
+                      >
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                </Row>
+              </section>
+            </>
           ) : null}
 
           {section === "general" ? (
             <>
-              <div className="settings-section">
-                <div className="settings-section-head">
-                  <h3>General</h3>
-                  <p>
-                    Auto-save writes every collection and environment file with unsaved changes on a timer. Applies
-                    immediately. Drafts that were never saved are not auto-saved.
-                  </p>
-                </div>
-                <label className="settings-checkbox-row">
+              <section className="sset">
+                <h2>Auto-save</h2>
+                <Row
+                  title="Auto-save"
+                  help="Writes every collection and environment file with unsaved changes on a timer. Drafts that were never saved are not auto-saved."
+                >
+                  <Switch label="Auto-save" checked={autosave.enabled} onChange={(enabled) => commitAutosave({ ...autosave, enabled })} />
+                </Row>
+                <Row title="Every" help="From 1 to 600 seconds">
                   <input
-                    type="checkbox"
-                    checked={autosave.enabled}
-                    onChange={(e) => commitAutosave({ ...autosave, enabled: e.target.checked })}
+                    type="number"
+                    className="mono num-in"
+                    aria-label="Auto-save interval in seconds"
+                    min={1}
+                    max={600}
+                    disabled={!autosave.enabled}
+                    value={secondsText}
+                    onChange={(e) => handleSecondsChange(e.target.value)}
+                    onBlur={() => setSecondsText(String(autosave.seconds))}
                   />
-                  Auto-save
-                </label>
-                <div className="settings-row">
-                  <label>Every</label>
-                  <div className="settings-control-group">
-                    <input
-                      type="number"
-                      className="mono settings-seconds-input"
-                      min={1}
-                      max={600}
-                      disabled={!autosave.enabled}
-                      value={secondsText}
-                      onChange={(e) => handleSecondsChange(e.target.value)}
-                      onBlur={() => setSecondsText(String(autosave.seconds))}
-                    />
-                    seconds
-                  </div>
-                </div>
-              </div>
-              <div className="settings-section">
-                <div className="settings-section-head">
-                  <h3>Editor</h3>
-                  <p>Long lines in the request body, response, and scripts. Applies immediately.</p>
-                </div>
-                <label className="settings-checkbox-row">
-                  <input
-                    type="checkbox"
+                  <span className="unit">seconds</span>
+                </Row>
+              </section>
+              <section className="sset">
+                <h2>Editor</h2>
+                <Row title="Wrap long lines" help="In the request body, response and scripts">
+                  <Switch
+                    label="Wrap long lines"
                     checked={wrap}
-                    onChange={(e) => {
-                      setWrap(e.target.checked);
-                      saveWrap(e.target.checked);
+                    onChange={(v) => {
+                      setWrap(v);
+                      saveWrap(v);
                     }}
                   />
-                  Wrap long lines
-                </label>
-              </div>
-              <div className="settings-section">
-                <div className="settings-section-head">
-                  <h3>History</h3>
-                  <p>
-                    How many sent requests the History list keeps. Lowering it deletes the oldest entries. Applies
-                    immediately.
-                  </p>
-                </div>
-                <div className="settings-row">
-                  <label>Keep the last</label>
-                  <div className="settings-control-group">
-                    <input
-                      type="number"
-                      className="mono settings-seconds-input"
-                      min={1}
-                      max={10000}
-                      value={historyText}
-                      onChange={(e) => setHistoryText(e.target.value)}
-                      onBlur={commitHistoryLimit}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") commitHistoryLimit();
-                      }}
-                    />
-                    requests
-                  </div>
-                </div>
-              </div>
+                </Row>
+              </section>
+              <section className="sset">
+                <h2>History</h2>
+                <Row title="Keep the last" help="Lowering it deletes the oldest entries">
+                  <input
+                    type="number"
+                    className="mono num-in"
+                    aria-label="History limit"
+                    min={1}
+                    max={10000}
+                    value={historyText}
+                    onChange={(e) => setHistoryText(e.target.value)}
+                    onBlur={commitHistoryLimit}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") commitHistoryLimit();
+                    }}
+                  />
+                  <span className="unit">requests</span>
+                </Row>
+              </section>
             </>
           ) : null}
 
           {section === "network" ? (
             <>
-              <div className="settings-section">
-                <div className="settings-section-head">
-                  <h3>Network</h3>
-                  <p>Proxy, SSL, and client certificates for outgoing requests. Requires Save below to take effect.</p>
-                </div>
-                <div className="settings-section-head">
-                  <h3>Proxy</h3>
-                  <p>Route outgoing requests through a proxy.</p>
-                </div>
-                <div className="settings-radio-group">
-                  {(["none", "environment", "custom"] as const).map((mode) => (
-                    <label key={mode} className="settings-radio-row">
-                      <input
-                        type="radio"
-                        name="proxyMode"
-                        checked={net.proxyMode === mode}
-                        onChange={() => update((s) => (s.network.proxyMode = mode))}
-                      />
-                      {mode === "none" ? "No proxy" : mode === "environment" ? "Environment" : "Custom"}
-                    </label>
-                  ))}
-                </div>
+              <section className="sset">
+                <h2>Proxy</h2>
+                <Row title="Proxy" help="Where requests leave this machine">
+                  <div className="radios" role="radiogroup" aria-label="Proxy">
+                    {PROXY_MODES.map(({ mode, label }) => (
+                      <label key={mode} className="rd">
+                        <input type="radio" name="proxyMode" checked={net.proxyMode === mode} onChange={() => update((s) => (s.network.proxyMode = mode))} />
+                        {label}
+                      </label>
+                    ))}
+                  </div>
+                </Row>
                 {net.proxyMode === "environment" ? (
-                  <div className="hint">Uses HTTP_PROXY, HTTPS_PROXY and NO_PROXY. The macOS system proxy setting is not read.</div>
+                  <p className="sub reveal-note">Uses HTTP_PROXY, HTTPS_PROXY and NO_PROXY. The macOS system proxy setting is not read.</p>
                 ) : null}
                 {net.proxyMode === "custom" ? (
-                  <>
-                    <div className="settings-row">
-                      <label>Proxy URL</label>
+                  <div className="reveal">
+                    <div className="field">
+                      <label htmlFor="proxy-url">Proxy URL</label>
                       <input
+                        id="proxy-url"
                         type="text"
                         className="mono"
                         placeholder="http://user:pass@proxy.local:8080"
@@ -350,150 +399,148 @@ export default function AppSettingsTab() {
                         onChange={(e) => update((s) => (s.network.proxyUrl = e.target.value))}
                       />
                     </div>
-                    <div className="settings-row">
-                      <label>Bypass</label>
+                    <div className="field">
+                      <label htmlFor="proxy-bypass">Bypass</label>
                       <input
+                        id="proxy-bypass"
                         type="text"
                         className="mono"
                         placeholder="localhost, *.internal"
                         value={net.proxyBypass}
                         onChange={(e) => update((s) => (s.network.proxyBypass = e.target.value))}
                       />
+                      <span className="help">Comma separated hosts that skip the proxy.</span>
                     </div>
-                  </>
-                ) : null}
-              </div>
-
-              <div className="settings-section">
-                <div className="settings-section-head">
-                  <h3>User-Agent</h3>
-                  <p>
-                    Sent when a request has no User-Agent header of its own. Used by sends, collection runs,
-                    WebSockets, and code snippets.
-                  </p>
-                </div>
-                <Select
-                  value={USER_AGENT_PRESETS.some((p) => p.value === net.userAgent) ? net.userAgent : CUSTOM_UA}
-                  options={[...USER_AGENT_PRESETS, { label: "Custom", value: CUSTOM_UA }]}
-                  ariaLabel="User-Agent preset"
-                  onChange={(v) => {
-                    if (v === CUSTOM_UA) uaInputRef.current?.focus();
-                    else update((s) => (s.network.userAgent = v));
-                  }}
-                />
-                <input
-                  type="text"
-                  className="mono"
-                  ref={uaInputRef}
-                  placeholder="Restly/0.1"
-                  aria-label="User-Agent"
-                  value={net.userAgent}
-                  onChange={(e) => update((s) => (s.network.userAgent = e.target.value))}
-                />
-              </div>
-
-              <div className="settings-section">
-                <div className="settings-section-head">
-                  <h3>SSL</h3>
-                  <p>Control certificate verification and client identity for HTTPS requests.</p>
-                </div>
-                <label className="settings-checkbox-row">
-                  <input
-                    type="checkbox"
-                    checked={net.verifyTls}
-                    onChange={(e) => update((s) => (s.network.verifyTls = e.target.checked))}
-                  />
-                  Verify SSL certificates
-                </label>
-                <div className="settings-row">
-                  <label>CA bundle</label>
-                  <div className="settings-control-group">
-                    <input type="text" className="mono" readOnly placeholder="No CA bundle selected" value={net.caFile} />
-                    <button onClick={chooseCaFile}>Choose…</button>
-                    <button className="ghost" onClick={() => update((s) => (s.network.caFile = ""))}>
-                      Clear
-                    </button>
                   </div>
-                </div>
-              </div>
+                ) : null}
+              </section>
 
-              <div className="settings-section">
-                <div className="settings-section-head">
-                  <h3>Client certificates</h3>
-                  <p>PEM files only. .pfx and passphrase-protected keys are not supported.</p>
-                </div>
-                <table className="kv-table cert-table">
-                  <thead>
-                    <tr>
-                      <th>Host</th>
-                      <th>Certificate</th>
-                      <th>Key</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {net.clientCerts.map((cert, i) => (
-                      <tr key={i}>
+              <section className="sset">
+                <h2>User-Agent</h2>
+                <Row
+                  stack
+                  title="User-Agent"
+                  help="Sent when a request has no User-Agent header of its own. Used by sends, collection runs, WebSockets, and code snippets."
+                >
+                  <Select
+                    value={USER_AGENT_PRESETS.some((p) => p.value === net.userAgent) ? net.userAgent : CUSTOM_UA}
+                    options={[...USER_AGENT_PRESETS, { label: "Custom", value: CUSTOM_UA }]}
+                    ariaLabel="User-Agent preset"
+                    onChange={(v) => {
+                      if (v === CUSTOM_UA) uaInputRef.current?.focus();
+                      else update((s) => (s.network.userAgent = v));
+                    }}
+                  />
+                  <input
+                    type="text"
+                    className="mono"
+                    ref={uaInputRef}
+                    placeholder="Restly/0.1"
+                    aria-label="User-Agent"
+                    value={net.userAgent}
+                    onChange={(e) => update((s) => (s.network.userAgent = e.target.value))}
+                  />
+                </Row>
+              </section>
+
+              <section className="sset">
+                <h2>Security</h2>
+                <Row title="Verify TLS certificates" help="Turn off only for local servers with self-signed certificates">
+                  <Switch label="Verify TLS certificates" checked={net.verifyTls} onChange={(v) => update((s) => (s.network.verifyTls = v))} />
+                </Row>
+                <Row title="CA bundle" help="Extra trusted certificate authorities, PEM format">
+                  {net.caFile ? (
+                    <>
+                      <span className="filechip" title={net.caFile}>
+                        <File size={13} aria-hidden="true" />
+                        {baseName(net.caFile)}
+                      </span>
+                      <button onClick={chooseCaFile}>Change</button>
+                      <button className="ghost" onClick={() => update((s) => (s.network.caFile = ""))}>
+                        Remove
+                      </button>
+                    </>
+                  ) : (
+                    <button onClick={chooseCaFile}>Choose file…</button>
+                  )}
+                </Row>
+              </section>
+
+              <section className="sset">
+                <h2>Client certificates</h2>
+                <p className="sub">PEM files only. .pfx and passphrase-protected keys are not supported.</p>
+                <div className="pg-wrap">
+                  <table className="pg-table cert-table">
+                    <thead>
+                      <tr>
+                        <th className="w-var">Host</th>
+                        <th>Certificate</th>
+                        <th>Key</th>
+                        <th className="acts" />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {net.clientCerts.map((cert, i) => (
+                        <tr key={i}>
+                          <td className="in">
+                            <input
+                              type="text"
+                              className="mono"
+                              aria-label="Host"
+                              placeholder="api.example.com"
+                              value={cert.host}
+                              onChange={(e) => updateCert(i, "host", e.target.value)}
+                            />
+                          </td>
+                          {(["certFile", "keyFile"] as const).map((field) => (
+                            <td key={field} className="file">
+                              <button
+                                className="ghost mono"
+                                title={cert[field] || undefined}
+                                onClick={() => chooseCertFile(i, field)}
+                              >
+                                {cert[field] ? baseName(cert[field]) : <span className="subtlest">Choose file…</span>}
+                              </button>
+                            </td>
+                          ))}
+                          <td className="acts">
+                            <button className="icon pg-del" onClick={() => removeCert(i)} title="Remove" aria-label="Remove certificate">
+                              <Trash2 size={13} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      <tr className="pg-ghost" onClick={addCert}>
                         <td>
-                          <input
-                            type="text"
-                            className="mono"
-                            placeholder="api.example.com or api.example.com:8443"
-                            value={cert.host}
-                            onChange={(e) => updateCert(i, "host", e.target.value)}
-                          />
-                        </td>
-                        <td>
-                          <div className="cert-cell">
-                            <input type="text" className="mono" readOnly placeholder="Not set" value={cert.certFile} />
-                            <button onClick={() => chooseCertFile(i, "certFile")}>Choose…</button>
-                          </div>
-                        </td>
-                        <td>
-                          <div className="cert-cell">
-                            <input type="text" className="mono" readOnly placeholder="Not set" value={cert.keyFile} />
-                            <button onClick={() => chooseCertFile(i, "keyFile")}>Choose…</button>
-                          </div>
-                        </td>
-                        <td>
-                          <button className="icon" onClick={() => removeCert(i)} title="Remove">
-                            ✕
+                          <button className="pg-add" aria-label="Add certificate">
+                            <Plus size={13} /> Host
                           </button>
                         </td>
+                        <td>Choose file…</td>
+                        <td>Choose file…</td>
+                        <td className="acts" />
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <button className="ghost" onClick={addCert}>
-                  Add certificate
-                </button>
-              </div>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
 
-              <div className="settings-footer">
-                {error ? <div className="settings-error">{error}</div> : null}
+              <div className="set-foot">
                 <button className="primary" disabled={saving} onClick={handleSave}>
                   {saving ? "Saving…" : "Save"}
                 </button>
+                <span>Saving reconnects open connections</span>
+                {error ? <span className="settings-error">{error}</span> : null}
               </div>
             </>
           ) : null}
 
-          {section === "keyboard" ? (
-              <div className="settings-section">
-              <div className="settings-section-head">
-                <h3>Keyboard</h3>
-                <p>⌘/ (Ctrl+/ on Windows/Linux) lists every keyboard shortcut.</p>
-              </div>
-              <button onClick={openKeybindingsFile}>Open Keybindings File</button>
-            </div>
-          ) : null}
+          {section === "keyboard" ? <KeyboardSection onOpenFile={openKeybindingsFile} /> : null}
 
           {section === "about" ? (
-              <div className="settings-section">
-              <div className="settings-section-head">
-                <h3>About</h3>
-                <p>Version and build details.</p>
-              </div>
+            <section className="sset">
+              <h2>Restly</h2>
+              <p className="sub">Version and build details.</p>
               <div className="about-row">
                 <img className="about-logo" src={logo} alt="Restly" width={48} height={48} />
                 <div className="about-text">
@@ -517,18 +564,59 @@ export default function AppSettingsTab() {
                 </button>
               </div>
               {logPath ? (
-                <div className="about-row">
-                  <div className="about-text">
-                    <div className="about-version">Log file</div>
-                    <div className="mono about-version">{logPath}</div>
-                  </div>
+                <Row title="Log file" help={logPath}>
                   <button onClick={showLogFile}>Show log file</button>
-                </div>
+                </Row>
               ) : null}
-            </div>
+            </section>
           ) : null}
         </div>
       </div>
     </div>
+  );
+}
+
+// Every command grouped as in the shortcuts overlay, so settings is a second place to read them.
+function KeyboardSection({ onOpenFile }: { onOpenFile: () => void }) {
+  const [query, setQuery] = useState("");
+  const matches = fuzzyFilter(listCommands(), query, (c) => c.title);
+  const groups = new Map<string, typeof matches>();
+  for (const m of matches) groups.set(m.item.group, [...(groups.get(m.item.group) ?? []), m]);
+  return (
+    <>
+      <section className="sset">
+        <h2>Customize</h2>
+        <Row title="Keybindings file" help="Change any shortcut in keybindings.json. Edits apply when the window regains focus.">
+          <button onClick={onOpenFile}>Open keybindings file</button>
+        </Row>
+        <Row title="Shortcuts overlay" help="Shows this list from anywhere in the app.">
+          <Kbd command="keyboard-shortcuts" />
+        </Row>
+      </section>
+      <section className="sset">
+        <div className="skeys-head">
+          <h2>Shortcuts</h2>
+          <input
+            type="text"
+            className="skeys-filter"
+            placeholder="Filter shortcuts"
+            aria-label="Filter shortcuts"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        {groups.size === 0 ? <p className="sub">No matching shortcuts</p> : null}
+        {[...groups].map(([group, list]) => (
+          <div key={group} className="skeys">
+            <h3>{group}</h3>
+            {list.map((m) => (
+              <ShortcutRow key={m.item.id} id={m.item.id} keys={effectiveKeys(m.item)} custom={isCustomized(m.item)}>
+                {highlight(m.item.title, m.indices)}
+              </ShortcutRow>
+            ))}
+          </div>
+        ))}
+      </section>
+    </>
   );
 }

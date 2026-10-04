@@ -20,62 +20,68 @@ const layout = {
   fontMono,
   fontSizeUi: "13px",
   fontSizeMono: "12.5px",
-  radius: "6px",
-  radiusSmall: "4px",
+  radiusXs: "3px",
+  radiusSmall: "5px",
+  radius: "7px",
+  radiusLarge: "10px",
 };
 
-// The built-ins are convertVscodeTheme() output for VS Code's own theme files, so they follow the
-// same mapping and WCAG guard as imported themes. A trailing comment gives the source value where
-// the guard changed it.
+// Dark and Light take their chrome (surfaces, text, accents, status and method colors, tints,
+// shadow) from the approved redesign in docs/design/mockups/tokens.css, marked "Restly redesign" where
+// it matters. Their editor values (selection, scrollbars, line highlight, syntax) and the border
+// strengths stay VS Code's Dark Modern and Light Modern, which the guard in vscode.ts checks like any
+// imported theme.
 
-// VS Code Dark Modern: extensions/theme-defaults/themes/dark_modern.json, which includes
-// dark_plus.json and dark_vs.json. Restly's surface is #262626 instead of #1f1f1f, so every
-// background and border below is Dark Modern's color 7 steps lighter before conversion:
-// editor.background and tab.activeBackground #262626, sideBar.background #1f1f1f,
-// editorWidget.background #272727, input.background and dropdown.background #383838,
-// input.border, dropdown.border and checkbox.border #434343, panel.border and sideBar.border #323232,
-// editor.lineHighlightBorder #2f2f2f.
+// Dark editor values follow VS Code Dark Modern: extensions/theme-defaults/themes/dark_modern.json,
+// which includes dark_plus.json and dark_vs.json. Restly's surface is #262626 instead of #1f1f1f, so
+// input.border, dropdown.border and checkbox.border #434343 and editor.lineHighlightBorder #2f2f2f
+// are Dark Modern's colors lifted to match.
 const darkTokens: ThemeTokens = {
   ...layout,
   surface: "#262626",
-  surfaceRaised: "#1f1f1f",
-  surfaceOverlay: "#272727",
-  surfaceHover: "#333333",
-  surfaceActive: "#3d3d3d",
-  surfaceInput: "#383838",
+  surfaceRaised: "#1e1e1e", // Restly redesign
+  surfaceOverlay: "#2b2b2b",
+  surfaceHover: "#2f2f2f",
+  surfaceActive: "#383838",
+  surfaceInput: "#2c2c2c",
 
-  text: "#cccccc",
-  textSubtle: "#a7a7a7", // descriptionForeground #9d9d9d
-  textSubtlest: "#8d8d8d", // textSubtle one step dimmer (input.placeholderForeground #989898 is too close)
+  text: "#e3e3e3",
+  textSubtle: "#a6a6a6",
+  textSubtlest: "#929292", // Restly redesign #8d8d8d, lifted to 4.5:1 on surfaceOverlay
 
-  border: "#434343",
-  borderSubtle: "#3e3e3e", // panel.border #323232
+  border: "#434343", // Restly redesign #3d3d3d, kept so table grids stay visible
+  borderSubtle: "#3e3e3e", // Restly redesign #333333, kept for the same reason
   borderControl: "#434343",
-  borderFocus: "#258cda", // focusBorder #0078d4
+  borderFocus: "#4d8ef7",
 
-  primary: "#52adfc", // textLink.foreground #4daafc
-  primaryButton: "#0078d4",
-  primaryButtonHover: "#026ec1",
+  primary: "#6aa3ff",
+  primaryButton: "#2d6fdb",
+  primaryButtonHover: "#2862c4",
   primaryButtonText: "#ffffff",
-  info: "#4daafc",
-  success: "#0dbc79",
-  notice: "#e5e510",
-  warning: "#cca700",
-  danger: "#fa7b74", // errorForeground #f85149
+  primaryTint: "rgba(77, 142, 247, 0.14)",
+  info: "#6aa3ff",
+  success: "#4cc38a",
+  successTint: "rgba(76, 195, 138, 0.13)",
+  notice: "#e0b25c",
+  warning: "#e0b25c",
+  warningTint: "rgba(224, 178, 92, 0.13)",
+  danger: "#f18181", // Restly redesign #f07a7a
+  dangerTint: "rgba(240, 122, 122, 0.13)",
 
-  methodGet: "#16be7e", // terminal.ansiGreen #0dbc79
-  methodPost: "#e5e510",
-  methodPut: "#7cabde", // terminal.ansiBlue #2472c8
-  methodPatch: "#d78ed7", // terminal.ansiMagenta #bc3fbc
-  methodDelete: "#e49191", // terminal.ansiRed #cd3131
-  methodHead: "#a7a7a7", // descriptionForeground #9d9d9d
-  methodOptions: "#de993b", // ansiRed/ansiYellow mix #d98b21
-  methodWs: "#33b5d4", // terminal.ansiCyan #11a8cd
+  // Muted set: similar lightness, saturation held low, POST amber instead of yellow
+  methodGet: "#5fbf8f",
+  methodPost: "#e0b25c",
+  methodPut: "#6ba4e8", // Restly redesign #6aa3e8
+  methodPatch: "#b99be8",
+  methodDelete: "#e98484", // Restly redesign #e88080
+  methodHead: "#9ca1a7", // Restly redesign #9aa0a6
+  methodOptions: "#d99a6c",
+  methodWs: "#5cc0d0",
 
-  varDefined: "#44cb98", // terminal.ansiGreen #0dbc79
-  varDefinedBg: "rgba(13, 188, 121, 0.16)",
-  varUndefined: "#fb918b", // errorForeground #f85149
-  varUndefinedBg: "rgba(248, 81, 73, 0.16)",
+  varDefined: "#5fbf8f",
+  varDefinedBg: "rgba(95, 191, 143, 0.14)",
+  varUndefined: "#f18787", // Restly redesign #f07a7a
+  varUndefinedBg: "rgba(240, 122, 122, 0.14)",
 
   selection: "#275079", // editor.selectionBackground #264f78
   scrollbarThumb: "rgba(121, 121, 121, 0.4)", // scrollbarSlider.background #79797966
@@ -91,52 +97,57 @@ const darkTokens: ThemeTokens = {
   syntaxPunctuation: "#cccccc",
   syntaxBoolean: "#569cd6",
 
-  shadowOverlay: "0 8px 24px rgba(0, 0, 0, 0.36)",
-  overlayBackdrop: "rgba(0, 0, 0, 0.5)",
+  shadowOverlay: "0 0 0 1px rgba(0, 0, 0, 0.35), 0 12px 32px rgba(0, 0, 0, 0.45)", // Restly redesign
+  overlayBackdrop: "rgba(0, 0, 0, 0.42)",
 };
 
-// VS Code Light Modern: light_modern.json, which includes light_plus.json and light_vs.json.
+// Light editor values follow VS Code Light Modern: light_modern.json, which includes light_plus.json
+// and light_vs.json.
 const lightTokens: ThemeTokens = {
   ...layout,
   surface: "#ffffff",
-  surfaceRaised: "#f8f8f8",
-  surfaceOverlay: "#f8f8f8",
-  surfaceHover: "#f2f2f2",
-  surfaceActive: "#e8e8e8",
+  surfaceRaised: "#f6f6f7", // Restly redesign
+  surfaceOverlay: "#ffffff",
+  surfaceHover: "#efeff1",
+  surfaceActive: "#e6e6e9",
   surfaceInput: "#ffffff",
 
-  text: "#3b3b3b",
-  textSubtle: "#3b3b3b",
-  textSubtlest: "#727272", // input.placeholderForeground #767676
+  text: "#1d1d1f",
+  textSubtle: "#5a5a60",
+  textSubtlest: "#6e6e74",
 
-  border: "#cecece",
-  borderSubtle: "#d3d3d3", // panel.border #e5e5e5
-  borderControl: "#cecece",
-  borderFocus: "#005fb8",
+  border: "#d1d1d5", // Restly redesign #d6d6da, 1.4:1 on surfaceRaised
+  borderSubtle: "#d1d1d5", // Restly redesign #e4e4e7, too faint: #d9d9dd is 1.30:1 on surfaceRaised
+  borderControl: "#d1d1d5", // Restly redesign #d6d6da, 1.4:1 on surfaceRaised
+  borderFocus: "#1f63d1",
 
-  primary: "#005fb8",
-  primaryButton: "#005fb8",
-  primaryButtonHover: "#0258a8",
+  primary: "#1f62d0", // Restly redesign #1f63d1
+  primaryButton: "#1f63d1",
+  primaryButtonHover: "#1b57b8",
   primaryButtonText: "#ffffff",
-  info: "#005fb8",
-  success: "#007700", // terminal.ansiGreen #00bc00
-  notice: "#696b00", // terminal.ansiYellow #949800
-  warning: "#966a02", // editorWarning.foreground #bf8803
-  danger: "#b63b36", // errorForeground #f85149
+  primaryTint: "rgba(31, 99, 209, 0.1)",
+  info: "#1f63d1",
+  success: "#157647", // Restly redesign #17804d
+  successTint: "rgba(23, 128, 77, 0.1)",
+  notice: "#8d5d00", // Restly redesign #8f5f00
+  warning: "#8f5f00",
+  warningTint: "rgba(143, 95, 0, 0.1)",
+  danger: "#b73838", // Restly redesign #c23b3b
+  dangerTint: "rgba(194, 59, 59, 0.09)",
 
-  methodGet: "#007a00", // terminal.ansiGreen #00bc00
-  methodPost: "#6a6d00", // terminal.ansiYellow #949800
-  methodPut: "#0451a5",
-  methodPatch: "#b905b9", // terminal.ansiMagenta #bc05bc
-  methodDelete: "#c42f2f", // terminal.ansiRed #cd3131
-  methodHead: "#3b3b3b",
-  methodOptions: "#9b5816", // ansiRed/ansiYellow mix #b16519
-  methodWs: "#04728e", // terminal.ansiCyan #0598bc
+  methodGet: "#157647", // Restly redesign #17804d
+  methodPost: "#8d5e00", // Restly redesign #8f5f00
+  methodPut: "#1f5fbf",
+  methodPatch: "#7447bd",
+  methodDelete: "#ba3939", // Restly redesign #c23b3b
+  methodHead: "#5a5a60",
+  methodOptions: "#a24f17",
+  methodWs: "#0f7183", // Restly redesign #0f7385
 
-  varDefined: "#007d00", // terminal.ansiGreen #00bc00
-  varDefinedBg: "rgba(0, 188, 0, 0.16)",
-  varUndefined: "#bb3d37", // errorForeground #f85149
-  varUndefinedBg: "rgba(248, 81, 73, 0.16)",
+  varDefined: "#177d4b", // Restly redesign #17804d
+  varDefinedBg: "rgba(23, 128, 77, 0.1)",
+  varUndefined: "#c23b3b",
+  varUndefinedBg: "rgba(194, 59, 59, 0.09)",
 
   selection: "#add6ff",
   scrollbarThumb: "rgba(100, 100, 100, 0.4)", // scrollbarSlider.background #64646466
@@ -152,8 +163,8 @@ const lightTokens: ThemeTokens = {
   syntaxPunctuation: "#3b3b3b",
   syntaxBoolean: "#0000ff",
 
-  shadowOverlay: "0 8px 24px rgba(0, 0, 0, 0.16)",
-  overlayBackdrop: "rgba(0, 0, 0, 0.5)",
+  shadowOverlay: "0 0 0 1px rgba(0, 0, 0, 0.08), 0 12px 32px rgba(0, 0, 0, 0.14)", // Restly redesign
+  overlayBackdrop: "rgba(0, 0, 0, 0.18)",
 };
 
 // One Dark Pro (github.com/Binaryify/OneDark-Pro, themes/OneDark-Pro.json).
@@ -182,17 +193,22 @@ const oneDarkTokens: ThemeTokens = {
   info: "#61afef",
   success: "#8cc265",
   notice: "#d79f6a", // terminal.ansiYellow #d18f52
-  warning: "#d19a66",
+  warning: "#d29b68", // #d19a66
   danger: "#de9994", // editorError.foreground #c24038
+  primaryTint: "rgba(97, 175, 239, 0.14)",
+  successTint: "rgba(140, 194, 101, 0.14)",
+  warningTint: "rgba(209, 154, 102, 0.14)",
+  dangerTint: "rgba(222, 153, 148, 0.14)",
 
-  methodGet: "#8cc265",
-  methodPost: "#d29357", // terminal.ansiYellow #d18f52
-  methodPut: "#4ba6f0", // terminal.ansiBlue #4aa5f0
-  methodPatch: "#ce84e5", // terminal.ansiMagenta #c162de
-  methodDelete: "#e8838b", // terminal.ansiRed #e05561
-  methodHead: "#abb2bf",
-  methodOptions: "#df8a76", // ansiRed/ansiYellow mix #d9725a
-  methodWs: "#42b3c2",
+  // Restly redesign method set, shared with Dark
+  methodGet: "#5fbf8f",
+  methodPost: "#e0b25c",
+  methodPut: "#6aa3e8",
+  methodPatch: "#b99be8",
+  methodDelete: "#e98383", // Restly redesign #e88080
+  methodHead: "#9ba1a6", // Restly redesign #9aa0a6
+  methodOptions: "#d99a6c",
+  methodWs: "#5cc0d0",
 
   varDefined: "#8cc265",
   varDefinedBg: "rgba(140, 194, 101, 0.16)",

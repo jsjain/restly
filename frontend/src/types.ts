@@ -1,6 +1,7 @@
 // Hand-written types for the subset of the Postman v2.1 JSON shape Restly edits.
 // Every object keeps `[key: string]: unknown` so members we don't model survive a save.
 // Do not use the generated wailsjs model classes (their createFrom drops unknown members).
+import type { Description } from "./description";
 
 export interface FileRef {
   file: string; // absolute path
@@ -25,6 +26,7 @@ export interface KV {
   key: string;
   value?: string;
   disabled?: boolean;
+  description?: Description;
   type?: string; // formdata: "text" | "file"; auth params: "string"
   src?: string;
   [key: string]: unknown;
@@ -92,6 +94,7 @@ export interface Variable {
   key: string;
   value?: string;
   disabled?: boolean;
+  description?: Description;
   [key: string]: unknown;
 }
 

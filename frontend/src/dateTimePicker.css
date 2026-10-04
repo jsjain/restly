@@ -5,18 +5,29 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 30px;
-  padding: 5px 8px;
+  height: var(--h-control);
+  padding: 0 8px;
   background: var(--surface-input);
   border: 1px solid var(--border-control);
   border-radius: var(--radius-small);
   color: var(--text);
+  font-size: var(--fs-small);
   font-weight: 400;
+  font-variant-numeric: tabular-nums;
   cursor: pointer;
 }
 
-.dtp-trigger:hover {
+.dtp-trigger:hover:not(:disabled) {
   background: var(--surface-hover);
+}
+
+.dtp-trigger svg {
+  color: var(--text-subtlest);
+}
+
+.dtp-trigger[aria-expanded="true"] {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 1px var(--border-focus);
 }
 
 .dtp-placeholder {
@@ -26,12 +37,11 @@
 .dtp-popover {
   position: fixed;
   z-index: 1000;
-  width: 240px;
+  width: 268px;
   background: var(--surface-overlay);
-  border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-overlay);
-  padding: 10px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -41,11 +51,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  font-weight: 500;
 }
 
 .dtp-month-label {
-  font-weight: 500;
   color: var(--text);
+}
+
+.dtp-nav.icon {
+  width: 24px;
+  height: 24px;
 }
 
 .dtp-weekdays,
@@ -53,83 +68,99 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 2px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 .dtp-weekdays span {
-  text-align: center;
-  font-size: 11px;
-  color: var(--text-subtle);
-  padding-bottom: 2px;
+  display: grid;
+  place-items: center;
+  height: 20px;
+  font-size: var(--fs-micro);
+  color: var(--text-subtlest);
 }
 
 .dtp-day {
-  height: 26px;
+  height: 28px;
   padding: 0;
   background: none;
   border: 1px solid transparent;
   border-radius: var(--radius-small);
   color: var(--text);
-  font-size: 12px;
+  font-size: var(--fs-small);
   font-weight: 400;
 }
 
-.dtp-day:hover {
+.dtp-day:hover:not(:disabled) {
   background: var(--surface-hover);
 }
 
 .dtp-day-outside {
-  color: var(--text-subtle);
+  color: var(--text-subtlest);
+  opacity: 0.6;
 }
 
+/* Today is outlined, the chosen day is filled. */
 .dtp-day-today {
-  border-color: var(--border);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
-.dtp-day-selected {
+.dtp-day-selected,
+.dtp-day-selected:hover:not(:disabled) {
   background: var(--primary-button);
   border-color: var(--primary-button);
   color: var(--primary-button-text);
-  font-weight: 600;
+  opacity: 1;
 }
 
-.dtp-day-selected:hover {
+.dtp-day-selected:hover:not(:disabled) {
   background: var(--primary-button-hover);
+}
+
+.dtp-session-on .dtp-grid,
+.dtp-session-on .dtp-time {
+  opacity: 0.5;
 }
 
 .dtp-time {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
+  gap: 8px;
+  margin-top: 2px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: var(--fs-small);
+  color: var(--text-subtle);
 }
 
 .dtp-time input[type="number"] {
-  width: 40px;
+  width: 46px;
+  height: var(--h-control);
+  padding: 0 4px;
   text-align: center;
   -moz-appearance: textfield;
 }
 
-/* Hide the native up/down spinner: at 40px wide it eats the digits. */
+/* Hide the native up/down spinner: at 46px wide it eats the digits. */
 .dtp-time input[type="number"]::-webkit-outer-spin-button,
 .dtp-time input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
+.dtp-session {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-small);
+  color: var(--text-subtle);
+  cursor: pointer;
+}
+
 .dtp-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
-  border-top: 1px solid var(--border);
-  padding-top: 8px;
-}
-
-.dtp-session-btn {
-  padding: 0 8px;
-}
-
-.dtp-actions-right {
-  display: flex;
-  gap: 6px;
+  margin-top: 4px;
 }

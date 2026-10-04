@@ -18,7 +18,8 @@
 
 ## Features
 
-- **Requests.** Params, headers, and body as raw JSON, XML, or text, URL-encoded, form data with files, binary, or GraphQL. Basic, bearer, and API key auth, inherited from folders and collections. JSON, XML, and GraphQL variable bodies can be formatted.
+- **Requests.** Params, headers, and body as raw JSON, XML, or text, URL-encoded, form data with files, binary, or GraphQL. Basic, bearer, and API key auth, inherited from folders and collections, with the Auth tab naming where inherited auth comes from. JSON, XML, and GraphQL variable bodies can be formatted.
+- **Key-value tables.** Params, headers, and variables add rows from an empty last row, have a Description column, and switch to bulk editing as `key: value` lines.
 - **Responses.** Body, headers, cookies, test results, console output, and timings.
 - **Variables and environments.** `{{variables}}` resolve from local, data, environment, collection, and global scopes, with `$guid`, `$timestamp`, `$isoTimestamp`, and `$randomInt`. Editors color each variable by whether it resolves, show its value on hover, and suggest names as you type. Values can be marked secret, and an environment can belong to one collection or be shared by all.
 - **Scripts.** Pre-request and test scripts at collection, folder, and request level.
@@ -27,9 +28,10 @@
 - **cURL import.** Paste a cURL command into the URL bar or the import dialog.
 - **WebSocket requests.** Connect, send text messages, and read the event log.
 - **History and cookies.** The last 50 sends (configurable) reopen as editable requests, and the cookie jar can be viewed and edited.
-- **Network settings.** Proxy with a bypass list, TLS verification toggle, extra CA certificates, and client certificates per host.
+- **Network settings.** Proxy with a bypass list, a configurable User-Agent, TLS verification toggle, extra CA certificates, and client certificates per host.
 - **Collections.** Import and export Postman files, clone collections, and edit the description, auth, and scripts of collections and folders, and collection variables.
-- **Themes.** Dark, Light, and One Dark built in, plus any imported VS Code color theme, with configurable UI and editor fonts.
+- **Error log.** Errors are written to `restly.log`, which Settings > About opens so it can be attached to a bug report.
+- **Themes.** Dark, Light, and One Dark built in, plus any imported VS Code color theme, with configurable UI and editor fonts and three densities (Compact, Default, Comfortable).
 
 ## Install
 
@@ -52,7 +54,7 @@ The builds are not signed with an Apple or Windows certificate, so the first lau
 
 ## Keyboard shortcuts
 
-The default shortcuts are listed in [`frontend/src/keybindings.default.json`](frontend/src/keybindings.default.json), where `mod` means ⌘ on macOS and Ctrl elsewhere. To change them, run "Open Keybindings File" from the command palette (⌘K or Ctrl+K) and add entries in the same format: `{ "key": "cmd+j", "command": "send" }` adds a key, and `{ "key": "mod+enter", "command": "-send" }` removes one. Press ⌘/ or Ctrl+/ to see every shortcut in the app.
+The default shortcuts are listed in [`frontend/src/keybindings.default.json`](frontend/src/keybindings.default.json), where `mod` means ⌘ on macOS and Ctrl elsewhere. To change them, run "Open Keybindings File" from the command palette (⌘K or Ctrl+K) and add entries in the same format: `{ "key": "cmd+j", "command": "send" }` adds a key, and `{ "key": "mod+enter", "command": "-send" }` removes one. Press ⌘/ or Ctrl+/ to see every shortcut in the app, or filter them in Settings > Keyboard.
 
 ## Themes
 
@@ -94,6 +96,13 @@ The version is `info.productVersion` in `wails.json`. Change it and commit, then
 - Auth types other than basic, bearer, and API key are kept in the file but not applied. OAuth 2 token flows are not implemented.
 - Client certificates must be PEM files without a passphrase.
 - There is no cloud sync, mock server, or monitor.
+
+## Documentation
+
+- [docs/spec/](docs/spec/README.md) records how each feature works and why, one file per feature, as numbered decisions.
+- [docs/variables-and-scripts.md](docs/variables-and-scripts.md) lists every variable scope, dynamic variable, and script API with examples.
+- [docs/ui-guidelines.md](docs/ui-guidelines.md) holds the rules every UI change follows, and [docs/design/mockups/](docs/design/mockups/) the approved screen designs.
+- [docs/releases/](docs/releases/) has the notes for each release.
 
 ## License
 

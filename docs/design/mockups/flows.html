@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Restly · Flows</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="app.css">
+<script src="shell.js"></script>
+<style>
+  .doc { max-width: 1280px; margin: 0 auto; }
+  .flow { margin: 34px 0 10px; }
+  .flow h2 { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+  .flow .goal { font-size: 13px; opacity: 0.65; margin: 0 0 16px; max-width: 90ch; }
+  .strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; }
+  .step { position: relative; padding-right: 22px; }
+  .step:not(:last-child)::after { content: "→"; position: absolute; right: 4px; top: 66px; opacity: 0.45; font-size: 14px; }
+  .step a { display: block; }
+  .step img { width: 100%; aspect-ratio: 1280 / 800; object-fit: cover; object-position: top left; border-radius: 6px; display: block; box-shadow: 0 0 0 1px rgba(127, 127, 127, 0.28); }
+  .step .cap { display: flex; gap: 8px; margin-top: 10px; font-size: 12.5px; line-height: 1.5; }
+  .step .cap b { font-weight: 600; display: block; }
+  .step .cap p { margin: 2px 0 0; opacity: 0.65; }
+  .step .keys { margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap; }
+</style>
+</head>
+<body data-screen="flows.html">
+<div class="deck">
+<div class="doc">
+
+  <section class="flow">
+    <h2>FL1 · First request in an empty workspace</h2>
+    <p class="goal">A new user goes from an empty window to a saved, working request without the mouse. Every step names its shortcut, and each state tells the user what to do next.</p>
+    <div class="strip">
+      <div class="step"><a href="02-welcome.html"><img src="thumbs/02-welcome.png" alt="First run"></a>
+        <div class="cap"><span class="pinno">1</span><div><b>Start a request</b><p>The welcome view lists every way in. The sidebar's empty state offers New collection and Import.</p><div class="keys"><span class="kbd">⌘O</span><span class="kbd">⌘N</span></div></div></div></div>
+      <div class="step"><a href="10-dialogs.html"><img src="thumbs/10-dialogs-2.png" alt="Import cURL dialog"></a>
+        <div class="cap"><span class="pinno">2</span><div><b>Paste a cURL command</b><p>Import cURL turns it into a request tab. Pasting into any URL field does the same.</p><div class="keys"><span class="kbd">⌘V</span></div></div></div></div>
+      <div class="step"><a href="02-welcome.html"><img src="thumbs/02-welcome-3.png" alt="Sending"></a>
+        <div class="cap"><span class="pinno">3</span><div><b>Send</b><p>Send turns into Cancel, and a progress line and timer show the request is live.</p><div class="keys"><span class="kbd">⌘↵</span><span class="kbd">Esc</span></div></div></div></div>
+      <div class="step"><a href="01-request.html"><img src="thumbs/01-request.png" alt="Response"></a>
+        <div class="cap"><span class="pinno">4</span><div><b>Read the response</b><p>Status, time and size sit on one line. Hovering the time shows where it went.</p><div class="keys"><span class="kbd">⌘F</span></div></div></div></div>
+      <div class="step"><a href="04-collection.html"><img src="thumbs/04-collection.png" alt="Collection overview"></a>
+        <div class="cap"><span class="pinno">5</span><div><b>Save it into a collection</b><p>The Save dialog picks a collection and folder. The request then appears in the overview's request list.</p><div class="keys"><span class="kbd">⌘S</span></div></div></div></div>
+    </div>
+  </section>
+
+  <section class="flow">
+    <h2>FL2 · Find and fix a failing request</h2>
+    <p class="goal">A collection run shows one failure. The user jumps to the request, checks the environment, fixes it and confirms with a second run. The failure stays visible from the run summary to the request's Tests tab.</p>
+    <div class="strip">
+      <div class="step"><a href="06-runner.html"><img src="thumbs/06-runner.png" alt="Run with a failure"></a>
+        <div class="cap"><span class="pinno">1</span><div><b>See the failure in context</b><p>The summary bar turns red. The failing row expands to show the assertion and the console line.</p></div></div></div>
+      <div class="step"><a href="03-palette.html"><img src="thumbs/03-palette.png" alt="Quick open"></a>
+        <div class="cap"><span class="pinno">2</span><div><b>Open the request</b><p>Quick open finds "Update role" by name. Recent sends with their status codes appear in the same list.</p><div class="keys"><span class="kbd">⌘P</span></div></div></div></div>
+      <div class="step"><a href="05-environment.html"><img src="thumbs/05-environment-2.png" alt="Switch environment"></a>
+        <div class="cap"><span class="pinno">3</span><div><b>Check the environment</b><p>The picker shows which environments belong to this collection and which one is active.</p><div class="keys"><span class="kbd">⌘E</span></div></div></div></div>
+      <div class="step"><a href="01-request.html"><img src="thumbs/01-request.png" alt="Tests pass"></a>
+        <div class="cap"><span class="pinno">4</span><div><b>Fix and resend</b><p>The Tests count in the response tabs turns green when every test passes.</p><div class="keys"><span class="kbd">⌘↵</span><span class="kbd">⌘S</span></div></div></div></div>
+      <div class="step"><a href="06-runner.html"><img src="thumbs/06-runner-2.png" alt="Run again"></a>
+        <div class="cap"><span class="pinno">5</span><div><b>Run again</b><p>The finished summary shows the count, and the Failed filter confirms nothing is left (proposed).</p></div></div></div>
+    </div>
+  </section>
+
+  <section class="flow">
+    <h2>FL3 · Debug a live order stream</h2>
+    <p class="goal">A WebSocket drops. The user reconnects, filters the log down to one order, checks the session cookie and reopens an earlier connection from history.</p>
+    <div class="strip">
+      <div class="step"><a href="07-websocket.html"><img src="thumbs/07-websocket-2.png" alt="Disconnected"></a>
+        <div class="cap"><span class="pinno">1</span><div><b>Notice the drop</b><p>The status names the close code and reason. Connect becomes the primary action and the composer locks.</p></div></div></div>
+      <div class="step"><a href="07-websocket.html"><img src="thumbs/07-websocket.png" alt="Connected log"></a>
+        <div class="cap"><span class="pinno">2</span><div><b>Reconnect and filter</b><p>Filtering the log narrows it to one order, and expanding a row shows its pretty-printed JSON.</p></div></div></div>
+      <div class="step"><a href="09-history-cookies.html"><img src="thumbs/09-history-cookies-2.png" alt="Cookies"></a>
+        <div class="cap"><span class="pinno">3</span><div><b>Check the session cookie</b><p>Cookies are grouped by domain, and the flags read at a glance.</p></div></div></div>
+      <div class="step"><a href="09-history-cookies.html"><img src="thumbs/09-history-cookies.png" alt="History"></a>
+        <div class="cap"><span class="pinno">4</span><div><b>Reopen an earlier connection</b><p>History keeps every send and connect with its status. Opening an entry creates a draft that can be saved back.</p><div class="keys"><span class="kbd">⌘⇧F</span></div></div></div></div>
+      <div class="step"><a href="08-settings.html"><img src="thumbs/08-settings-2.png" alt="Network settings"></a>
+        <div class="cap"><span class="pinno">5</span><div><b>Rule out the network</b><p>Proxy, TLS verification and client certificates are on one page. Saving reconnects open connections.</p><div class="keys"><span class="kbd">⌘,</span></div></div></div></div>
+    </div>
+  </section>
+
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Restly · Command palette</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="app.css">
+<!-- Both windows dim the same request screen. Cloned from #bg before shell.js renders the data-* helpers. -->
+<script>document.addEventListener("DOMContentLoaded", () => { const t = document.getElementById("bg"); document.querySelectorAll("[data-bg]").forEach((e) => e.append(t.content.cloneNode(true))); });</script>
+<script src="shell.js"></script>
+<style>
+  .cap { max-width: 1280px; margin: 56px auto 14px; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+
+  /* palette refinements */
+  .palette .list { max-height: none; }
+  .palette .q .caret { display: inline-block; width: 1px; height: 18px; margin-left: 1px; vertical-align: -3px; background: var(--text); }
+  .palette .it .ico { width: 38px; place-items: center start; }
+  .palette .it .ico .m { width: auto; }
+  .palette .it .sub { flex: 1 1 auto; }
+  .palette .it .r { margin-left: 0; align-items: center; gap: 8px; }
+  .palette .it .tm { color: var(--text-subtlest); font-size: var(--fs-small); font-variant-numeric: tabular-nums; }
+  .palette .foot { gap: 16px; }
+  .palette .foot .kbd { margin-right: 0; }
+  .chip-note { position: absolute; z-index: 30; left: 50%; margin-left: -320px; top: 604px; }
+  .chip-note .tag { background: var(--surface-overlay); color: var(--text); height: 22px; padding: 0 8px; font-size: var(--fs-small); }
+
+  /* shortcuts overlay */
+  .dialog.wide { width: 640px; }
+  .dialog.wide h2 { display: flex; align-items: center; padding-bottom: 8px; }
+  .sc-tools { display: flex; align-items: center; gap: 10px; }
+  .sc-tools .sf { position: relative; flex: 1; }
+  .sc-tools .sf .input { width: 100%; padding-left: 28px; }
+  .sc-tools .sf .i { position: absolute; left: 8px; top: 7px; color: var(--text-subtlest); }
+  .sc-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 36px; margin-top: 2px; }
+  .sc-h { font-size: var(--fs-micro); font-weight: 500; color: var(--text-subtlest); padding: 14px 0 4px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 2px; }
+  .sc-cols > div > .sc-h:first-child { padding-top: 4px; }
+  .sc { display: flex; align-items: center; gap: 6px; height: 28px; color: var(--text); }
+  .sc .ti { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sc .keys { display: flex; gap: 3px; }
+  .sc .tag { margin-right: 4px; }
+  .dialog.wide .foot { align-items: center; }
+  .dialog.wide .foot .left { color: var(--text-subtlest); font-size: var(--fs-small); }
+</style>
+</head>
+<body data-screen="03-palette.html">
+
+<template id="bg">
+  <div data-sidebar='{"active":"List users"}'></div>
+  <section class="main">
+    <div data-tabbar='{"tabs":[{"kind":"COL","label":"Northwind API"},{"m":"GET","label":"List users","on":true},{"m":"POST","label":"Create user"}]}'></div>
+    <div class="reqname">
+      <span class="crumbs">Northwind API <i data-i="chevron-right" class="sm"></i> Users <i data-i="chevron-right" class="sm"></i> <b>List users</b></span>
+      <span class="grow"></span>
+      <span class="btn ghost"><i data-i="code" class="sm"></i>Code <span class="kbd">⌥⌘C</span></span>
+      <span class="btn ghost"><i data-i="save" class="sm"></i>Save <span class="kbd">⌘S</span></span>
+    </div>
+    <div class="reqbar">
+      <div class="url">
+        <span class="meth m auto get">GET <i data-i="chevron-down" class="sm"></i></span>
+        <span class="text"><span class="var">{{baseUrl}}</span>/api/users<span class="q">?page=</span>1<span class="q">&amp;per_page=</span>20</span>
+      </div>
+      <span class="btn primary lg">Send <span class="kbd">⌘↵</span></span>
+    </div>
+    <div class="subtabs" style="margin-top:8px">
+      <a class="on">Params <span class="c">2</span></a><a>Headers <span class="c">2</span></a><a>Body</a><a>Auth <span class="c">Inherit</span></a><a>Pre-request</a><a>Post-response</a>
+    </div>
+    <div class="pane-pad" style="height:236px">
+      <div class="kvwrap">
+        <table class="kv">
+          <thead><tr><th class="ck"></th><th>Key</th><th>Value</th><th>Description</th><th class="acts"></th></tr></thead>
+          <tbody>
+            <tr><td class="ck"><span class="cb on"></span></td><td class="k">page</td><td class="v">1</td><td class="d"></td><td class="acts"></td></tr>
+            <tr><td class="ck"><span class="cb on"></span></td><td class="k">per_page</td><td class="v">20</td><td class="d">Max 100</td><td class="acts"></td></tr>
+            <tr class="ghost"><td class="ck"></td><td>Key</td><td>Value</td><td></td><td class="acts"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="hsplit"></div>
+    <div class="resp">
+      <div class="resp-head">
+        <div class="subtabs"><a class="on">Body</a><a>Headers <span class="c">7</span></a><a>Cookies</a><a>Tests</a><a>Console</a></div>
+        <div class="resp-meta"><span class="status s2"><span class="dot"></span>200 OK</span><span>38 ms</span><span>430 B</span></div>
+      </div>
+      <div class="code">
+        <div class="l"><span class="g">1</span><span class="f"></span><span class="u">{</span></div>
+        <div class="l"><span class="g">2</span><span class="f"></span>  <span class="p">"data"</span><span class="u">: [</span></div>
+        <div class="l"><span class="g">3</span><span class="f"></span>    <span class="u">{</span></div>
+        <div class="l"><span class="g">4</span><span class="f"></span>      <span class="p">"id"</span><span class="u">: </span><span class="n">4821</span><span class="u">,</span></div>
+        <div class="l"><span class="g">5</span><span class="f"></span>      <span class="p">"name"</span><span class="u">: </span><span class="s">"Priya Raman"</span><span class="u">,</span></div>
+        <div class="l"><span class="g">6</span><span class="f"></span>      <span class="p">"email"</span><span class="u">: </span><span class="s">"priya@northwind.dev"</span><span class="u">,</span></div>
+        <div class="l"><span class="g">7</span><span class="f"></span>      <span class="p">"role"</span><span class="u">: </span><span class="s">"admin"</span></div>
+      </div>
+    </div>
+  </section>
+  <div data-statusbar='{"saved":"Auto-saved 4 s ago"}'></div>
+</template>
+
+<div class="deck">
+
+  <!-- ============ Window 1: command palette ============ -->
+  <div class="window">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app" data-bg></div>
+
+    <div class="scrim"></div>
+    <div class="palette" style="top:60px">
+      <div class="q"><i data-i="search"></i><span>users<span class="caret"></span></span></div>
+      <div class="list">
+        <div class="grp">Requests</div>
+        <div class="it on"><span class="ico"><span data-m="GET"></span></span><span class="t">List <mark>users</mark></span><span class="sub">Northwind API / Users</span><span class="r"><span class="kbd">↵</span></span></div>
+        <div class="it"><span class="ico"><span data-m="POST"></span></span><span class="t">Sync <mark>users</mark></span><span class="sub">Internal tools / Admin</span></div>
+        <div class="it"><span class="ico"><span data-m="DELETE"></span></span><span class="t">Bulk delete <mark>users</mark></span><span class="sub">Internal tools / Admin</span></div>
+
+        <div class="grp">Commands</div>
+        <div class="it"><span class="ico"><i data-i="search"></i></span><span class="t">Foc<mark>us</mark> sid<mark>e</mark>ba<mark>r</mark> <mark>s</mark>earch</span><span class="sub">Navigation</span><span class="r"><span class="kbd">⌘⇧F</span></span></div>
+
+
+        <div class="grp">Recent</div>
+        <div class="it"><span class="ico"><span data-m="GET"></span></span><span class="t mono">/api/<mark>users</mark>?page=1</span><span class="sub"></span><span class="r"><span class="tag ok">200</span><span class="tm">14 min ago</span></span></div>
+        <div class="it"><span class="ico"><span data-m="POST"></span></span><span class="t mono">/api/<mark>users</mark></span><span class="sub"></span><span class="r"><span class="tag ok">201</span><span class="tm">2 h ago</span></span></div>
+        <div class="it"><span class="ico"><span data-m="PATCH"></span></span><span class="t mono">/api/<mark>users</mark>/4821/role</span><span class="sub"></span><span class="r"><span class="tag warn">403</span><span class="tm">3 h ago</span></span></div>
+        <div class="it"><span class="ico"><span data-m="DELETE"></span></span><span class="t mono">/api/<mark>users</mark>/4823</span><span class="sub"></span><span class="r"><span class="tag ok">204</span><span class="tm">Yesterday</span></span></div>
+      </div>
+      <div class="foot">
+        <span><span class="kbd">↑</span><span class="kbd">↓</span>navigate</span>
+        <span><span class="kbd">↵</span>open</span>
+        <span><span class="kbd">⌘↵</span>open in new tab</span>
+        <span><span class="kbd">&gt;</span>commands only</span>
+        <span style="margin-left:auto"><span class="kbd">esc</span>close</span>
+      </div>
+    </div>
+
+    <div class="chip-note"><span class="tag">Opened with <span class="kbd" style="height:16px">⌘P</span></span></div>
+    <div class="palette" style="top:636px">
+      <div class="q"><i data-i="search"></i><span class="tag info">Requests</span><span>users<span class="caret"></span></span></div>
+      <div class="list" style="padding-bottom:0">
+        <div class="it on"><span class="ico"><span data-m="GET"></span></span><span class="t">List <mark>users</mark></span><span class="sub">Northwind API / Users</span><span class="r"><span class="kbd">↵</span></span></div>
+      </div>
+    </div>
+
+    <span class="pin pinno" style="left:292px;top:134px">1</span>
+    <span class="pin pinno" style="left:292px;top:278px">2</span>
+    <span class="pin pinno" style="left:292px;top:486px">3</span>
+    <span class="pin pinno" style="left:292px;top:676px">4</span>
+  </div>
+
+  <div class="deck-notes">
+    <div class="n"><span class="pinno">1</span><div><b>Results are filtered and grouped, and the match is highlighted.</b><p>Each result shows its method, its name with the matched letters in the accent color, and the collection path as a quiet subtitle. The query field uses the UI font, where the current placeholder is monospace. The current palette lists every command whatever you type.</p></div></div>
+    <div class="n"><span class="pinno">2</span><div><b>Every row has an icon, a name, a group subtitle and a right-aligned shortcut.</b><p>The group name now sits right after the title instead of floating in a misaligned middle column, and the keycap is flush right. Rows in the current palette have no icons, so commands, requests and history are harder to tell apart. Environments appear as their own group when the query matches one.</p></div></div>
+    <div class="n"><span class="pinno">3</span><div><b>A footer lists the keys that work inside the palette.</b><p>Navigate, open, close and commands-only are already supported. "Open in new tab" with ⌘↵ is a proposed addition. The current palette has no hints, so the ">" prefix is only discoverable from the placeholder.</p></div></div>
+    <div class="n"><span class="pinno">4</span><div><b>Opened with ⌘P, the palette shows a "Requests" chip (proposed).</b><p>The chip says the search is limited to requests, so Commands, Environments and Recent are not mixed in. ⌘K keeps the full mixed list shown above.</p></div></div>
+  </div>
+
+  <!-- ============ Window 2: shortcuts overlay ============ -->
+  <h2 class="cap">Keyboard shortcuts, ⌘/</h2>
+  <div class="window">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app" data-bg></div>
+
+    <div class="scrim"></div>
+    <div class="dialog wide">
+      <h2>Keyboard shortcuts<span class="kbd" style="margin-left:auto">⌘/</span></h2>
+      <div class="body">
+        <div class="sc-tools">
+          <div class="sf"><i data-i="search" class="sm"></i><input class="input focus" placeholder="Filter shortcuts"></div>
+          <span class="btn ghost"><i data-i="file" class="sm"></i>Open keybindings.json</span>
+        </div>
+        <div class="sc-cols">
+          <div>
+            <div class="sc-h">Request</div>
+            <div class="sc"><span class="ti">Send</span><span class="keys"><span class="kbd">⌘</span><span class="kbd">↵</span></span></div>
+            <div class="sc"><span class="ti">Save</span><span class="keys"><span class="kbd">⌘</span><span class="kbd">S</span></span></div>
+            <div class="sc"><span class="ti">Copy as cURL</span><span class="keys"><span class="kbd">⌘</span><span class="kbd">⇧</span><span class="kbd">C</span></span></div>
+            <div class="sc"><span class="ti">Import cURL</span><span class="keys"><span class="kbd">⌘</span><span class="kbd">O</span></span></div>
+            <div class="sc"><span class="ti">Format body</span><span class="keys"><span class="kbd">⇧</span><span class="kbd">⌥</span><span class="kbd">F</span></span></div>
+            <div class="sc"><span class="ti">Find</span><span class="keys"><span class="kbd">⌘</span><span class="kbd">F</span></span></div>
+
+            <div class="sc-h">Navigation</div>
+            <div class="sc"><span class="ti">Command palette</span><span class="keys"><span class="kbd">⌘</span><span class="kbd">K</span></span></div>
+            <div class="sc"><span class="ti">Quick open request</span><span class="keys"><span class="kbd">⌘</span><span class="kbd">P</span></span></div>
+            <div class="sc"><span class="ti">Switch environment</span><span class="tag info">custom</span><span class="keys"><span class="kbd">⌘</span><span class="kbd">E</span></span></div>
+            <div class="sc"><span class="ti">Focus URL</span><span class="keys"><span class="kbd">⌘</span><span class="kbd">L</span></span></div>
+          </div>
+          <div>
+            <div class="sc-h">Tabs</div>
+            <div class="sc"><span class="ti">New HTTP request</span><span class="keys"><span class="kbd">⌘</span><span class="kbd">N</span></span></div>
+            <div class="sc"><span class="ti">New WebSocket request</span><span class="keys"><span class="kbd">⌘</span><span class="kbd">⇧</span><span class="kbd">W</span></span></div>
+            <div class="sc"><span class="ti">Duplicate tab</span><span class="tag info">custom</span><span class="keys"><span class="kbd">⌘</span><span class="kbd">D</span></span></div>
+            <div class="sc"><span class="ti">Close tab</span><span class="keys"><span class="kbd">⌘</span><span class="kbd">W</span></span></div>
+            <div class="sc"><span class="ti">Reopen closed tab</span><span class="keys"><span class="kbd">⌘</span><span class="kbd">⇧</span><span class="kbd">T</span></span></div>
+            <div class="sc"><span class="ti">Next tab</span><span class="keys"><span class="kbd">⌃</span><span class="kbd">⇥</span></span></div>
+            <div class="sc"><span class="ti">Go to tab 1 to 8</span><span class="keys"><span class="kbd">⌘</span><span class="kbd">1</span><span class="subtlest" style="font-size:var(--fs-micro)">to</span><span class="kbd">⌘</span><span class="kbd">8</span></span></div>
+
+            <div class="sc-h">View</div>
+            <div class="sc"><span class="ti">Toggle sidebar</span><span class="keys"><span class="kbd">⌘</span><span class="kbd">B</span></span></div>
+            <div class="sc"><span class="ti">Toggle code panel</span><span class="keys"><span class="kbd">⌥</span><span class="kbd">⌘</span><span class="kbd">C</span></span></div>
+            <div class="sc"><span class="ti">Focus sidebar search</span><span class="keys"><span class="kbd">⌘</span><span class="kbd">⇧</span><span class="kbd">F</span></span></div>
+            <div class="sc"><span class="ti">Settings</span><span class="keys"><span class="kbd">⌘</span><span class="kbd">,</span></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="foot"><span class="left">Edit keybindings.json to rebind a shortcut.</span><span class="btn">Close <span class="kbd">esc</span></span></div>
+    </div>
+
+    <span class="pin pinno" style="left:290px;top:188px">5</span>
+    <span class="pin pinno" style="left:290px;top:236px">6</span>
+    <span class="pin pinno" style="left:970px;top:316px">7</span>
+  </div>
+
+  <div class="deck-notes">
+    <div class="n"><span class="pinno">5</span><div><b>The filter and the keybindings.json button share one row.</b><p>Both are the same controls as today, but the button is a quiet ghost button next to the filter instead of a separate full-weight button. The overlay is 640 px wide so two columns of groups fit.</p></div></div>
+    <div class="n"><span class="pinno">6</span><div><b>Two columns, one line per shortcut, keycaps right-aligned.</b><p>Groups are Request, Navigation, Tabs and View, with a hairline under each heading. Each key is its own keycap. The faint command id on every row is gone, because it is noise for anyone who is not editing keybindings.json.</p></div></div>
+    <div class="n"><span class="pinno">7</span><div><b>A "custom" tag marks a customized binding.</b><p>It replaces the "*" suffix, which looked like a footnote with no footnote. The tag sits next to the keycaps, so it reads as a property of the binding.</p></div></div>
+  </div>
+
+</div>
+</body>
+</html>

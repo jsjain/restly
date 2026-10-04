@@ -1,0 +1,11 @@
+# Versions, builds, and releases
+
+The version source, logo, CI builds, and release files. Part of the [Restly spec](README.md).
+
+## D31 Version and logo
+
+`wails.json`'s `info.productVersion` is the single source of the app version: Wails reads it into `CFBundleShortVersionString` at build time, and Go embeds `wails.json` (`//go:embed`) to read the same value for `GetAppInfo`, bound to the frontend. Commit and build time are set with `-ldflags "-X main.buildCommit=... -X main.buildTime=..."` (see the README build command), because `wails build` always passes `-buildvcs=false`, so the Go build info has no VCS data. Both are empty in builds without those flags. Settings > About shows the logo, name, version, commit, build date, and Go version, with a Copy button. The app icon is `icon.png`, resized to `build/appicon.png` (1024x1024, source for the macOS .icns and the regenerated Windows .ico) and to `frontend/src/assets/logo.png` (256x256, used as the favicon and in About).
+
+## D32 Builds and releases
+
+`.github/workflows/build.yml` runs when a `v*` tag is pushed or a release is published on GitHub, not on every push (the user's call on 2026-09-15), and can be run by hand from the Actions tab: Go tests on macOS, Windows, and Linux, the frontend checks on Linux, and `wails build` for macOS universal, Apple silicon, and Intel (the last two thinned from the universal app with `lipo`, all ad-hoc signed, each in a DMG with an Applications link made by `hdiutil`), Windows amd64 (NSIS installer and the bare exe), and Linux amd64 (tar.gz, and a .deb that is test-installed on the runner to prove its dependency names, built on Ubuntu 24.04 with `-tags webkit2_41` for WebKitGTK 4.1, so it needs glibc 2.39 or newer). The files are kept as run artifacts. For a tag or release, the run fails if the tag differs from `info.productVersion`, then attaches the files and `SHA256SUMS.txt` to the release, creating it when only the tag exists, with `docs/releases/<tag>.md` as its notes when that file exists. Nothing is notarized or signed with a certificate, which needs an Apple Developer ID and a Windows code signing certificate, so first launch shows Gatekeeper and SmartScreen warnings. Skipped until someone asks: arm64 Windows and Linux builds, AppImage, RPM, and auto-update.

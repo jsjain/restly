@@ -74,6 +74,7 @@ func NewApp() *App {
 
 func (app *App) startup(ctx context.Context) {
 	app.ctx = ctx
+	compactTitleBar()
 	app.emit = func(event string, data any) { runtime.EventsEmit(ctx, event, data) }
 	app.logError = func(format string, args ...any) {
 		runtime.LogErrorf(ctx, format, args...)
@@ -995,6 +996,24 @@ func (app *App) SaveLastBody() (string, error) {
 	app.mu.Unlock()
 	if err := os.WriteFile(target, body, 0o644); err != nil {
 		return "", fmt.Errorf("failed to save response body to %s: %w", target, err)
+	}
+	return target, nil
+}
+
+// SaveTextFile writes content to a path chosen in a native save dialog and returns the path, or "" when cancelled.
+func (app *App) SaveTextFile(defaultName, content string) (string, error) {
+	target, err := runtime.SaveFileDialog(app.ctx, runtime.SaveDialogOptions{
+		Title:           "Save file",
+		DefaultFilename: defaultName,
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to show save dialog: %w", err)
+	}
+	if target == "" {
+		return "", nil
+	}
+	if err := os.WriteFile(target, []byte(content), 0o644); err != nil {
+		return "", fmt.Errorf("failed to save %s: %w", target, err)
 	}
 	return target, nil
 }

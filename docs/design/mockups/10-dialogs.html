@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Restly · Menus, dialogs and toasts</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="app.css">
+<script src="shell.js"></script>
+<style>
+  .wcap { max-width: 1280px; margin: 0 auto 10px; font-size: 12px; opacity: 0.65; }
+  .window + .wcap { margin-top: 36px; }
+  .dialog { top: 330px; }
+  .dialog .body .field .select { width: 100%; }
+  .curl { width: 100%; height: 118px; padding: 8px 10px; resize: none; white-space: pre; overflow: hidden; line-height: 19px; }
+  .btn.danger.fill { background: var(--danger-tint); border-color: transparent; }
+  .toasts { position: absolute; z-index: 40; right: 16px; bottom: 40px; display: flex; flex-direction: column; gap: 8px; }
+  .toasts .toast { position: static; width: 380px; align-items: flex-start; }
+  .toasts .toast .i { margin-top: 2px; }
+  .toasts .toast.neutral .i:first-child { color: var(--success); }
+  .toasts .toast .dismiss { margin-left: auto; color: var(--text-subtlest); margin-top: 3px; }
+  .toasts .toast span { flex: 1; }
+  .dialog .body > span { line-height: 1.5; }
+</style>
+</head>
+<body data-screen="10-dialogs.html">
+<div class="deck">
+
+  <div class="wcap">Collection row menu and tab context menu</div>
+  <div class="window">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app">
+      <div data-sidebar='{"active":"Northwind API","dirty":["Create user"]}'></div>
+      <section class="main">
+        <div data-tabbar='{"tabs":[{"m":"GET","label":"List users"},{"m":"POST","label":"Create user","on":true,"dirty":true},{"m":"PATCH","label":"Update role"}]}'></div>
+        <div class="reqname">
+          <span class="crumbs">Northwind API <i data-i="chevron-right" class="sm"></i> Users <i data-i="chevron-right" class="sm"></i> <b>Create user</b></span>
+          <span class="grow"></span>
+          <span class="btn ghost"><i data-i="code" class="sm"></i>Code <span class="kbd">⌥⌘C</span></span>
+          <span class="btn ghost"><i data-i="save" class="sm"></i>Save <span class="kbd">⌘S</span></span>
+        </div>
+        <div class="reqbar">
+          <div class="url">
+            <span class="meth m auto post">POST <i data-i="chevron-down" class="sm"></i></span>
+            <span class="text"><span class="var">{{baseUrl}}</span>/api/users</span>
+          </div>
+          <span class="btn primary lg">Send <span class="kbd">⌘↵</span></span>
+        </div>
+        <div class="subtabs" style="margin-top:8px">
+          <a>Params</a><a>Headers <span class="c">2</span></a><a class="on">Body <span class="c">JSON</span></a><a>Auth <span class="c">Inherit</span></a><a>Pre-request</a><a>Post-response</a>
+        </div>
+        <div class="code" style="flex:0 0 auto;height:140px">
+          <div class="l"><span class="g">1</span><span class="u">{</span></div>
+          <div class="l"><span class="g">2</span>  <span class="p">"name"</span><span class="u">: </span><span class="s">"Ada Okafor"</span><span class="u">,</span></div>
+          <div class="l cur"><span class="g">3</span>  <span class="p">"email"</span><span class="u">: </span><span class="s">"ada@northwind.dev"</span><span class="u">,</span></div>
+          <div class="l"><span class="g">4</span>  <span class="p">"role"</span><span class="u">: </span><span class="s">"member"</span></div>
+          <div class="l"><span class="g">5</span><span class="u">}</span></div>
+        </div>
+        <div class="hsplit"></div>
+        <div class="resp">
+          <div class="resp-head">
+            <div class="subtabs"><a class="on">Body</a><a>Headers <span class="c">7</span></a><a>Cookies</a><a>Console</a></div>
+            <div class="resp-meta"><span class="status s2"><span class="dot"></span>201 Created</span><span>52 ms</span><span>164 B</span></div>
+          </div>
+          <div class="code">
+            <div class="l"><span class="g">1</span><span class="u">{</span></div>
+            <div class="l"><span class="g">2</span>  <span class="p">"id"</span><span class="u">: </span><span class="n">4833</span><span class="u">,</span></div>
+            <div class="l"><span class="g">3</span>  <span class="p">"name"</span><span class="u">: </span><span class="s">"Ada Okafor"</span><span class="u">,</span></div>
+            <div class="l"><span class="g">4</span>  <span class="p">"email"</span><span class="u">: </span><span class="s">"ada@northwind.dev"</span><span class="u">,</span></div>
+            <div class="l"><span class="g">5</span>  <span class="p">"role"</span><span class="u">: </span><span class="s">"member"</span></div>
+            <div class="l"><span class="g">6</span><span class="u">}</span></div>
+          </div>
+        </div>
+      </section>
+      <div data-statusbar='{"saved":"Auto-saved 4 s ago"}'></div>
+    </div>
+
+    <div class="pop" style="left:240px;top:118px;width:196px">
+      <div class="menu-item"><i data-i="plus" class="sm"></i>Add request</div>
+      <div class="menu-item"><i data-i="plug" class="sm"></i>Add WebSocket</div>
+      <div class="menu-item"><i data-i="folder" class="sm"></i>Add folder</div>
+      <div class="menu-sep"></div>
+      <div class="menu-item"><i data-i="format" class="sm"></i>Rename</div>
+      <div class="menu-item"><i data-i="copy" class="sm"></i>Clone</div>
+      <div class="menu-item on"><i data-i="play" class="sm"></i>Run</div>
+      <div class="menu-item"><i data-i="export" class="sm"></i>Export</div>
+      <div class="menu-sep"></div>
+      <div class="menu-item danger"><i data-i="trash" class="sm"></i>Delete</div>
+    </div>
+    <div class="pop" style="left:540px;top:42px;width:220px">
+      <div class="menu-item">Close <span class="kbd">⌘W</span></div>
+      <div class="menu-item">Close other tabs</div>
+      <div class="menu-item">Close tabs to the right</div>
+      <div class="menu-item">Close saved tabs</div>
+      <div class="menu-item">Close all</div>
+      <div class="menu-sep"></div>
+      <div class="menu-item">Duplicate tab <span class="kbd">⌘D</span></div>
+      <div class="menu-item">Copy URL</div>
+      <div class="menu-item">Reveal in sidebar</div>
+    </div>
+    <span class="pin pinno" style="left:448px;top:124px">1</span>
+    <span class="pin pinno" style="left:772px;top:50px">2</span>
+  </div>
+
+  <div class="wcap">Save request and Import cURL dialogs</div>
+  <div class="window">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app">
+      <div data-sidebar='{"dirty":["Create user"]}'></div>
+      <section class="main">
+        <div data-tabbar='{"tabs":[{"m":"GET","label":"List users"},{"m":"POST","label":"Create user","on":true,"dirty":true},{"m":"PATCH","label":"Update role"}]}'></div>
+        <div class="reqname">
+          <span class="crumbs">Northwind API <i data-i="chevron-right" class="sm"></i> Users <i data-i="chevron-right" class="sm"></i> <b>Create user</b></span>
+          <span class="grow"></span>
+          <span class="btn ghost"><i data-i="code" class="sm"></i>Code <span class="kbd">⌥⌘C</span></span>
+          <span class="btn ghost"><i data-i="save" class="sm"></i>Save <span class="kbd">⌘S</span></span>
+        </div>
+        <div class="reqbar">
+          <div class="url">
+            <span class="meth m auto post">POST <i data-i="chevron-down" class="sm"></i></span>
+            <span class="text"><span class="var">{{baseUrl}}</span>/api/users</span>
+          </div>
+          <span class="btn primary lg">Send <span class="kbd">⌘↵</span></span>
+        </div>
+        <div class="subtabs" style="margin-top:8px">
+          <a>Params</a><a>Headers <span class="c">2</span></a><a class="on">Body <span class="c">JSON</span></a><a>Auth <span class="c">Inherit</span></a><a>Pre-request</a><a>Post-response</a>
+        </div>
+        <div class="code" style="flex:0 0 auto;height:140px">
+          <div class="l"><span class="g">1</span><span class="u">{</span></div>
+          <div class="l"><span class="g">2</span>  <span class="p">"name"</span><span class="u">: </span><span class="s">"Ada Okafor"</span><span class="u">,</span></div>
+          <div class="l cur"><span class="g">3</span>  <span class="p">"email"</span><span class="u">: </span><span class="s">"ada@northwind.dev"</span><span class="u">,</span></div>
+          <div class="l"><span class="g">4</span>  <span class="p">"role"</span><span class="u">: </span><span class="s">"member"</span></div>
+          <div class="l"><span class="g">5</span><span class="u">}</span></div>
+        </div>
+        <div class="hsplit"></div>
+        <div class="resp">
+          <div class="resp-head">
+            <div class="subtabs"><a class="on">Body</a><a>Headers <span class="c">7</span></a><a>Cookies</a><a>Console</a></div>
+            <div class="resp-meta"><span class="status s2"><span class="dot"></span>201 Created</span><span>52 ms</span><span>164 B</span></div>
+          </div>
+          <div class="code">
+            <div class="l"><span class="g">1</span><span class="u">{</span></div>
+            <div class="l"><span class="g">2</span>  <span class="p">"id"</span><span class="u">: </span><span class="n">4833</span><span class="u">,</span></div>
+            <div class="l"><span class="g">3</span>  <span class="p">"name"</span><span class="u">: </span><span class="s">"Ada Okafor"</span><span class="u">,</span></div>
+            <div class="l"><span class="g">4</span>  <span class="p">"email"</span><span class="u">: </span><span class="s">"ada@northwind.dev"</span><span class="u">,</span></div>
+            <div class="l"><span class="g">5</span>  <span class="p">"role"</span><span class="u">: </span><span class="s">"member"</span></div>
+            <div class="l"><span class="g">6</span><span class="u">}</span></div>
+          </div>
+        </div>
+      </section>
+      <div data-statusbar='{"saved":"Auto-saved 4 s ago"}'></div>
+    </div>
+
+    <div class="scrim"></div>
+    <div class="dialog" style="left:420px;width:440px">
+      <h2>Save request</h2>
+      <div class="body">
+        <div class="field"><label>Name</label><input class="input focus" value="Create user"></div>
+        <div class="field"><label>Collection</label><span class="select">Northwind API<i data-i="chevron-down" class="sm"></i></span></div>
+        <div class="field"><label>Folder</label><span class="select">Users<i data-i="chevron-down" class="sm"></i></span></div>
+        <div style="height:66px"></div>
+      </div>
+      <div class="foot"><span class="btn">Cancel</span><span class="btn primary">Save <span class="kbd">⌘↵</span></span></div>
+      <div class="pop" id="folderlist" style="left:20px;top:234px;width:200px">
+        <div class="menu-item"><i data-i="layers" class="sm"></i>Collection root</div>
+        <div class="menu-item" style="padding-left:24px"><i data-i="folder" class="sm"></i>Auth</div>
+        <div class="menu-item on" style="padding-left:24px"><i data-i="folder" class="sm"></i>Users<i data-i="check" class="sm" style="margin-left:auto"></i></div>
+        <div class="menu-item" style="padding-left:24px"><i data-i="folder" class="sm"></i>Orders</div>
+      </div>
+    </div>
+    <div class="dialog" style="left:960px;width:480px">
+      <h2>Import cURL</h2>
+      <div class="body">
+        <textarea class="input mono curl" spellcheck="false" readonly>curl -X POST 'http://127.0.0.1:8765/api/users' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer {{token}}' \
+  -d '{"name":"Ada Okafor","email":"ada@northwind.dev"}'</textarea>
+      </div>
+      <div class="foot"><span class="btn">Cancel</span><span class="btn primary">Import</span></div>
+    </div>
+    <span class="pin pinno" style="left:172px;top:232px">3</span>
+    <span class="pin pinno" style="left:1210px;top:250px">4</span>
+  </div>
+
+  <div class="wcap">Unsaved changes and quit confirmations</div>
+  <div class="window">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app">
+      <div data-sidebar='{"dirty":["Create user"]}'></div>
+      <section class="main">
+        <div data-tabbar='{"tabs":[{"m":"GET","label":"List users"},{"m":"POST","label":"Create user","on":true,"dirty":true},{"m":"PATCH","label":"Update role"}]}'></div>
+        <div class="reqname">
+          <span class="crumbs">Northwind API <i data-i="chevron-right" class="sm"></i> Users <i data-i="chevron-right" class="sm"></i> <b>Create user</b></span>
+          <span class="grow"></span>
+          <span class="btn ghost"><i data-i="code" class="sm"></i>Code <span class="kbd">⌥⌘C</span></span>
+          <span class="btn ghost"><i data-i="save" class="sm"></i>Save <span class="kbd">⌘S</span></span>
+        </div>
+        <div class="reqbar">
+          <div class="url">
+            <span class="meth m auto post">POST <i data-i="chevron-down" class="sm"></i></span>
+            <span class="text"><span class="var">{{baseUrl}}</span>/api/users</span>
+          </div>
+          <span class="btn primary lg">Send <span class="kbd">⌘↵</span></span>
+        </div>
+        <div class="subtabs" style="margin-top:8px">
+          <a>Params</a><a>Headers <span class="c">2</span></a><a class="on">Body <span class="c">JSON</span></a><a>Auth <span class="c">Inherit</span></a><a>Pre-request</a><a>Post-response</a>
+        </div>
+        <div class="code" style="flex:0 0 auto;height:140px">
+          <div class="l"><span class="g">1</span><span class="u">{</span></div>
+          <div class="l"><span class="g">2</span>  <span class="p">"name"</span><span class="u">: </span><span class="s">"Ada Okafor"</span><span class="u">,</span></div>
+          <div class="l cur"><span class="g">3</span>  <span class="p">"email"</span><span class="u">: </span><span class="s">"ada@northwind.dev"</span><span class="u">,</span></div>
+          <div class="l"><span class="g">4</span>  <span class="p">"role"</span><span class="u">: </span><span class="s">"member"</span></div>
+          <div class="l"><span class="g">5</span><span class="u">}</span></div>
+        </div>
+        <div class="hsplit"></div>
+        <div class="resp">
+          <div class="resp-head">
+            <div class="subtabs"><a class="on">Body</a><a>Headers <span class="c">7</span></a><a>Cookies</a><a>Console</a></div>
+            <div class="resp-meta"><span class="status s2"><span class="dot"></span>201 Created</span><span>52 ms</span><span>164 B</span></div>
+          </div>
+          <div class="code">
+            <div class="l"><span class="g">1</span><span class="u">{</span></div>
+            <div class="l"><span class="g">2</span>  <span class="p">"id"</span><span class="u">: </span><span class="n">4833</span><span class="u">,</span></div>
+            <div class="l"><span class="g">3</span>  <span class="p">"name"</span><span class="u">: </span><span class="s">"Ada Okafor"</span><span class="u">,</span></div>
+            <div class="l"><span class="g">4</span>  <span class="p">"email"</span><span class="u">: </span><span class="s">"ada@northwind.dev"</span><span class="u">,</span></div>
+            <div class="l"><span class="g">5</span>  <span class="p">"role"</span><span class="u">: </span><span class="s">"member"</span></div>
+            <div class="l"><span class="g">6</span><span class="u">}</span></div>
+          </div>
+        </div>
+      </section>
+      <div data-statusbar='{"saved":"Auto-saved 4 s ago"}'></div>
+    </div>
+
+    <div class="scrim"></div>
+    <div class="dialog" style="left:420px;width:440px">
+      <h2>Save changes to "Create user"?</h2>
+      <div class="body"><span>Your changes will be lost if you don't save them.</span></div>
+      <div class="foot"><span class="btn ghost left">Don't save</span><span class="btn">Cancel</span><span class="btn primary">Save</span></div>
+    </div>
+    <div class="dialog" style="left:960px;width:400px">
+      <h2>Quit Restly?</h2>
+      <div class="body"><span>2 collections have unsaved changes.</span></div>
+      <div class="foot"><span class="btn">Cancel</span><span class="btn danger fill">Quit anyway</span></div>
+    </div>
+    <span class="pin pinno" style="left:172px;top:270px">5</span>
+    <span class="pin pinno" style="left:1170px;top:270px">6</span>
+  </div>
+
+  <div class="wcap">Method select and toasts</div>
+  <div class="window">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app">
+      <div data-sidebar='{"dirty":["Create user"]}'></div>
+      <section class="main">
+        <div data-tabbar='{"tabs":[{"m":"GET","label":"List users"},{"m":"POST","label":"Create user","on":true,"dirty":true},{"m":"PATCH","label":"Update role"}]}'></div>
+        <div class="reqname">
+          <span class="crumbs">Northwind API <i data-i="chevron-right" class="sm"></i> Users <i data-i="chevron-right" class="sm"></i> <b>Create user</b></span>
+          <span class="grow"></span>
+          <span class="btn ghost"><i data-i="code" class="sm"></i>Code <span class="kbd">⌥⌘C</span></span>
+          <span class="btn ghost"><i data-i="save" class="sm"></i>Save <span class="kbd">⌘S</span></span>
+        </div>
+        <div class="reqbar">
+          <div class="url">
+            <span class="meth m auto post">POST <i data-i="chevron-down" class="sm"></i></span>
+            <span class="text"><span class="var">{{baseUrl}}</span>/api/users</span>
+          </div>
+          <span class="btn primary lg">Send <span class="kbd">⌘↵</span></span>
+        </div>
+        <div class="subtabs" style="margin-top:8px">
+          <a>Params</a><a>Headers <span class="c">2</span></a><a class="on">Body <span class="c">JSON</span></a><a>Auth <span class="c">Inherit</span></a><a>Pre-request</a><a>Post-response</a>
+        </div>
+        <div class="code" style="flex:0 0 auto;height:140px">
+          <div class="l"><span class="g">1</span><span class="u">{</span></div>
+          <div class="l"><span class="g">2</span>  <span class="p">"name"</span><span class="u">: </span><span class="s">"Ada Okafor"</span><span class="u">,</span></div>
+          <div class="l cur"><span class="g">3</span>  <span class="p">"email"</span><span class="u">: </span><span class="s">"ada@northwind.dev"</span><span class="u">,</span></div>
+          <div class="l"><span class="g">4</span>  <span class="p">"role"</span><span class="u">: </span><span class="s">"member"</span></div>
+          <div class="l"><span class="g">5</span><span class="u">}</span></div>
+        </div>
+        <div class="hsplit"></div>
+        <div class="resp">
+          <div class="resp-head">
+            <div class="subtabs"><a class="on">Body</a><a>Headers <span class="c">7</span></a><a>Cookies</a><a>Console</a></div>
+            <div class="resp-meta"><span class="status s2"><span class="dot"></span>201 Created</span><span>52 ms</span><span>164 B</span></div>
+          </div>
+          <div class="code">
+            <div class="l"><span class="g">1</span><span class="u">{</span></div>
+            <div class="l"><span class="g">2</span>  <span class="p">"id"</span><span class="u">: </span><span class="n">4833</span><span class="u">,</span></div>
+            <div class="l"><span class="g">3</span>  <span class="p">"name"</span><span class="u">: </span><span class="s">"Ada Okafor"</span><span class="u">,</span></div>
+            <div class="l"><span class="g">4</span>  <span class="p">"email"</span><span class="u">: </span><span class="s">"ada@northwind.dev"</span><span class="u">,</span></div>
+            <div class="l"><span class="g">5</span>  <span class="p">"role"</span><span class="u">: </span><span class="s">"member"</span></div>
+            <div class="l"><span class="g">6</span><span class="u">}</span></div>
+          </div>
+        </div>
+      </section>
+      <div data-statusbar='{"saved":"Auto-saved 4 s ago"}'></div>
+    </div>
+
+    <div class="pop" style="left:280px;top:122px;width:210px">
+      <div class="menu-item"><span class="m auto get" style="width:64px">GET</span></div>
+      <div class="menu-item on"><span class="m auto post" style="width:64px">POST</span><i data-i="check" class="sm" style="margin-left:auto"></i></div>
+      <div class="menu-item"><span class="m auto put" style="width:64px">PUT</span></div>
+      <div class="menu-item"><span class="m auto patch" style="width:64px">PATCH</span></div>
+      <div class="menu-item"><span class="m auto delete" style="width:64px">DELETE</span></div>
+      <div class="menu-item"><span class="m auto head" style="width:64px">HEAD</span></div>
+      <div class="menu-item"><span class="m auto options" style="width:64px">OPTIONS</span></div>
+      <div class="menu-sep"></div>
+      <div class="menu-item">Custom…</div>
+      <div class="menu-sep"></div>
+      <div class="menu-label" style="padding-bottom:4px">Type g, p or d to pick</div>
+    </div>
+    <div class="toasts">
+      <div class="toast neutral"><i data-i="check-circle"></i><span>Imported 14 requests from orders.postman_collection.json.</span><i data-i="x" class="sm dismiss"></i></div>
+      <div class="toast"><i data-i="alert"></i><span>Couldn't save Northwind API.postman_collection.json. Permission denied.</span><i data-i="x" class="sm dismiss"></i></div>
+    </div>
+    <span class="pin pinno" style="left:500px;top:128px">7</span>
+    <span class="pin pinno" style="left:850px;top:650px">8</span>
+  </div>
+
+  <div class="deck-notes">
+    <div class="n"><span class="pinno">1</span><div><b>The collection menu uses icons and groups.</b><p>Add request, Add WebSocket and Add folder come first, then Rename, Clone, Run and Export, with Delete last and in red. Run has no shortcut, so none is drawn. The old styling is plain text rows with heavy borders and no grouping.</p></div></div>
+    <div class="n"><span class="pinno">2</span><div><b>The tab context menu shows shortcuts and separates close actions.</b><p>Close and Duplicate tab carry their keys, and the five close commands are kept apart from Duplicate, Copy URL and Reveal in sidebar. The current menu has the same commands with heavier borders.</p></div></div>
+    <div class="n"><span class="pinno">3</span><div><b>Save request is one calm dialog with a single filled button.</b><p>The Name field has the focus ring, and Collection and Folder are selects with a small list. The Folder list indents Auth, Users and Orders under Collection root, and the Collection list ends with New collection…. Save shows ⌘↵ (proposed).</p></div></div>
+    <div class="n"><span class="pinno">4</span><div><b>Import cURL pairs a mono textarea with two buttons.</b><p>Cancel is outlined and Import is the only filled button. It sits beside the Save dialog here to save space, but it opens on its own over the scrim. The current dialog fills both buttons.</p></div></div>
+    <div class="n"><span class="pinno">5</span><div><b>Unsaved changes: Don't save leaves the primary pair alone.</b><p>"Don't save" is a ghost button on the far left so it is not hit by mistake, then Cancel and a primary Save. The old confirm fills every button, so the safe choice did not stand out.</p></div></div>
+    <div class="n"><span class="pinno">6</span><div><b>Quit variant uses a danger style for the destructive choice.</b><p>"Quit anyway" gets a red tint, not a filled red block, and Cancel stays neutral. It states how many collections are affected.</p></div></div>
+    <div class="n"><span class="pinno">7</span><div><b>The method select lists each method in its own color.</b><p>The current method is checked, Custom… sits below a separator, and the footer hint tells you to type g, p or d to pick. The old list is plain text.</p></div></div>
+    <div class="n"><span class="pinno">8</span><div><b>Toasts stack at the bottom right with a dismiss x.</b><p>The error toast names the file and the reason, and the neutral one confirms an import with its count. Both use the overlay surface and a soft shadow instead of a colored fill.</p></div></div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Restly · Collection overview</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="app.css">
+<script src="shell.js"></script>
+<style>
+  .page-head h1.rename { display: inline-block; margin: 0 0 0 -6px; padding: 0 6px; border-radius: var(--radius-small); }
+  .page-head h1.rename:hover, .page-head h1.rename.hover { background: var(--surface-hover); }
+  .page-head .meta .dotsep { width: 3px; height: 3px; border-radius: 50%; background: var(--text-subtlest); }
+  .page-head .meta .mono { font-size: var(--fs-small); }
+  .page-head .meta { margin-left: 0; }
+  .blk { padding: 0 0 14px; margin-bottom: 14px; border-bottom: 1px solid var(--border-subtle); }
+  .blk:last-child { border-bottom: 0; margin-bottom: 0; padding-bottom: 0; }
+  .blk .lbl { font-size: var(--fs-small); font-weight: 500; color: var(--text-subtle); margin-bottom: 6px; display: flex; align-items: center; }
+  .blk .lbl .grow { flex: 1; }
+  .blk .li { display: flex; align-items: center; gap: 8px; height: 24px; color: var(--text); }
+  .blk .li .sub { color: var(--text-subtlest); font-size: var(--fs-small); margin-left: auto; }
+  .blk .stat-row { gap: 24px; }
+  .secthead { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font-size: var(--fs-small); font-weight: 500; color: var(--text-subtle); height: 28px; }
+  .secthead .grow { flex: 1; }
+  .secthead .c { color: var(--text-subtlest); font-variant-numeric: tabular-nums; }
+  .descbox { border-radius: var(--radius); padding: 2px 0 6px; }
+  .descbox .prose p { margin: 0 0 8px; }
+  .reqs td.name { color: var(--text); }
+  .reqs td.fold { color: var(--text-subtle); }
+  .reqs td.k { color: var(--text-subtle); }
+  .hintrow { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; color: var(--text-subtle); font-size: var(--fs-small); }
+  .hintrow .grow { flex: 1; }
+</style>
+</head>
+<body data-screen="04-collection.html">
+<div class="deck">
+
+  <!-- window 1: overview -->
+  <div class="window">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app">
+      <div data-sidebar='{"active":"Northwind API"}'></div>
+      <section class="main">
+        <div data-tabbar='{"tabs":[{"kind":"COL","label":"Northwind API","on":true},{"m":"GET","label":"List users"}]}'></div>
+        <div class="page">
+          <div class="page-head">
+            <div>
+              <h1 class="rename hover">Northwind API</h1>
+              <div class="meta"><span class="mono">Northwind API.postman_collection.json</span><span class="dotsep"></span><span>8 requests, 3 folders, 1 WebSocket</span><span class="dotsep"></span><span>2 variables</span></div>
+            </div>
+            <div class="acts">
+              <span class="btn primary"><i data-i="play" class="sm"></i>Run</span>
+              <span class="btn ghost"><i data-i="save" class="sm"></i>Save <span class="kbd">⌘S</span></span>
+            </div>
+          </div>
+          <div class="subtabs">
+            <a class="on">Overview</a><a>Authorization</a><a>Scripts</a><a>Variables <span class="c">2</span></a><a>Environments <span class="c">2</span></a><a>Runs</a>
+          </div>
+          <div class="page-body">
+            <div class="cols">
+              <div>
+                <div class="secthead">Description<span class="grow"></span><span class="btn ghost" style="height:24px"><i data-i="format" class="sm"></i>Edit</span></div>
+                <div class="descbox">
+                  <div class="prose">
+                    <p>Backend for the Northwind storefront. Sign in with <code>POST /api/auth/login</code>, then send the returned token as <code>Authorization: Bearer &lt;token&gt;</code> on every other request.</p>
+                    <p>Start the local server on port 8765 before running requests against Local. Staging resets nightly at 02:00 UTC.</p>
+                  </div>
+                </div>
+                <div class="secthead" style="margin-top:14px">Requests <span class="c">9</span></div>
+                <div class="kvwrap">
+                  <table class="kv reqs">
+                    <thead><tr><th style="width:62px">Method</th><th style="width:160px">Name</th><th>Path</th><th style="width:90px">Folder</th></tr></thead>
+                    <tbody>
+                      <tr><td><span data-m="POST"></span></td><td class="name">Login</td><td class="k">/api/auth/login</td><td class="fold">Auth</td></tr>
+                      <tr><td><span data-m="POST"></span></td><td class="name">Refresh token</td><td class="k">/api/auth/refresh</td><td class="fold">Auth</td></tr>
+                      <tr class="hover"><td><span data-m="GET"></span></td><td class="name">List users</td><td class="k">/api/users</td><td class="fold">Users</td></tr>
+                      <tr><td><span data-m="GET"></span></td><td class="name">Get user</td><td class="k">/api/users/:id</td><td class="fold">Users</td></tr>
+                      <tr><td><span data-m="POST"></span></td><td class="name">Create user</td><td class="k">/api/users</td><td class="fold">Users</td></tr>
+                      <tr><td><span data-m="PATCH"></span></td><td class="name">Update role</td><td class="k">/api/users/:id/role</td><td class="fold">Users</td></tr>
+                      <tr><td><span data-m="DELETE"></span></td><td class="name">Delete user</td><td class="k">/api/users/:id</td><td class="fold">Users</td></tr>
+                      <tr><td><span data-m="GET"></span></td><td class="name">Health</td><td class="k">/health</td><td class="fold subtlest">None</td></tr>
+                      <tr><td><span data-m="WS"></span></td><td class="name">Order events</td><td class="k">/ws/orders</td><td class="fold subtlest">None</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div>
+                <div class="blk">
+                  <div class="lbl">Authorization</div>
+                  <div class="li"><i data-i="lock" class="sm subtle"></i>Bearer token<span class="sub">Used by 7 requests</span></div>
+                </div>
+                <div class="blk">
+                  <div class="lbl">Environments</div>
+                  <div class="li"><span class="env-dot on" style="margin:0 2px 0 1px"></span>Local<span class="tag ok" style="margin-left:auto">Active</span></div>
+                  <div class="li"><span class="env-dot" style="margin:0 2px 0 1px"></span>Staging</div>
+                </div>
+                <div class="blk">
+                  <div class="lbl">Scripts</div>
+                  <div class="li"><span class="subtle">Pre-request</span><span class="sub">None</span></div>
+                  <div class="li"><span class="subtle">Post-response</span><span class="sub">3 lines</span></div>
+                </div>
+                <div class="blk">
+                  <div class="lbl">Stats</div>
+                  <div class="stat-row">
+                    <div class="stat"><div class="v">8</div><div class="l">requests</div></div>
+                    <div class="stat"><div class="v">3</div><div class="l">folders</div></div>
+                    <div class="stat"><div class="v">2</div><div class="l">variables</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div data-statusbar='{"saved":"Auto-saved 12 s ago"}'></div>
+    </div>
+
+    <span class="pin pinno" style="left:450px;top:62px">1</span>
+    <span class="pin pinno" style="left:1046px;top:63px">2</span>
+    <span class="pin pinno" style="left:790px;top:128px">3</span>
+    <span class="pin pinno" style="left:268px;top:180px">4</span>
+    <span class="pin pinno" style="left:268px;top:336px">5</span>
+    <span class="pin pinno" style="left:936px;top:176px">6</span>
+  </div>
+
+  <div style="height:36px"></div>
+
+  <!-- window 2: variables -->
+  <div class="window">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app">
+      <div data-sidebar='{"active":"Northwind API"}'></div>
+      <section class="main">
+        <div data-tabbar='{"tabs":[{"kind":"COL","label":"Northwind API","on":true},{"m":"GET","label":"List users"}]}'></div>
+        <div class="page">
+          <div class="page-head">
+            <div>
+              <h1 class="rename">Northwind API</h1>
+              <div class="meta"><span class="mono">Northwind API.postman_collection.json</span><span class="dotsep"></span><span>8 requests, 3 folders, 1 WebSocket</span><span class="dotsep"></span><span>2 variables</span></div>
+            </div>
+            <div class="acts">
+              <span class="btn primary"><i data-i="play" class="sm"></i>Run</span>
+              <span class="btn ghost"><i data-i="save" class="sm"></i>Save <span class="kbd">⌘S</span></span>
+            </div>
+          </div>
+          <div class="subtabs">
+            <a>Overview</a><a>Authorization</a><a>Scripts</a><a class="on">Variables <span class="c">2</span></a><a>Environments <span class="c">2</span></a><a>Runs</a>
+          </div>
+          <div class="page-body">
+            <div class="hintrow">
+              <span>Collection variables are saved in the collection file. Use environments for secrets.</span>
+              <span class="grow"></span>
+              <span class="seg"><span class="on">Table</span><span>Bulk edit</span></span>
+            </div>
+            <div class="kvwrap">
+              <table class="kv">
+                <thead><tr><th class="ck"></th><th style="width:240px">Variable</th><th style="width:300px">Value</th><th>Description</th><th class="acts"></th></tr></thead>
+                <tbody>
+                  <tr><td class="ck"><span class="cb on"></span></td><td class="k">apiVersion</td><td class="v">v2</td><td class="d">Path prefix for versioned routes</td><td class="acts"><i data-i="trash" class="sm"></i></td></tr>
+                  <tr class="hover"><td class="ck"><span class="cb on"></span></td><td class="k">pageSize</td><td class="v">20</td><td class="d">Default page size for list requests</td><td class="acts"><i data-i="trash" class="sm"></i></td></tr>
+                  <tr class="off"><td class="ck"><span class="cb"></span></td><td class="k">traceHeader</td><td class="v">true</td><td class="d"></td><td class="acts"><i data-i="trash" class="sm"></i></td></tr>
+                  <tr class="ghost"><td class="ck"></td><td>Variable</td><td>Value</td><td>Description</td><td class="acts"></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div data-statusbar='{"saved":"Auto-saved 12 s ago"}'></div>
+    </div>
+
+    <span class="pin pinno" style="left:1106px;top:179px">7</span>
+    <span class="pin pinno" style="left:268px;top:278px">8</span>
+  </div>
+
+  <div class="deck-notes">
+    <div class="n"><span class="pinno">1</span><div><b>A page header replaces the big centered title.</b><p>The name is plain text that gets a soft background on hover, and a click renames it. The file name moves from the bottom of the page into a quiet meta line beside the counts. Today the title is oversized and the file name is easy to miss.</p></div></div>
+    <div class="n"><span class="pinno">2</span><div><b>Run is the only filled button.</b><p>Save becomes a ghost button that shows ⌘S. Today both buttons are filled and compete, and the shortcut is not shown.</p></div></div>
+    <div class="n"><span class="pinno">3</span><div><b>Sub-tabs get an underline and live counts.</b><p>Variables and Environments show how many items they hold, so you do not have to open them. Today the tabs have no active marker and no counts.</p></div></div>
+    <div class="n"><span class="pinno">4</span><div><b>The description is rendered text, edited on click.</b><p>Inline code is styled, and an Edit button makes the click target obvious. Today it is an empty textarea that looks like a form.</p></div></div>
+    <div class="n"><span class="pinno">5</span><div><b>A requests table replaces the count chips.</b><p>Every request is listed with method, name, path and folder, so the overview says what the collection contains. Today you see "8 requests" in a pill and nothing else.</p></div></div>
+    <div class="n"><span class="pinno">6</span><div><b>A right rail summarizes settings.</b><p>Authorization, environments, scripts and stats are small labelled blocks, so you can check the setup without opening each tab. Today those facts are only inside separate sub-tabs, and the counts are bordered pills.</p></div></div>
+    <div class="n"><span class="pinno">7</span><div><b>A hint line and a Table or Bulk edit toggle sit above the variables.</b><p>The hint says where collection variables are stored and points secrets to environments (proposed copy). The toggle matches the request editor. Today there is no explanation and no bulk mode here.</p></div></div>
+    <div class="n"><span class="pinno">8</span><div><b>Variables use the shared key-value table.</b><p>It has the same hairline grid, neutral checkboxes, hover actions and ghost row as the request editor. A Description column is added (proposed). Today this tab uses a different, boxed grid.</p></div></div>
+  </div>
+</div>
+</body>
+</html>

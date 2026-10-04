@@ -100,7 +100,7 @@ export default function Overlays() {
       confirmDialog({
         title: "Quit Restly?",
         message: "Some collections, environments, or requests have unsaved changes. Quit without saving?",
-        confirmLabel: "Quit",
+        confirmLabel: "Quit anyway",
         cancelLabel: "Cancel",
         danger: true,
       }).then((ok) => {

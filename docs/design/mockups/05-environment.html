@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Restly · Environment editor</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="app.css">
+<script src="shell.js"></script>
+<style>
+  .page-head .meta { margin-left: 0; }
+  .page-head .meta .i { color: var(--text-subtlest); }
+  .toolrow { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .toolrow .grow { flex: 1; }
+  .filter { position: relative; width: 240px; }
+  .filter .input { width: 100%; padding-left: 28px; }
+  .filter .i { position: absolute; left: 8px; top: 7px; color: var(--text-subtlest); }
+  .env .kv .vcell { display: flex; align-items: center; gap: 8px; }
+  .env .kv .vcell .grow { flex: 1; }
+  .env .kv .vcell .i { color: var(--text-subtlest); }
+  .env .kv .vcell .note { font-family: var(--font-ui); font-size: var(--fs-micro); color: var(--text-subtlest); }
+  .env .kv .dots { letter-spacing: 0.12em; color: var(--text-subtle); }
+  .env .kv td.t { padding: 0 8px; }
+  .env .kv .seg span { height: 20px; padding: 0 7px; }
+  .banner { display: flex; align-items: center; gap: 10px; padding: 6px 8px 6px 12px; margin-bottom: 14px; border-radius: var(--radius); background: var(--warning-tint); color: var(--text); }
+  .banner .i { color: var(--warning); }
+  .banner > span:not(.btn) { max-width: 480px; }
+  .banner .btn { margin-left: 8px; }
+  .pick-open .envpick { background: var(--surface-active); }
+  .pop .head { display: flex; align-items: center; padding: 6px 8px 4px; color: var(--text-subtle); font-size: var(--fs-small); font-weight: 500; }
+  .pop .head .kbd { margin-left: auto; }
+  .pop .menu-item .sp { width: 13px; flex: 0 0 auto; }
+  .pop .menu-item .env-dot { margin: 0 3px 0 2px; }
+</style>
+</head>
+<body data-screen="05-environment.html">
+<div class="deck">
+
+  <!-- window 1: owned environment -->
+  <div class="window">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app">
+      <div data-sidebar='{"active":"Local"}'></div>
+      <section class="main">
+        <div data-tabbar='{"tabs":[{"m":"GET","label":"List users"},{"kind":"ENV","label":"Local","on":true}]}'></div>
+        <div class="page env">
+          <div class="page-head">
+            <div>
+              <h1>Local</h1>
+              <div class="meta"><i data-i="layers" class="sm"></i><span>Belongs to Northwind API</span></div>
+            </div>
+            <div class="acts">
+              <span class="tag ok" style="align-self:center">Active</span>
+              <span class="btn ghost"><i data-i="save" class="sm"></i>Save <span class="kbd">⌘S</span></span>
+            </div>
+          </div>
+          <div class="page-body" style="padding-top:22px">
+            <div class="toolrow">
+              <div class="filter"><i data-i="search" class="sm"></i><input class="input" placeholder="Filter variables"></div>
+              <span class="grow"></span>
+              <span class="seg"><span class="on">Table</span><span>Bulk edit</span></span>
+            </div>
+            <div class="kvwrap">
+              <table class="kv">
+                <thead><tr><th class="ck"></th><th style="width:200px">Variable</th><th>Value</th><th style="width:130px">Type</th><th class="acts"></th></tr></thead>
+                <tbody>
+                  <tr><td class="ck"><span class="cb on"></span></td><td class="k">baseUrl</td><td class="v">http://127.0.0.1:8765</td><td class="t"><span class="seg"><span class="on">Default</span><span>Secret</span></span></td><td class="acts"><i data-i="trash" class="sm"></i></td></tr>
+                  <tr class="hover"><td class="ck"><span class="cb on"></span></td><td class="k">apiBase</td><td class="v"><span class="var">{{baseUrl}}</span>/api</td><td class="t"><span class="seg"><span class="on">Default</span><span>Secret</span></span></td><td class="acts"><i data-i="trash" class="sm"></i></td></tr>
+                  <tr><td class="ck"><span class="cb on"></span></td><td class="k">email</td><td class="v">priya@northwind.dev</td><td class="t"><span class="seg"><span class="on">Default</span><span>Secret</span></span></td><td class="acts"><i data-i="trash" class="sm"></i></td></tr>
+                  <tr><td class="ck"><span class="cb on"></span></td><td class="k">password</td><td class="v"><div class="vcell"><span class="dots">••••••••••</span><span class="grow"></span><i data-i="eye" class="sm"></i></div></td><td class="t"><span class="seg"><span>Default</span><span class="on">Secret</span></span></td><td class="acts"><i data-i="trash" class="sm"></i></td></tr>
+                  <tr><td class="ck"><span class="cb on"></span></td><td class="k">token</td><td class="v"><div class="vcell"><span class="dots">••••••••••••••••</span><span class="note">set by script</span><span class="grow"></span><i data-i="eye" class="sm"></i></div></td><td class="t"><span class="seg"><span>Default</span><span class="on">Secret</span></span></td><td class="acts"><i data-i="trash" class="sm"></i></td></tr>
+                  <tr class="ghost"><td class="ck"></td><td>Variable</td><td>Value</td><td></td><td class="acts"></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div data-statusbar='{"saved":"Auto-saved 6 s ago"}'></div>
+    </div>
+
+    <span class="pin pinno" style="left:420px;top:62px">1</span>
+    <span class="pin pinno" style="left:268px;top:132px">2</span>
+    <span class="pin pinno" style="left:1256px;top:292px">3</span>
+    <span class="pin pinno" style="left:268px;top:322px">4</span>
+    <span class="pin pinno" style="left:268px;top:232px">5</span>
+  </div>
+
+  <div style="height:36px"></div>
+
+  <!-- window 2: picker open, orphan environment -->
+  <div class="window pick-open">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app">
+      <div data-sidebar='{"active":""}'></div>
+      <section class="main">
+        <div data-tabbar='{"tabs":[{"m":"GET","label":"List users"},{"kind":"ENV","label":"Legacy QA","on":true}]}'></div>
+        <div class="page env">
+          <div class="page-head">
+            <div>
+              <h1>Legacy QA</h1>
+              <div class="meta"><i data-i="globe" class="sm"></i><span>Not attached to a collection</span></div>
+            </div>
+            <div class="acts">
+              <span class="btn ghost"><i data-i="check-circle" class="sm"></i>Set active</span>
+              <span class="btn ghost"><i data-i="save" class="sm"></i>Save <span class="kbd">⌘S</span></span>
+            </div>
+          </div>
+          <div class="page-body" style="padding-top:22px">
+            <div class="banner"><i data-i="alert" class="sm"></i><span>The collection this environment belonged to was deleted. It is only offered to that collection's requests.</span><span class="btn">Make shared</span></div>
+            <div class="toolrow">
+              <div class="filter"><i data-i="search" class="sm"></i><input class="input" placeholder="Filter variables"></div>
+              <span class="grow"></span>
+              <span class="seg"><span class="on">Table</span><span>Bulk edit</span></span>
+            </div>
+            <div class="kvwrap">
+              <table class="kv">
+                <thead><tr><th class="ck"></th><th style="width:200px">Variable</th><th>Value</th><th style="width:130px">Type</th><th class="acts"></th></tr></thead>
+                <tbody>
+                  <tr><td class="ck"><span class="cb on"></span></td><td class="k">baseUrl</td><td class="v">https://qa.northwind.dev</td><td class="t"><span class="seg"><span class="on">Default</span><span>Secret</span></span></td><td class="acts"><i data-i="trash" class="sm"></i></td></tr>
+                  <tr><td class="ck"><span class="cb on"></span></td><td class="k">apiKey</td><td class="v"><div class="vcell"><span class="dots">••••••••••••</span><span class="grow"></span><i data-i="eye" class="sm"></i></div></td><td class="t"><span class="seg"><span>Default</span><span class="on">Secret</span></span></td><td class="acts"><i data-i="trash" class="sm"></i></td></tr>
+                  <tr class="ghost"><td class="ck"></td><td>Variable</td><td>Value</td><td></td><td class="acts"></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div data-statusbar='{"saved":"Auto-saved 6 s ago"}'></div>
+    </div>
+
+    <div class="pop" style="right:80px;top:44px;width:260px">
+      <div class="head">Switch environment<span class="kbd">⌘E</span></div>
+      <div class="menu-sep"></div>
+      <div class="menu-label">Northwind API</div>
+      <div class="menu-item on"><i data-i="check" class="sm"></i>Local</div>
+      <div class="menu-item"><span class="sp"></span>Staging</div>
+      <div class="menu-label">Shared</div>
+      <div class="menu-item"><span class="sp"></span>QA shared</div>
+      <div class="menu-sep"></div>
+      <div class="menu-item"><span class="sp"></span>No environment</div>
+      <div class="menu-sep"></div>
+      <div class="menu-item"><i data-i="settings" class="sm"></i>Manage environments</div>
+    </div>
+
+    <span class="pin pinno" style="left:912px;top:54px">6</span>
+    <span class="pin pinno" style="left:268px;top:138px">7</span>
+  </div>
+
+  <div class="deck-notes">
+    <div class="n"><span class="pinno">1</span><div><b>The name becomes a page title with an owner line.</b><p>"Belongs to Northwind API" says which collection offers this environment, and shared ones say so too. An "Active" tag replaces the action when this environment is in use, and Save is a ghost button with its shortcut. Today there is a "Name" label with a text field and a filled blue Save button.</p></div></div>
+    <div class="n"><span class="pinno">2</span><div><b>A filter field and Bulk edit sit above the table.</b><p>Both are proposed additions. Filtering helps once an environment has dozens of variables, and Bulk edit matches the request editor. Today there is neither.</p></div></div>
+    <div class="n"><span class="pinno">3</span><div><b>Type is a small segmented control.</b><p>Default and Secret are both visible, so one click switches them. Today it is a dropdown that reads "default" or "secret".</p></div></div>
+    <div class="n"><span class="pinno">4</span><div><b>Secrets are dots with an eye icon.</b><p>The eye reveals the value and the dots sit in the same mono column. A "set by script" note on token is proposed. Today secrets show a plain "show" text link.</p></div></div>
+    <div class="n"><span class="pinno">5</span><div><b>Values that reference another variable are tinted.</b><p>apiBase shows <code>{{baseUrl}}</code> in the same green tint as the URL bar, so a reference reads differently from plain text. Today values are plain monospace. The same table is used for Globals.</p></div></div>
+    <div class="n"><span class="pinno">6</span><div><b>The picker groups environments by owner.</b><p>The current collection's environments come first, then shared ones, then No environment and a Manage link. The check marks the active one and ⌘E opens the menu. Today there is a plain select with no grouping.</p></div></div>
+    <div class="n"><span class="pinno">7</span><div><b>An orphaned environment shows a warning bar.</b><p>This window shows an environment whose collection was deleted (Legacy QA), so it is not in the picker. The bar explains it and offers Make shared. Today nothing explains why such an environment is missing.</p></div></div>
+  </div>
+</div>
+</body>
+</html>

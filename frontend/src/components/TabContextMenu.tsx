@@ -8,12 +8,11 @@
 //   onContextMenu={(e) => { e.preventDefault(); setMenu({ tab, x: e.clientX, y: e.clientY }); }}
 // and render <TabContextMenu tab={menu.tab} x={menu.x} y={menu.y} onClose={() => setMenu(null)} />
 // when `menu` is set.
-import { useLayoutEffect, useRef, useState } from "react";
+import { Fragment, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Tab } from "../store";
 import { requestClose, closeOthers, closeToRight, closeSaved, closeAll, duplicateTab, copyUrl, revealInSidebar, tabItem } from "../tabActions";
-import { listCommands } from "../commands";
-import { formatKeys } from "../shortcuts";
+import { Kbd } from "./Kbd";
 
 interface Props {
   tab: Tab;
@@ -22,15 +21,10 @@ interface Props {
   onClose: () => void;
 }
 
-function keyHint(commandId: string): string | undefined {
-  const keys = listCommands().find((c) => c.id === commandId)?.keys?.[0];
-  return keys ? formatKeys(keys.split("+")) : undefined;
-}
-
 interface Item {
   id: string;
   label: string;
-  keys?: string;
+  command?: string; // its shortcut is shown as a keycap
   onSelect: () => void;
 }
 
@@ -42,15 +36,15 @@ export default function TabContextMenu({ tab, x, y, onClose }: Props) {
   const canDuplicate = !!tabItem(tab);
 
   const items: Item[] = [
-    { id: "close", label: "Close", keys: keyHint("close-tab"), onSelect: () => requestClose(tab) },
-    { id: "close-others", label: "Close Other Tabs", onSelect: () => closeOthers(tab) },
-    { id: "close-right", label: "Close Tabs to the Right", onSelect: () => closeToRight(tab) },
-    { id: "close-saved", label: "Close Saved Tabs", onSelect: () => closeSaved() },
-    { id: "close-all", label: "Close All", onSelect: () => closeAll() },
+    { id: "close", label: "Close", command: "close-tab", onSelect: () => requestClose(tab) },
+    { id: "close-others", label: "Close other tabs", onSelect: () => closeOthers(tab) },
+    { id: "close-right", label: "Close tabs to the right", onSelect: () => closeToRight(tab) },
+    { id: "close-saved", label: "Close saved tabs", onSelect: () => closeSaved() },
+    { id: "close-all", label: "Close all", onSelect: () => closeAll() },
   ];
-  if (canDuplicate) items.push({ id: "duplicate", label: "Duplicate Tab", keys: keyHint("duplicate-tab"), onSelect: () => duplicateTab(tab) });
+  if (canDuplicate) items.push({ id: "duplicate", label: "Duplicate tab", command: "duplicate-tab", onSelect: () => duplicateTab(tab) });
   if (canDuplicate) items.push({ id: "copy-url", label: "Copy URL", onSelect: () => void copyUrl(tab) });
-  if (isSavedRequest) items.push({ id: "reveal", label: "Reveal in Sidebar", onSelect: () => revealInSidebar(tab) });
+  if (isSavedRequest) items.push({ id: "reveal", label: "Reveal in sidebar", onSelect: () => revealInSidebar(tab) });
 
   function run(item: Item): void {
     item.onSelect();
@@ -113,8 +107,8 @@ export default function TabContextMenu({ tab, x, y, onClose }: Props) {
       tabIndex={-1}
     >
       {items.map((item, i) => (
-        <div key={item.id}>
-          {item.id === "duplicate" ? <div className="tab-context-menu-separator" /> : null}
+        <Fragment key={item.id}>
+          {item.id === "duplicate" ? <div className="menu-sep" role="separator" /> : null}
           <button
             type="button"
             role="menuitem"
@@ -122,10 +116,10 @@ export default function TabContextMenu({ tab, x, y, onClose }: Props) {
             onMouseEnter={() => setActiveIndex(i)}
             onClick={() => run(item)}
           >
-            <span>{item.label}</span>
-            {item.keys ? <span className="overlay-keys">{item.keys}</span> : null}
+            {item.label}
+            {item.command ? <Kbd command={item.command} /> : null}
           </button>
-        </div>
+        </Fragment>
       ))}
     </div>,
     document.body

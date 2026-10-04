@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Restly · Request and response</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="app.css">
+<script src="shell.js"></script>
+</head>
+<body data-screen="01-request.html">
+<div class="deck">
+  <div class="window">
+    <div class="traffic"><span></span><span></span><span></span></div>
+    <div class="app">
+      <div data-sidebar='{"active":"List users","dirty":["Create user"]}'></div>
+      <section class="main">
+        <div data-tabbar='{"tabs":[{"kind":"COL","label":"Northwind API"},{"m":"GET","label":"List users","on":true},{"m":"POST","label":"Create user","dirty":true},{"m":"PATCH","label":"Update role"}]}'></div>
+
+        <div class="reqname">
+          <span class="crumbs">Northwind API <i data-i="chevron-right" class="sm"></i> Users <i data-i="chevron-right" class="sm"></i> <b>List users</b></span>
+          <span class="grow"></span>
+          <span class="btn ghost"><i data-i="code" class="sm"></i>Code <span class="kbd">⌥⌘C</span></span>
+          <span class="btn ghost"><i data-i="save" class="sm"></i>Save <span class="kbd">⌘S</span></span>
+        </div>
+
+        <div class="reqbar">
+          <div class="url">
+            <span class="meth m auto get">GET <i data-i="chevron-down" class="sm"></i></span>
+            <span class="text"><span class="var">{{baseUrl}}</span>/api/users<span class="q">?page=</span>1<span class="q">&amp;per_page=</span>20</span>
+          </div>
+          <span class="btn primary lg">Send <span class="kbd">⌘↵</span></span>
+        </div>
+
+        <div class="subtabs" style="margin-top:8px">
+          <a class="on">Params <span class="c">2</span></a>
+          <a>Headers <span class="c">2</span></a>
+          <a>Body</a>
+          <a>Auth <span class="c">Inherit</span></a>
+          <a>Pre-request</a>
+          <a>Post-response <span class="mark"></span></a>
+          <span class="right"><span class="seg"><span class="on">Table</span><span>Bulk edit</span></span></span>
+        </div>
+
+        <div class="pane-pad" style="height:236px">
+          <div class="kvwrap">
+            <table class="kv">
+              <thead><tr><th class="ck"></th><th>Key</th><th>Value</th><th>Description</th><th class="acts"></th></tr></thead>
+              <tbody>
+                <tr><td class="ck"><span class="cb on"></span></td><td class="k">page</td><td class="v">1</td><td class="d"></td><td class="acts"><i data-i="trash" class="sm"></i></td></tr>
+                <tr class="hover"><td class="ck"><span class="cb on"></span></td><td class="k">per_page</td><td class="v">20</td><td class="d">Max 100</td><td class="acts"><i data-i="trash" class="sm"></i></td></tr>
+                <tr class="off"><td class="ck"><span class="cb"></span></td><td class="k">role</td><td class="v">admin</td><td class="d"></td><td class="acts"><i data-i="trash" class="sm"></i></td></tr>
+                <tr class="ghost"><td class="ck"></td><td>Key</td><td>Value</td><td></td><td class="acts"></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="hsplit"></div>
+
+        <div class="resp">
+          <div class="resp-head">
+            <div class="subtabs">
+              <a class="on">Body</a>
+              <a>Headers <span class="c">7</span></a>
+              <a>Cookies</a>
+              <a>Tests <span class="c" style="color:var(--success)">2/2</span></a>
+              <a>Console</a>
+            </div>
+            <div class="resp-meta">
+              <span class="status s2"><span class="dot"></span>200 OK</span>
+              <span>38 ms</span>
+              <span>430 B</span>
+            </div>
+          </div>
+          <div class="resp-tools">
+            <span class="seg"><span class="on">Pretty</span><span>Raw</span><span>Preview</span></span>
+            <span class="tag">JSON</span>
+            <span class="grow"></span>
+            <span class="btn icon sm" title="Find ⌘F"><i data-i="search" class="sm"></i></span>
+            <span class="btn icon sm" title="Copy"><i data-i="copy" class="sm"></i></span>
+            <span class="btn icon sm" title="Save to file"><i data-i="export" class="sm"></i></span>
+          </div>
+          <div class="code">
+            <div class="l"><span class="g">1</span><span class="f"><i data-i="chevron-down" class="sm"></i></span><span class="u">{</span></div>
+            <div class="l"><span class="g">2</span><span class="f"><i data-i="chevron-down" class="sm"></i></span>  <span class="p">"data"</span><span class="u">: [</span></div>
+            <div class="l"><span class="g">3</span><span class="f"><i data-i="chevron-down" class="sm"></i></span>    <span class="u">{</span></div>
+            <div class="l"><span class="g">4</span><span class="f"></span>      <span class="p">"id"</span><span class="u">: </span><span class="n">4821</span><span class="u">,</span></div>
+            <div class="l cur"><span class="g">5</span><span class="f"></span>      <span class="p">"name"</span><span class="u">: </span><span class="s">"Priya Raman"</span><span class="u">,</span></div>
+            <div class="l"><span class="g">6</span><span class="f"></span>      <span class="p">"email"</span><span class="u">: </span><span class="s">"priya@northwind.dev"</span><span class="u">,</span></div>
+            <div class="l"><span class="g">7</span><span class="f"></span>      <span class="p">"role"</span><span class="u">: </span><span class="s">"admin"</span><span class="u">,</span></div>
+            <div class="l"><span class="g">8</span><span class="f"></span>      <span class="p">"active"</span><span class="u">: </span><span class="b">true</span><span class="u">,</span></div>
+            <div class="l"><span class="g">9</span><span class="f"></span>      <span class="p">"created_at"</span><span class="u">: </span><span class="s">"2026-08-14T09:21:07Z"</span></div>
+            <div class="l"><span class="g">10</span><span class="f"></span>    <span class="u">},</span></div>
+            <div class="l"><span class="g">11</span><span class="f"><i data-i="chevron-right" class="sm"></i></span>    <span class="u">{</span> <span class="subtlest">… 6 keys</span> <span class="u">},</span></div>
+            <div class="l"><span class="g">17</span><span class="f"><i data-i="chevron-right" class="sm"></i></span>    <span class="u">{</span> <span class="subtlest">… 6 keys</span> <span class="u">}</span></div>
+            <div class="l"><span class="g">23</span><span class="f"></span>  <span class="u">],</span></div>
+            <div class="l"><span class="g">24</span><span class="f"></span>  <span class="p">"page"</span><span class="u">: </span><span class="n">1</span><span class="u">,</span></div>
+          </div>
+        </div>
+      </section>
+      <div data-statusbar='{"saved":"Auto-saved 4 s ago"}'></div>
+    </div>
+
+    <!-- timing popover, shown on hover of "38 ms" -->
+    <div class="pop" style="right:40px;top:446px;width:250px;padding:10px 12px">
+      <div style="font-weight:500;margin-bottom:8px">Timing</div>
+      <div style="display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:12px" class="tnum">
+        <span class="subtle">DNS</span><div class="progress"><i style="width:4%;background:var(--text-subtlest)"></i></div><span>1 ms</span>
+        <span class="subtle">Connect</span><div class="progress"><i style="width:8%;margin-left:4%;background:var(--text-subtlest)"></i></div><span>3 ms</span>
+        <span class="subtle">TLS</span><div class="progress"><i style="width:0%"></i></div><span class="subtlest">none</span>
+        <span class="subtle">First byte</span><div class="progress"><i style="width:76%;margin-left:12%;background:var(--primary)"></i></div><span>29 ms</span>
+        <span class="subtle">Download</span><div class="progress"><i style="width:12%;margin-left:88%;background:var(--success)"></i></div><span>5 ms</span>
+      </div>
+    </div>
+
+    <span class="pin pinno" style="left:160px;top:12px">1</span>
+    <span class="pin pinno" style="left:228px;top:172px">2</span>
+    <span class="pin pinno" style="left:530px;top:30px">3</span>
+    <span class="pin pinno" style="left:1146px;top:30px">4</span>
+    <span class="pin pinno" style="left:1020px;top:54px">5</span>
+    <span class="pin pinno" style="left:900px;top:97px">6</span>
+    <span class="pin pinno" style="left:1236px;top:280px">7</span>
+    <span class="pin pinno" style="left:1088px;top:412px">8</span>
+    <span class="pin pinno" style="left:980px;top:438px">9</span>
+    <span class="pin pinno" style="left:280px;top:778px">10</span>
+  </div>
+
+  <div class="deck-notes">
+    <div class="n"><span class="pinno">1</span><div><b>Workspace header replaces the empty sidebar row.</b><p>The name opens a workspace menu (open folder, reveal in Finder). New and Import stay as icon buttons. Collections and History become quiet text tabs instead of a filled pill switch.</p></div></div>
+    <div class="n"><span class="pinno">2</span><div><b>Method tags are smaller, muted and in a fixed column.</b><p>All methods share one lightness, so no color shouts. POST moves from neon <code>#e5e510</code> to amber. DELETE and OPTIONS shorten to DEL and OPT so names align.</p></div></div>
+    <div class="n"><span class="pinno">3</span><div><b>Tabs have a top accent and fill to the editor surface.</b><p>The active tab joins the page below it, as in VS Code. Unsaved tabs show a dot in place of the close button. Collection and environment tabs show a quiet COL or ENV label.</p></div></div>
+    <div class="n"><span class="pinno">4</span><div><b>The environment picker shows state with a dot.</b><p>A green dot means an environment is active. A hollow dot means none is selected. Cookies and Settings become plain icons after a divider.</p></div></div>
+    <div class="n"><span class="pinno">5</span><div><b>Request actions move to the breadcrumb row.</b><p>Save and Code become ghost buttons that show their shortcuts. The toolbar keeps one primary action, Send. It is the only filled button on screen.</p></div></div>
+    <div class="n"><span class="pinno">6</span><div><b>One URL field.</b><p>The method sits inside the URL field instead of in a separate box. Query parts are dimmed and variables are tinted. Its 34 px height marks it as the main input.</p></div></div>
+    <div class="n"><span class="pinno">7</span><div><b>Quieter key-value table.</b><p>It keeps the hairline grid you asked for. Checkboxes are neutral rather than blue, and the delete icon appears only on hover. A ghost row replaces the "+ Add" button, and a Description column and Bulk edit are added.</p></div></div>
+    <div class="n"><span class="pinno">8</span><div><b>The response header is one line.</b><p>Sub-tabs sit on the left and the status, time and size on the right, in tabular numerals. The test count is colored by its result. "View [Pretty]" becomes a segmented control with a Preview option.</p></div></div>
+    <div class="n"><span class="pinno">9</span><div><b>Hovering the time shows a timing breakdown.</b><p>This replaces the current plain tooltip with bars for DNS, connect, TLS, first byte and download. All the data already exists in httptrace.</p></div></div>
+    <div class="n"><span class="pinno">10</span><div><b>New status bar (optional).</b><p>It shows the save state, proxy, cookie count and the palette hint. It gives auto-save a visible confirmation, since auto-save shows no toast on success.</p></div></div>
+  </div>
+</div>
+</body>
+</html>

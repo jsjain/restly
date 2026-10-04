@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Restly redesign</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="app.css">
+<script src="shell.js"></script>
+<style>
+  .doc { max-width: 1280px; margin: 0 auto; }
+  .doc h2 { font-size: 15px; font-weight: 600; margin: 44px 0 6px; letter-spacing: -0.005em; }
+  .doc .lede { font-size: 15px; line-height: 1.6; max-width: 72ch; color: inherit; opacity: 0.85; margin: 4px 0 0; }
+  .doc .sub { font-size: 13px; opacity: 0.6; margin: 0 0 16px; max-width: 80ch; }
+  .find { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+  .find img { width: 100%; border-radius: 8px; display: block; box-shadow: 0 0 0 1px rgba(127, 127, 127, 0.25); }
+  .find ol, .list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; font-size: 13px; line-height: 1.55; }
+  .find li b, .list li b { font-weight: 600; }
+  .code-ref { display: inline-block; min-width: 26px; font-weight: 600; opacity: 0.55; font-variant-numeric: tabular-nums; }
+  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .shots figure { margin: 0; }
+  .shots figcaption { font-size: 11px; opacity: 0.6; margin-top: 4px; }
+  .themes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .tokpanel { background: var(--surface); color: var(--text); border-radius: 10px; padding: 18px; box-shadow: 0 0 0 1px var(--border-subtle); }
+  .tokpanel h3 { margin: 0 0 12px; font-size: 13px; font-weight: 600; }
+  .sw { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 14px; }
+  .sw div { font-size: 10.5px; color: var(--text-subtle); }
+  .sw i { display: block; height: 30px; border-radius: 5px; margin-bottom: 4px; box-shadow: inset 0 0 0 1px var(--border-subtle); }
+  .meths { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+  .meths .m { width: auto; font-size: 11px; }
+  .types { display: grid; grid-template-columns: 1fr 2fr; gap: 6px 16px; align-items: baseline; font-size: 12px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .card-link { display: block; text-decoration: none; color: inherit; }
+  .card-link img { width: 100%; aspect-ratio: 1280 / 800; object-fit: cover; object-position: top left; border-radius: 8px; display: block; box-shadow: 0 0 0 1px rgba(127, 127, 127, 0.25); background: #1e1e1e; }
+  .card-link b { display: block; font-size: 13px; font-weight: 600; margin-top: 8px; }
+  .card-link span { font-size: 12px; opacity: 0.6; }
+  .card-link:hover b { text-decoration: underline; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+</style>
+</head>
+<body data-screen="index.html">
+<div class="deck">
+<div class="doc">
+  <p class="lede">The redesign turns Restly into a quieter, denser instrument. It uses one accent, muted method colors, a single type scale and three radii. States are designed rather than left as one line of text. The layout stays the same: sidebar, tabs, request over response. That keeps every shortcut and the VS Code theme system working. Every color is still a theme token, so the redesign ships as new token values plus component CSS.</p>
+
+  <h2>Why it looks unfinished today</h2>
+  <p class="sub">From screenshots of the current build (v0.2.0) with a sample workspace.</p>
+  <div class="find">
+    <div class="shots">
+      <figure><img src="current/04-response.png" alt="Current request and response screen"><figcaption>Request and response</figcaption></figure>
+      <figure><img src="current/08-overview.png" alt="Current collection overview"><figcaption>Collection overview</figcaption></figure>
+      <figure><img src="current/07-palette.png" alt="Current command palette"><figcaption>Command palette</figcaption></figure>
+      <figure><img src="current/09-history.png" alt="Current history sidebar"><figcaption>History</figcaption></figure>
+    </div>
+    <ol>
+      <li><span class="code-ref">F1</span><b>Method colors are terminal ANSI colors.</b> POST is <code>#e5e510</code>, a neon yellow, and the five methods have different lightness. The tree reads as a rainbow before it reads as a list.</li>
+      <li><span class="code-ref">F2</span><b>Too many button styles in one row.</b> The request bar has a separate method box, a filled blue Send, an outlined Save and a bare "Code" text. Three treatments for four actions.</li>
+      <li><span class="code-ref">F3</span><b>Heavy controls where quiet ones belong.</b> The Collections/History switch is a filled pill. Tables put a bright blue checkbox and a red X on every row.</li>
+      <li><span class="code-ref">F4</span><b>Form layouts inside tool panels.</b> "View [Pretty]" in the response and "Name [Local] Save" in environments are settings-form patterns, not editor chrome.</li>
+      <li><span class="code-ref">F5</span><b>Pages are sparse forms.</b> The collection overview is an empty textarea and four bordered pill chips in a narrow centered column, with most of the window blank.</li>
+      <li><span class="code-ref">F6</span><b>Weak hierarchy.</b> Nearly everything is 13 to 14 px at weight 500 or 600. Titles, labels and values compete, and numbers are proportional, so times and sizes jitter.</li>
+      <li><span class="code-ref">F7</span><b>The palette looks unfinished.</b> It lists every command unfiltered, the group name floats in a misaligned middle column, the placeholder is monospace and rows have no icons.</li>
+      <li><span class="code-ref">F8</span><b>States are one line of text.</b> First run, empty response, in flight and errors are bare sentences. There is no place that confirms auto-save worked.</li>
+    </ol>
+  </div>
+
+  <h2>Direction</h2>
+  <div class="two">
+    <ul class="list">
+      <li><span class="code-ref">P1</span><b>One accent.</b> Blue marks the single primary action per view, focus and the active tab. Nothing else is blue.</li>
+      <li><span class="code-ref">P2</span><b>Methods share one lightness.</b> Saturation stays under about 55%, so method tags identify requests without shouting.</li>
+      <li><span class="code-ref">P3</span><b>Type scale 11 / 12 / 13 / 15 / 20, weights 400 / 500 / 600.</b> Tabular numerals wherever a number changes: status, time, size, counts.</li>
+    </ul>
+    <ul class="list">
+      <li><span class="code-ref">P4</span><b>Three radii.</b> 3 px for badges and keycaps, 5 px for controls, 7 to 10 px for panels and overlays. The current UI uses 6 px on everything.</li>
+      <li><span class="code-ref">P5</span><b>Actions reveal on hover.</b> Row actions, delete icons and close buttons appear on hover or focus. Shortcuts sit next to the action they trigger.</li>
+      <li><span class="code-ref">P6</span><b>Every state is designed.</b> First run, empty, in flight, error, cancelled and saved each get a composed view with a next step.</li>
+    </ul>
+  </div>
+
+  <h2>Tokens</h2>
+  <p class="sub">Names match <code>ThemeTokens</code> in <code>frontend/src/theme/tokens.ts</code>. Dark keeps the #262626 editor surface. Borders hold the 1.4:1 floor the contrast guard enforces.</p>
+  <div class="themes">
+    <div class="tokpanel" data-theme="dark">
+      <h3>Dark</h3>
+      <div class="sw">
+        <div><i style="background:var(--surface-raised)"></i>surfaceRaised</div>
+        <div><i style="background:var(--surface)"></i>surface</div>
+        <div><i style="background:var(--surface-input)"></i>surfaceInput</div>
+        <div><i style="background:var(--surface-overlay)"></i>surfaceOverlay</div>
+        <div><i style="background:var(--surface-active)"></i>surfaceActive</div>
+        <div><i style="background:var(--border)"></i>border</div>
+        <div><i style="background:var(--text)"></i>text</div>
+        <div><i style="background:var(--text-subtle)"></i>textSubtle</div>
+        <div><i style="background:var(--text-subtlest)"></i>textSubtlest</div>
+        <div><i style="background:var(--primary-button)"></i>primaryButton</div>
+        <div><i style="background:var(--success)"></i>success</div>
+        <div><i style="background:var(--danger)"></i>danger</div>
+      </div>
+      <div class="meths"><span class="m get">GET</span><span class="m post">POST</span><span class="m put">PUT</span><span class="m patch">PATCH</span><span class="m delete">DEL</span><span class="m head">HEAD</span><span class="m options">OPT</span><span class="m ws">WS</span></div>
+      <div class="types">
+        <span class="subtlest">20 / 600</span><span style="font-size:20px;font-weight:600;letter-spacing:-0.015em">Northwind API</span>
+        <span class="subtlest">15 / 600</span><span style="font-size:15px;font-weight:600">Save request</span>
+        <span class="subtlest">13 / 500</span><span style="font-size:13px;font-weight:500">Params, Headers, Body</span>
+        <span class="subtlest">13 / 400</span><span style="font-size:13px">List users</span>
+        <span class="subtlest">12 / 400</span><span style="font-size:12px" class="subtle">Northwind API / Users</span>
+        <span class="subtlest">12.5 mono</span><span class="mono">{{baseUrl}}/api/users</span>
+        <span class="subtlest">12 / 600 tnum</span><span class="status s2 tnum"><span class="dot"></span>200 OK</span>
+      </div>
+    </div>
+    <div class="tokpanel" data-theme="light">
+      <h3>Light</h3>
+      <div class="sw">
+        <div><i style="background:var(--surface-raised)"></i>surfaceRaised</div>
+        <div><i style="background:var(--surface)"></i>surface</div>
+        <div><i style="background:var(--surface-input)"></i>surfaceInput</div>
+        <div><i style="background:var(--surface-overlay)"></i>surfaceOverlay</div>
+        <div><i style="background:var(--surface-active)"></i>surfaceActive</div>
+        <div><i style="background:var(--border)"></i>border</div>
+        <div><i style="background:var(--text)"></i>text</div>
+        <div><i style="background:var(--text-subtle)"></i>textSubtle</div>
+        <div><i style="background:var(--text-subtlest)"></i>textSubtlest</div>
+        <div><i style="background:var(--primary-button)"></i>primaryButton</div>
+        <div><i style="background:var(--success)"></i>success</div>
+        <div><i style="background:var(--danger)"></i>danger</div>
+      </div>
+      <div class="meths"><span class="m get">GET</span><span class="m post">POST</span><span class="m put">PUT</span><span class="m patch">PATCH</span><span class="m delete">DEL</span><span class="m head">HEAD</span><span class="m options">OPT</span><span class="m ws">WS</span></div>
+      <div class="types">
+        <span class="subtlest">Radii</span><span><span class="tag">3 px badge</span> <span class="btn" style="height:24px">5 px control</span> <span class="card" style="display:inline-block;padding:3px 10px">7 px panel</span></span>
+        <span class="subtlest">Heights</span><span class="subtle">Bar 40, URL 34, control 28, table row 30, tree row 26, status 24</span>
+        <span class="subtlest">Keys</span><span><span class="kbd">⌘K</span> <span class="kbd">⌘↵</span> <span class="kbd">⇧⌥F</span></span>
+        <span class="subtlest">Tags</span><span><span class="tag ok">200 OK</span> <span class="tag warn">403</span> <span class="tag err">ERR</span> <span class="tag info">current</span> <span class="tag">JSON</span></span>
+      </div>
+    </div>
+  </div>
+
+  <h2>Screens</h2>
+  <p class="sub">Each screen has numbered notes that compare it to the current UI. Use "Toggle light/dark" at the top right of any page. Notes marked "(proposed)" are new features rather than restyles.</p>
+  <div class="grid" id="screens"></div>
+
+  <h2>Shipping it</h2>
+  <div class="two">
+    <ol class="list">
+      <li><span class="code-ref">S1</span><b>Token values.</b> Put the new values from <code>tokens.css</code> into <code>darkTokens</code> and <code>lightTokens</code> in <code>themes.ts</code>. Method colors go in as <code>restly.method*</code>, so imported VS Code themes keep their ANSI-derived colors unless they set these keys. Add <code>primaryTint</code>, <code>successTint</code>, <code>warningTint</code> and <code>dangerTint</code> as new tokens, blended from the base color in <code>vscode.ts</code>.</li>
+      <li><span class="code-ref">S2</span><b>Layout tokens.</b> Replace <code>radius</code> and <code>radiusSmall</code> with three radii, and add the type scale and control heights to <code>layout</code>. These are not theme colors, so imported themes are unaffected.</li>
+      <li><span class="code-ref">S3</span><b>Component CSS, one area per change.</b> Sidebar header and view tabs, tree rows, tab strip, request bar (method inside the URL field), KvTable, response header, command palette, overview pages. Each is a CSS change plus small markup moves in the component named in the screen notes.</li>
+    </ol>
+    <ol class="list">
+      <li><span class="code-ref">S4</span><b>Additions, each optional.</b> Status bar, timing popover, welcome view, Description column and Bulk edit in tables, run summary bar and filter, palette footer. Each is marked "(proposed)" in the notes, so it can be cut without touching the restyle.</li>
+      <li><span class="code-ref">S5</span><b>Checks that still apply.</b> <code>colors.check.ts</code> (no literal colors) and <code>theme-contrast.check.ts</code> (text 4.5:1, focus 3:1, borders 1.4:1) cover the new values. One Dark needs the same method-color pass.</li>
+      <li><span class="code-ref">S6</span><b>Order.</b> S1 and S2 first, since they change every screen at once. Then S3 by area, starting with the request screen. S4 last.</li>
+    </ol>
+  </div>
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const blurb = {
+      "01-request.html": "The main screen, with the before and after notes",
+      "02-welcome.html": "First run, no tab open, in flight, empty and error",
+      "03-palette.html": "⌘K palette and the ⌘/ shortcuts overlay",
+      "04-collection.html": "Overview page and variables",
+      "05-environment.html": "Variables, secrets and the environment picker",
+      "06-runner.html": "Live run with a failure, and the finished summary",
+      "07-websocket.html": "Message log, composer and disconnected state",
+      "08-settings.html": "Appearance and network",
+      "09-history-cookies.html": "History sidebar, drafts and the cookie jar",
+      "10-dialogs.html": "Context menus, save, confirm, toasts and method select",
+      "flows.html": "Three end-to-end flows built from the screens",
+    };
+    document.getElementById("screens").innerHTML = SCREENS.slice(1).map(([f, t]) =>
+      `<a class="card-link" href="${f}"><img src="thumbs/${f.replace(".html", "")}.png" alt="${t}"><b>${t}</b><span>${blurb[f] || ""}</span></a>`).join("");
+  });
+</script>
+</body>
+</html>

@@ -14,12 +14,14 @@ const BLACK: Rgba = { r: 0, g: 0, b: 0, a: 1 };
 // {{variable}} highlight background: the variable color at this alpha.
 const VAR_BG_ALPHA = 0.16;
 const MIN_VAR_BG_ALPHA = 0.08;
+// primaryTint, successTint, warningTint, dangerTint: the color at this alpha.
+const TINT_ALPHA = 0.14;
 // textSubtlest's contrast on the surface is at most textSubtle's divided by this.
 const SUBTLEST_STEP = 1.25;
 // Tokens that are not colors, so no "restly.<token>" key sets them.
-const NON_COLOR_KEYS = new Set<string>(["fontUi", "fontMono", "fontSizeUi", "fontSizeMono", "radius", "radiusSmall"]);
+const NON_COLOR_KEYS = new Set<string>(["fontUi", "fontMono", "fontSizeUi", "fontSizeMono", "radiusXs", "radiusSmall", "radius", "radiusLarge"]);
 // Tokens drawn as translucent layers, which keep their alpha instead of being composited on the surface.
-const TRANSLUCENT_KEYS = new Set<string>(["varDefinedBg", "varUndefinedBg", "overlayBackdrop", "scrollbarThumb", "scrollbarThumbHover", "lineHighlight", "lineHighlightBorder"]);
+const TRANSLUCENT_KEYS = new Set<string>(["primaryTint", "successTint", "warningTint", "dangerTint", "varDefinedBg", "varUndefinedBg", "overlayBackdrop", "scrollbarThumb", "scrollbarThumbHover", "lineHighlight", "lineHighlightBorder"]);
 const CLEAR: Rgba = { r: 0, g: 0, b: 0, a: 0 };
 
 // parseColor reads #RGB, #RGBA, #RRGGBB, #RRGGBBAA, rgb() and rgba().
@@ -128,6 +130,10 @@ export const contrastPairs: ContrastPair[] = [
   // Palette match text (overlays.css mark) on hovered and active rows, which also covers the Select
   // check and the tree row's edge and dot.
   ...on(["primary"], each(["surfaceHover", "surfaceActive"]), 4.5),
+  // Tags, banners, and selected menu rows sit on a tint of the color they carry.
+  ...(["primary", "success", "warning", "danger"] as Key[]).flatMap((k) =>
+    on([k], [["surface", `${k}Tint` as Key], ["surfaceOverlay", `${k}Tint` as Key]], 4.5)
+  ),
   // Status badges tint their background with color-mix(in srgb, var(--x) 16%, transparent).
   ...(["success", "notice", "danger"] as Key[]).flatMap((k) => on([k], [["surface", [k, 0.16]]], 4.5)),
   // Method badges sit on the sidebar, rows, menus, and the URL bar.
@@ -413,6 +419,7 @@ export function convertVscodeTheme(json: unknown, fallbackName: string, bases: R
   const selection = onSurface(pick("editor.selectionBackground"), d("editor.selectionBackground"));
   const lineFill = pick("editor.lineHighlightBackground");
   const success = onSurface(pick("terminal.ansiGreen"), d("terminal.ansiGreen"));
+  const warning = onSurface(pick("editorWarning.foreground"), d("editorWarning.foreground"));
   const danger = onSurface(pick("errorForeground", "editorError.foreground"), d("errorForeground"));
   const red = onSurface(pick("terminal.ansiRed"), d("terminal.ansiRed"));
   const yellow = onSurface(pick("terminal.ansiYellow"), d("terminal.ansiYellow"));
@@ -465,8 +472,12 @@ export function convertVscodeTheme(json: unknown, fallbackName: string, bases: R
     info: toHex(onSurface(pick("editorInfo.foreground", "textLink.foreground"), d("editorInfo.foreground"))),
     success: toHex(success),
     notice: toHex(yellow),
-    warning: toHex(onSurface(pick("editorWarning.foreground"), d("editorWarning.foreground"))),
+    warning: toHex(warning),
     danger: toHex(danger),
+    primaryTint: toCss(primary, TINT_ALPHA),
+    successTint: toCss(success, TINT_ALPHA),
+    warningTint: toCss(warning, TINT_ALPHA),
+    dangerTint: toCss(danger, TINT_ALPHA),
 
     methodGet: toHex(success),
     methodPost: toHex(yellow),

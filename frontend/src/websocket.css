@@ -1,0 +1,400 @@
+/* WebSocket tab. The URL field is VarInput inside a .ws-url box; request.css owns .url-field. */
+
+.ws-tab {
+  min-height: 0;
+}
+
+.ws-crumbs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 16px 0;
+  color: var(--text-subtle);
+  font-size: var(--fs-small);
+  flex: 0 0 auto;
+}
+
+.ws-crumb-path {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ws-crumb-part {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.ws-crumb-path b {
+  color: var(--text);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- request bar --- */
+
+.ws-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px 0;
+  flex: 0 0 auto;
+}
+
+.ws-url {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--h-url);
+  background: var(--surface-input);
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-small);
+}
+
+.ws-url:focus-within {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 1px var(--border-focus);
+}
+
+/* In place of the method menu: the protocol, in the WebSocket method color. */
+.ws-url-tag {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  padding: 0 10px;
+  border-right: 1px solid var(--border-control);
+  color: var(--method-ws);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* The box draws the border and focus ring, so the input inside stays flat. */
+.ws-url .url-field .varinput-input,
+.ws-url .url-field .varinput-input:focus {
+  background: transparent;
+  border-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.ws-conn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 40%;
+  color: var(--text-subtle);
+  white-space: nowrap;
+}
+
+.ws-conn-open {
+  color: var(--success);
+  font-weight: 500;
+}
+
+.ws-conn-time {
+  color: var(--success);
+}
+
+.ws-conn-error {
+  color: var(--danger);
+  font-weight: 500;
+}
+
+.ws-conn-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ws-conn svg {
+  flex: 0 0 auto;
+}
+
+.ws-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: 0 0 auto;
+}
+
+.ws-dot-off {
+  background: none;
+  border: 1.5px solid var(--text-subtlest);
+}
+
+.ws-bar .ws-connect {
+  height: var(--h-url);
+  padding: 0 14px;
+}
+
+/* Params, Headers and Auth stay short so the log gets the height. */
+.ws-tab .ws-subtab-body {
+  flex: 0 0 auto;
+  max-height: 200px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* --- log --- */
+
+.ws-messages {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.ws-log-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex: 0 0 auto;
+}
+
+.ws-filter {
+  position: relative;
+  width: 280px;
+  max-width: 50%;
+}
+
+.ws-filter svg {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  margin-top: -7px;
+  color: var(--text-subtlest);
+  pointer-events: none;
+}
+
+.ws-filter input {
+  width: 100%;
+  height: var(--h-control);
+  padding: 0 8px 0 28px;
+}
+
+.ws-count {
+  color: var(--text-subtle);
+  font-size: var(--fs-small);
+  white-space: nowrap;
+}
+
+.ws-clear {
+  margin-left: auto;
+}
+
+.ws-log {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.ws-row {
+  display: grid;
+  grid-template-columns: 16px 96px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 10px;
+  height: 28px;
+  padding: 0 16px;
+}
+
+.ws-row.expandable {
+  cursor: pointer;
+}
+
+.ws-row:hover,
+.ws-row.open {
+  background: var(--surface-hover);
+}
+
+.ws-row:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: -2px;
+}
+
+.ws-row-dir {
+  display: grid;
+  place-items: center;
+  color: var(--text-subtle);
+}
+
+.ws-row-recv .ws-row-dir {
+  color: var(--primary);
+}
+
+.ws-row-sys .ws-row-dir {
+  color: var(--text-subtlest);
+}
+
+.ws-row-err .ws-row-dir {
+  color: var(--danger);
+}
+
+.ws-row .ws-dot {
+  width: 5px;
+  height: 5px;
+}
+
+.ws-row-time {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono);
+  color: var(--text-subtlest);
+  font-variant-numeric: tabular-nums;
+}
+
+.ws-row-body {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono);
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ws-row-sys .ws-row-body {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-ui);
+  color: var(--text-subtle);
+}
+
+.ws-row-err .ws-row-body {
+  color: var(--danger);
+}
+
+.ws-row-trail {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-subtlest);
+}
+
+.ws-handshake-label {
+  color: var(--text-subtle);
+  font-size: var(--fs-small);
+  font-weight: 500;
+}
+
+/* --- expanded row --- */
+
+.ws-expanded {
+  position: relative;
+  margin: 2px 16px 8px 138px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+}
+
+.ws-copy {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+}
+
+.ws-code {
+  max-height: 260px;
+  overflow: auto;
+  padding: 8px 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono);
+  line-height: 19px;
+}
+
+.ws-code-line {
+  white-space: pre;
+  min-height: 19px;
+}
+
+.ws-code-gutter {
+  display: inline-block;
+  width: 32px;
+  padding-right: 12px;
+  text-align: right;
+  color: var(--text-subtlest);
+  user-select: none;
+}
+
+.tk-string {
+  color: var(--syntax-string);
+}
+
+.tk-number {
+  color: var(--syntax-number);
+}
+
+.tk-boolean {
+  color: var(--syntax-boolean);
+}
+
+.tk-property {
+  color: var(--syntax-property);
+}
+
+.tk-punct {
+  color: var(--syntax-punctuation);
+}
+
+/* --- composer --- */
+
+.ws-composer {
+  flex: 0 0 auto;
+  padding: 10px 16px 14px;
+  background: var(--surface-raised);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.ws-composer-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.ws-composer-head label {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-subtle);
+}
+
+.ws-composer-box {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.ws-composer textarea {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 94px;
+  min-height: 56px;
+  max-height: 220px;
+  padding: 7px 10px;
+  resize: vertical;
+  background: var(--surface-input);
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-small);
+}
+
+/* Disconnected: the message can still be edited, but is dimmed so it reads as not sendable. */
+.ws-composer.off .ws-composer-head,
+.ws-composer.off textarea {
+  opacity: 0.6;
+}
+
+.ws-composer .ws-send {
+  height: var(--h-url);
+  padding: 0 14px;
+}

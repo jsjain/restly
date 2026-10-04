@@ -1,10 +1,13 @@
 import { useEffect, useReducer } from "react";
-import { X } from "lucide-react";
+import type { CSSProperties } from "react";
+import { Check, Import, Info, X } from "lucide-react";
 import * as api from "../api";
 import { confirmDialog } from "../dialog";
 import { toast } from "../store";
 import { addImportedTheme, getActiveThemeId, listThemes, onThemeChange, removeImportedTheme, setThemeId } from "./theme";
 import type { Theme } from "./themes";
+import { tokenToCssVar } from "./tokens";
+import type { ThemeTokens } from "./tokens";
 import "./theme.css";
 
 function errorText(err: unknown): string {
@@ -15,6 +18,14 @@ function notes(theme: Theme): string[] {
   const out = [...(theme.warnings ?? [])];
   if (theme.adjusted?.length) out.push(`Adjusted for WCAG contrast: ${theme.adjusted.join(", ")}`);
   return out;
+}
+
+// A card's preview is drawn with the theme's own CSS variables, set on the preview element, so it
+// shows the theme without applying it and without any literal color here.
+function themeVars(theme: Theme): CSSProperties {
+  const vars: Record<string, string> = {};
+  for (const key of Object.keys(tokenToCssVar) as (keyof ThemeTokens)[]) vars[tokenToCssVar[key]] = theme.tokens[key];
+  return vars;
 }
 
 export default function ThemePicker() {
@@ -63,12 +74,12 @@ export default function ThemePicker() {
 
   return (
     <div className="theme-settings">
-      <div className="theme-picker" role="radiogroup" aria-label="Theme">
+      <div className="themes" role="radiogroup" aria-label="Theme">
         {themes.map((theme) => {
           const checked = theme.id === activeId;
           return (
-            <div key={theme.id} className={`theme-picker-option${checked ? " active" : ""}`}>
-              <label className="theme-picker-choice" title={notes(theme).join("\n") || undefined}>
+            <div key={theme.id} className={`tc${checked ? " on" : ""}`}>
+              <label className="tc-choice" title={notes(theme).join("\n") || undefined}>
                 <input
                   type="radio"
                   name="restly-theme"
@@ -77,38 +88,51 @@ export default function ThemePicker() {
                   onChange={() => setThemeId(theme.id)}
                   className="theme-picker-input"
                 />
-                <span
-                  className="theme-picker-swatch"
-                  style={{ background: theme.tokens.surface, borderColor: theme.tokens.border }}
-                >
-                  <span className="theme-picker-swatch-dot" style={{ background: theme.tokens.primary }} />
-                  <span className="theme-picker-swatch-text" style={{ background: theme.tokens.text }} />
+                <span className="frame">
+                  <span className="pv" style={themeVars(theme)} aria-hidden="true">
+                    <span className="pv-side">
+                      <i className="a" />
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                    <span className="pv-main">
+                      <span className="pv-url">
+                        <b />
+                        <i />
+                        <u />
+                      </span>
+                      <i style={{ width: "70%" }} />
+                      <i className="b" style={{ width: "46%" }} />
+                      <i className="c" style={{ width: "58%" }} />
+                      <i style={{ width: "34%" }} />
+                    </span>
+                  </span>
                 </span>
-                <span className="theme-picker-label">{theme.name}</span>
+                <span className="tl">
+                  {checked ? <Check size={13} aria-hidden="true" /> : null}
+                  {theme.name}
+                </span>
               </label>
               {theme.file ? (
-                <button
-                  className="icon theme-picker-remove"
-                  title={`Remove ${theme.name}`}
-                  aria-label={`Remove ${theme.name}`}
-                  onClick={() => remove(theme)}
-                >
-                  <X />
+                <button className="rm" title={`Remove ${theme.name}`} aria-label={`Remove ${theme.name}`} onClick={() => remove(theme)}>
+                  <X size={10} />
                 </button>
               ) : null}
             </div>
           );
         })}
       </div>
-      {active && notes(active).length ? (
-        <div className="hint theme-picker-notes">
-          {notes(active).map((note) => (
-            <div key={note}>{note}</div>
-          ))}
-        </div>
-      ) : null}
-      <div>
-        <button onClick={importTheme}>Import VS Code theme…</button>
+      <div className="imp">
+        <button className="ghost" onClick={importTheme}>
+          <Import size={13} /> Import VS Code theme…
+        </button>
+        {active && notes(active).length ? (
+          <span className="note">
+            <Info size={13} aria-hidden="true" />
+            <span>{notes(active).join(" ")}</span>
+          </span>
+        ) : null}
       </div>
     </div>
   );

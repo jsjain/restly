@@ -2,6 +2,40 @@
   box-sizing: border-box;
 }
 
+/* Colors, fonts and radii are set on :root by theme/theme.ts. These are the type scale, which follows
+   the UI font size setting, and the control heights that the density setting adjusts. */
+:root {
+  --fs-tag: calc(var(--font-size-ui) - 3px); /* method tags and tab kind labels */
+  --fs-micro: calc(var(--font-size-ui) - 2px);
+  --fs-small: calc(var(--font-size-ui) - 1px);
+  --fs-title: calc(var(--font-size-ui) + 2px);
+  --fs-display: calc(var(--font-size-ui) + 7px);
+  --h-bar: 40px;
+  --h-control: 28px;
+  --h-url: 34px;
+  --h-row: 26px;
+  --h-table-row: 30px;
+  --h-status: 24px;
+}
+
+:root[data-density="compact"] {
+  --h-bar: 36px;
+  --h-control: 24px;
+  --h-url: 30px;
+  --h-row: 22px;
+  --h-table-row: 26px;
+  --h-status: 22px;
+}
+
+:root[data-density="comfortable"] {
+  --h-bar: 44px;
+  --h-control: 30px;
+  --h-url: 38px;
+  --h-row: 30px;
+  --h-table-row: 34px;
+  --h-status: 26px;
+}
+
 html,
 body,
 #root {
@@ -14,7 +48,8 @@ body {
   color: var(--text);
   font-family: var(--font-ui);
   font-size: var(--font-size-ui);
-  line-height: 1.4;
+  line-height: 1.45;
+  font-feature-settings: "cv11", "ss01", "ss03";
 }
 
 input,
@@ -23,21 +58,26 @@ button,
 textarea {
   font-family: inherit;
   font-size: inherit;
+  font-feature-settings: inherit;
   color: inherit;
   line-height: 1.4;
 }
 
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
 /* --- buttons --- */
-/* Default (unclassed) button is the "secondary" variant: subtle fill, visible border. */
+/* Default (unclassed) button is the "secondary" variant: transparent, with a visible border. */
 button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 30px;
-  padding: 0 12px;
-  background: var(--surface-raised);
-  border: 1px solid var(--border);
+  height: var(--h-control);
+  padding: 0 10px;
+  background: transparent;
+  border: 1px solid var(--border-control);
   color: var(--text);
   border-radius: var(--radius-small);
   cursor: pointer;
@@ -63,7 +103,6 @@ button.primary {
   background: var(--primary-button);
   border-color: var(--primary-button);
   color: var(--primary-button-text);
-  font-weight: 600;
 }
 
 button.primary:hover:not(:disabled) {
@@ -71,36 +110,125 @@ button.primary:hover:not(:disabled) {
   border-color: var(--primary-button-hover);
 }
 
-/* No border, transparent until hover. Used for lower-emphasis actions (Code, Refresh). */
+/* No border, muted text until hover. Used for lower-emphasis actions (Code, Refresh). */
 button.ghost {
-  background: transparent;
   border-color: transparent;
-  font-weight: 500;
+  color: var(--text-subtle);
 }
 
 button.ghost:hover:not(:disabled) {
-  background: var(--surface-hover);
+  color: var(--text);
 }
 
 /* Square icon-only button: menu triggers, row actions, close/delete glyphs, tab bar icons. */
 button.icon {
-  width: 26px;
-  height: 26px;
+  width: var(--h-control);
   padding: 0;
   background: transparent;
-  border: 1px solid transparent;
+  border-color: transparent;
   color: var(--text-subtle);
   flex: 0 0 auto;
 }
 
 button.icon:hover:not(:disabled) {
-  background: var(--surface-hover);
   color: var(--text);
 }
 
 button.icon svg {
   width: 15px;
   height: 15px;
+}
+
+button.danger {
+  color: var(--danger);
+}
+
+button.danger:hover:not(:disabled) {
+  color: var(--danger);
+}
+
+/* A destructive confirm. --surface on --danger has the contrast of --danger on --surface, which
+   theme/vscode.ts holds at 4.5:1. Hover mixes in --text, which moves away from --surface. */
+button.primary.danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: var(--surface);
+}
+
+button.primary.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 85%, var(--text));
+  border-color: color-mix(in srgb, var(--danger) 85%, var(--text));
+  color: var(--surface);
+}
+
+button .kbd {
+  margin-left: 2px;
+}
+
+button.primary .kbd .key {
+  background: color-mix(in srgb, var(--primary-button-text) 18%, transparent);
+  border-color: transparent;
+  color: var(--primary-button-text);
+}
+
+/* Shortcut hint: one cap per key with a small gap, so chords read as separate keys. Caps use the
+   system font even when the UI font is a custom monospace one, which renders ⌘⇧⌥ poorly. */
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: 0 0 auto;
+  font: inherit;
+}
+
+.kbd .key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  min-width: 20px;
+  padding: 0 5px;
+  border: 1px solid var(--border-subtle);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-xs);
+  background: var(--surface-hover);
+  color: var(--text-subtle);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: var(--radius-xs);
+  background: var(--surface-active);
+  color: var(--text-subtle);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+}
+
+.tag.ok {
+  background: var(--success-tint);
+  color: var(--success);
+}
+
+.tag.err {
+  background: var(--danger-tint);
+  color: var(--danger);
+}
+
+.tag.warn {
+  background: var(--warning-tint);
+  color: var(--warning);
+}
+
+.tag.info {
+  background: var(--primary-tint);
+  color: var(--primary);
 }
 
 /* No explicit height: padding + line-height add up to ~30px on their own, which keeps a
@@ -121,8 +249,9 @@ select {
 
 /* Drawn from theme tokens: the native unchecked outline measured under 2:1 against rows in every
    built-in theme. A checkbox has no fill or text to identify it, so its outline uses textSubtlest
-   (at least 3:1 on every surface) rather than the faint input outline. The focus ring comes from
-   the input:focus-visible rule below. */
+   (at least 3:1 on every surface) rather than the faint input outline. Neutral when checked: the
+   fill is textSubtle, which theme/vscode.ts holds at 4.5:1 against the surface, so the check mark
+   keeps that ratio. The focus ring comes from the checkbox:focus-visible rule below. */
 input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
@@ -132,17 +261,16 @@ input[type="checkbox"] {
   height: 14px;
   flex: 0 0 auto;
   background: var(--surface-input);
-  border: 1px solid var(--text-subtlest);
-  border-radius: 3px;
+  border: 1.5px solid var(--text-subtlest);
+  border-radius: var(--radius-xs);
   cursor: pointer;
 }
 
 input[type="checkbox"]:checked {
-  background: var(--primary);
-  border-color: var(--primary);
+  background: var(--text-subtle);
+  border-color: var(--text-subtle);
 }
 
-/* The check mark in --surface, which theme/vscode.ts holds at 4.5:1 against --primary. */
 input[type="checkbox"]:checked::before {
   content: "";
   width: 8px;
@@ -158,17 +286,17 @@ input[type="checkbox"]:disabled {
   cursor: default;
 }
 
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 1px;
-}
-
-/* Fallback for browsers/elements that don't resolve :focus-visible on a given element. */
-input:focus,
+/* Text fields show focus as a border and a 1px ring instead of an outline. */
+input:not([type="checkbox"]):not([type="radio"]):focus,
 select:focus,
 textarea:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 1px var(--border-focus);
+}
+
+input[type="checkbox"]:focus-visible,
+input[type="radio"]:focus-visible {
   outline: 2px solid var(--border-focus);
   outline-offset: 1px;
 }
@@ -244,7 +372,7 @@ textarea::placeholder {
 *::-webkit-scrollbar-thumb {
   background: transparent;
   border: 2px solid transparent;
-  border-radius: 8px;
+  border-radius: 999px;
   background-clip: padding-box;
 }
 
@@ -263,324 +391,16 @@ textarea::placeholder {
   display: none;
 }
 
-/* --- app layout --- */
-
-#app {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 12px;
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--surface-raised);
-  flex: 0 0 auto;
-}
-
-.topbar .brand {
-  font-weight: 600;
-  color: var(--text);
-}
-
-.app-body {
-  display: flex;
-  flex: 1 1 auto;
-  min-height: 0;
-}
-
-.sidebar {
-  width: 280px;
-  flex: 0 0 280px;
-  border-right: 1px solid var(--border-subtle);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.sidebar-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-  padding: 0 8px;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.sidebar-view-switch {
-  display: flex;
-  padding: 8px 8px 0;
-}
-
-.sidebar-view-switch .segmented {
-  width: 100%;
-}
-
-.sidebar-view-switch .segmented button {
-  flex: 1 1 auto;
-}
-
-.sidebar-scroll {
-  flex: 1 1 auto;
-  overflow-y: hidden;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.sidebar-search {
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: 8px;
-}
-
-.sidebar-search-icon {
-  position: absolute;
-  left: 16px;
-  color: var(--text-subtlest);
-  pointer-events: none;
-  display: flex;
-}
-
-.sidebar-search input {
-  flex: 1 1 auto;
-  width: 100%;
-  background: var(--surface-input);
-  padding-left: 28px;
-}
-
-.sidebar-search .icon {
-  position: absolute;
-  right: 12px;
-}
-
-.menu-anchor {
-  position: relative;
-}
-
-.history-actions {
-  padding: 6px 8px;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.history-row .history-status {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  flex: 0 0 auto;
-}
-
-.history-row .history-time {
-  color: var(--text-subtle);
-  font-size: 11px;
-  flex: 0 0 auto;
-  width: 36px;
-  text-align: right;
-}
-
-.sidebar-section-title {
-  padding: 10px 10px 4px;
-  font-size: 11px;
-  color: var(--text-subtlest);
-}
-
-/* --- collapsible sidebar section header (Environments) --- */
-
-.sidebar-collapsible-header {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  width: 100%;
-  padding: 6px 8px 6px 10px;
-  background: none;
-  border: none;
-  border-radius: 0;
-  color: var(--text-subtle);
-  font-size: 11px;
-  cursor: pointer;
-  height: auto;
-}
-
-.sidebar-collapsible-header:hover {
-  color: var(--text);
-  background: var(--surface-hover);
-}
-
-.sidebar-collapsible-header:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: -2px;
-}
-
-.sidebar-collapsible-header .chevron {
-  display: flex;
-  color: var(--text-subtlest);
-  transition: transform 120ms ease;
-}
-
-.sidebar-collapsible-header .chevron.expanded {
-  transform: rotate(90deg);
-}
-
-.sidebar-collapsible-header .label {
-  flex: 1 1 auto;
-  text-align: left;
-}
-
-.main {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0;
-}
-
-/* --- tree --- */
-
-.tree-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  height: 28px;
-  padding: 0 8px;
-  cursor: pointer;
-  white-space: nowrap;
-  position: relative;
-}
-
-.tree-row:hover {
-  background: var(--surface-hover);
-}
-
-.tree-row.active {
-  background: var(--surface-active);
-  box-shadow: inset 2px 0 0 var(--primary);
-}
-
-.tree-row .name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1 1 auto;
-}
-
-.tree-row .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--primary);
-  flex: 0 0 auto;
-}
-
-.tree-row .row-icon {
-  flex: 0 0 auto;
-  display: flex;
-  color: var(--text-subtle);
-  width: 14px;
-}
-
-.tree-row .caret {
-  width: 12px;
-  flex: 0 0 auto;
-  color: var(--text-subtle);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 120ms ease;
-}
-
-.tree-row .caret.expanded {
-  transform: rotate(90deg);
-}
-
-.tree-row .menu-btn {
-  opacity: 0;
-  flex: 0 0 auto;
-  width: 20px;
-  height: 20px;
-}
-
-.tree-row:hover .menu-btn,
-.tree-row .menu-btn.menu-open {
-  opacity: 1;
-}
-
-.method-badge {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  padding: 1px 4px;
-  border-radius: 3px;
-  flex: 0 0 auto;
-  width: 40px;
-  text-align: right;
-  overflow: hidden;
-}
-
-.method-GET {
-  color: var(--method-get);
-}
-
-.method-POST {
-  color: var(--method-post);
-}
-
-.method-PUT {
-  color: var(--method-put);
-}
-
-.method-PATCH {
-  color: var(--method-patch);
-}
-
-.method-DELETE {
-  color: var(--method-delete);
-}
-
-.method-OTHER {
-  color: var(--method-head);
-}
-
-.method-ws {
-  color: var(--method-ws);
-}
-
-.tree-row.drop-into {
-  outline: 1px dashed var(--primary);
-  outline-offset: -1px;
-  background: var(--surface-active);
-}
-
-.tree-row.drop-before::before,
-.tree-row.drop-after::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--primary);
-}
-
-.tree-row.drop-before::before {
-  top: -1px;
-}
-
-.tree-row.drop-after::after {
-  bottom: -1px;
-}
-
 /* --- dropdown menus (tree row menu, sidebar New/Import, env picker) --- */
 
+/* No border: --shadow-overlay draws a 1px ring. */
 .menu {
   position: absolute;
   right: 4px;
   top: 100%;
   z-index: 20;
   background: var(--surface-overlay);
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius);
   box-shadow: var(--shadow-overlay);
   min-width: 160px;
   padding: 4px;
@@ -590,11 +410,11 @@ textarea::placeholder {
   display: flex;
   align-items: center;
   width: 100%;
-  height: 28px;
+  height: var(--h-row);
   text-align: left;
   background: none;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   padding: 0 8px;
   color: var(--text);
   font-weight: 400;
@@ -602,188 +422,118 @@ textarea::placeholder {
   gap: 12px;
 }
 
-.menu button:hover {
-  background: var(--surface-hover);
+.menu button svg {
+  color: var(--text-subtle);
 }
 
-.inline-input {
+.menu button:hover:not(:disabled) {
+  background: var(--surface-active);
+}
+
+.menu button[aria-selected="true"],
+.menu button[aria-selected="true"]:hover:not(:disabled) {
+  background: var(--primary-tint);
+}
+
+.menu-sep {
+  height: 1px;
+  margin: 4px -4px;
+  background: var(--border-subtle);
+}
+
+.menu-item-main {
   display: flex;
-  gap: 4px;
-  padding: 4px 8px;
-}
-
-.inline-input input {
-  flex: 1 1 auto;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* --- segmented control (Collections/History, script view) --- */
 
-/* A recessed track with the active option raised, instead of a bordered box split by a divider. */
+/* A recessed track with the active option raised. */
 .segmented {
   display: inline-flex;
   gap: 2px;
   padding: 2px;
-  background: var(--surface-raised);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius);
+  background: var(--surface-hover);
+  border-radius: var(--radius-small);
   width: fit-content;
 }
 
 .segmented button {
   background: none;
   border: none;
-  border-radius: var(--radius-small);
-  height: 24px;
-  padding: 0 12px;
+  border-radius: var(--radius-xs);
+  height: 22px;
+  padding: 0 8px;
   color: var(--text-subtle);
   cursor: pointer;
+  font-size: var(--fs-small);
   font-weight: 500;
 }
 
-.segmented button.active {
-  background: var(--surface-active);
-  color: var(--text);
-}
-
-/* --- tabs (request/headers/body/... sub-tab strips) --- */
-
-.tabbar {
-  display: flex;
-  border-bottom: 1px solid var(--border-subtle);
-  overflow-x: auto;
-  flex: 0 0 auto;
-  background: var(--surface-raised);
-}
-
-.tab {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 8px 0 10px;
-  border-right: 1px solid var(--border-subtle);
-  cursor: pointer;
-  white-space: nowrap;
-  color: var(--text-subtle);
-  border-bottom: 2px solid transparent;
-  min-width: 160px;
-  max-width: 220px;
-}
-
-.tab.active {
-  color: var(--text);
-  background: var(--surface);
-  border-bottom-color: var(--primary);
-}
-
-.tab .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--primary);
-  flex: 0 0 auto;
-}
-
-.tab .close {
-  opacity: 0;
-  flex: 0 0 auto;
-  width: 18px;
-  height: 18px;
-  border-radius: 3px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-subtle);
-}
-
-.tab:hover .close,
-.tab.active .close {
-  opacity: 1;
-}
-
-.tab .close:hover {
-  background: var(--surface-hover);
-  color: var(--text);
-}
-
-.tab-content {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-/* --- request tab --- */
-
-/* No divider under the URL bar: the sub-tab strip below draws the only line, as in Postman. */
-.request-toolbar {
-  display: flex;
-  gap: 8px;
-  padding: 8px 8px 4px;
-  flex: 0 0 auto;
-}
-
-/* Send and Cancel swap in place, so the toolbar keeps its width. */
-.request-toolbar .send-button {
-  min-width: 76px;
-}
-
-.request-toolbar .url-input {
-  flex: 1 1 auto;
-  font-family: var(--font-mono);
-}
-
-.request-toolbar button.active {
+.segmented button.active,
+.segmented button.active:hover:not(:disabled) {
   background: var(--surface-active);
   color: var(--text);
 }
 
 .subtabs {
   display: flex;
-  gap: 4px;
-  padding: 0 8px;
+  align-items: stretch;
+  gap: 18px;
+  height: 36px;
+  padding: 0 16px;
   border-bottom: 1px solid var(--border-subtle);
   flex: 0 0 auto;
 }
 
 .subtabs button {
+  position: relative;
+  height: auto;
+  padding: 0;
+  gap: 5px;
   border: none;
-  border-bottom: 2px solid transparent;
   border-radius: 0;
   background: none;
-  height: 36px;
-  padding: 0 4px;
-  margin: 0 6px;
   color: var(--text-subtle);
   font-weight: 500;
-  gap: 6px;
+}
+
+.subtabs button:hover:not(:disabled) {
+  background: none;
+  color: var(--text);
 }
 
 .subtabs button.active {
   color: var(--text);
-  border-bottom-color: var(--primary);
-  font-weight: 600;
 }
 
-.subtabs button:hover:not(.active) {
-  color: var(--text);
+/* Drawn over the strip's bottom border. */
+.subtabs button.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--primary);
 }
 
 .subtab-count {
   color: var(--text-subtlest);
-  font-size: 11px;
-  font-weight: 400;
-}
-
-.subtabs button.active .subtab-count {
-  color: var(--text-subtle);
+  font-size: var(--fs-micro);
+  font-variant-numeric: tabular-nums;
 }
 
 .subtab-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--primary);
+  background: var(--success);
 }
 
 .subtab-body {
@@ -793,220 +543,6 @@ textarea::placeholder {
   min-height: 0;
   display: flex;
   flex-direction: column;
-}
-
-.split {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-  /* Lets .split shrink below its content's min-content width when the code panel (a
-     row sibling, see .code-panel-row) claims most of the row's width. */
-  min-width: 0;
-}
-
-.split-top {
-  flex: 1 1 50%;
-  min-height: 80px;
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.split-bottom {
-  flex: 1 1 50%;
-  min-height: 80px;
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.split-bottom.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  text-align: center;
-  color: var(--text-subtle);
-}
-
-.split-bottom.empty-state .hint-keys {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-subtlest);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-small);
-  padding: 2px 6px;
-}
-
-/* --- kv table (params, headers, cookies, variables) --- */
-
-/* A grid like Postman's: an outer frame, a rule under every row, and rules between columns. The
-   checkbox shares the key's cell and the delete button's column has no rule, so both read as part
-   of their row. */
-.kv-table {
-  width: 100%;
-  border-collapse: collapse;
-  border: 1px solid var(--border-subtle);
-}
-
-.kv-table th {
-  text-align: left;
-  font-weight: 500;
-  color: var(--text-subtlest);
-  font-size: 11px;
-  padding: 6px;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.kv-table td {
-  padding: 0 6px;
-  height: 30px;
-  vertical-align: middle;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.kv-table th + th,
-.kv-table td + td {
-  border-left: 1px solid var(--border-subtle);
-}
-
-.kv-table th:first-child:empty + th,
-.kv-table td:first-child:has(> input[type="checkbox"]) + td,
-.kv-table th:last-child:empty,
-.kv-table td:has(> .kv-delete) {
-  border-left: none;
-}
-
-.kv-table input[type="text"] {
-  width: 100%;
-  background: transparent;
-  border: 1px solid transparent;
-}
-
-.kv-table input[type="text"]:hover,
-.kv-table input[type="text"]:focus {
-  background: var(--surface-input);
-  border-color: var(--border-control);
-}
-
-/* The checkbox stays at full strength: it is the enabled control that turns the row back on. */
-.kv-table tr.disabled input:not([type="checkbox"]) {
-  opacity: 0.45;
-}
-
-.kv-table input[type="text"]::placeholder {
-  color: var(--text-subtlest);
-}
-
-/* --- response pane --- */
-
-.response-status {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px;
-  border-bottom: 1px solid var(--border-subtle);
-  flex: 0 0 auto;
-}
-
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 999px;
-}
-
-.status-2xx {
-  color: var(--success);
-  background: color-mix(in srgb, var(--success) 16%, transparent);
-}
-
-.status-3xx {
-  color: var(--notice);
-  background: color-mix(in srgb, var(--notice) 16%, transparent);
-}
-
-.status-4xx,
-.status-5xx {
-  color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 16%, transparent);
-}
-
-.response-meta {
-  color: var(--text-subtle);
-  font-size: 12px;
-}
-
-.response-error {
-  padding: 8px;
-  color: var(--danger);
-  border-bottom: 1px solid var(--border-subtle);
-  white-space: pre-wrap;
-  font-family: var(--font-mono);
-}
-
-.banner {
-  padding: 8px;
-  background: var(--surface-raised);
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.console-line {
-  font-family: var(--font-mono);
-  white-space: pre-wrap;
-  padding: 1px 0;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.test-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 0;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.test-pass {
-  color: var(--success);
-}
-
-.test-fail {
-  color: var(--danger);
-}
-
-/* --- toasts --- */
-
-.toasts {
-  position: fixed;
-  bottom: 12px;
-  right: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  z-index: 100;
-}
-
-.toast {
-  background: var(--surface-overlay);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 12px;
-  max-width: 360px;
-  box-shadow: var(--shadow-overlay);
-  cursor: pointer;
-}
-
-.toast.error {
-  border-left: 3px solid var(--danger);
 }
 
 /* --- misc --- */
@@ -1031,54 +567,8 @@ textarea::placeholder {
 
 .hint {
   color: var(--text-subtle);
-  font-size: 12px;
+  font-size: var(--fs-small);
   margin-bottom: 8px;
-}
-
-/* --- modals --- */
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--overlay-backdrop);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 90;
-}
-
-.modal-panel {
-  background: var(--surface-overlay);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px;
-  width: 420px;
-  max-width: 90vw;
-  box-shadow: var(--shadow-overlay);
-}
-
-.modal-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 12px;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 14px;
-}
-
-.curl-textarea {
-  width: 100%;
-  min-height: 140px;
-  background: var(--surface-input);
-  border: 1px solid var(--border-control);
-  border-radius: var(--radius-small);
-  padding: 8px;
-  resize: vertical;
 }
 
 .cm-wrapper {
@@ -1104,137 +594,4 @@ textarea::placeholder {
 /* The global scrollbar thumbs only appear on hover, so an overflowing editor looked unscrollable. */
 .cm-wrapper .cm-scroller::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb);
-}
-
-/* --- window chrome --- */
-
-/* Wails drags the window from elements whose computed --wails-draggable is "drag". Custom
-   properties inherit, so every control opts back out. */
-.sidebar-actions,
-.tabbar {
-  --wails-draggable: drag;
-}
-
-button,
-input,
-select,
-textarea,
-.tab,
-.menu {
-  --wails-draggable: no-drag;
-}
-
-.sidebar-actions,
-.tabbar {
-  min-height: 40px;
-  align-items: center;
-  background: var(--surface-raised);
-}
-
-/* The hidden-inset title bar centers the traffic lights in a taller first row. */
-.platform-mac .sidebar-actions,
-.platform-mac .tabbar {
-  min-height: 48px;
-}
-
-/* The traffic lights end near x=70, so 92px leaves a clear gap before the first button. */
-.platform-mac .sidebar-actions {
-  padding-left: 92px;
-  gap: 4px;
-}
-
-.tabbar {
-  overflow: visible;
-}
-
-.tabbar-tabs {
-  display: flex;
-  align-self: stretch;
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow-x: auto;
-}
-
-.tabbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0 8px;
-  flex: 0 0 auto;
-}
-
-.tabbar-actions-sep {
-  width: 1px;
-  height: 18px;
-  background: var(--border-subtle);
-  margin: 0 4px;
-}
-
-.env-picker-trigger {
-  gap: 8px;
-  padding: 0 10px;
-  color: var(--text);
-  font-weight: 500;
-}
-
-.env-picker-label {
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.env-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex: 0 0 auto;
-  background: var(--text-subtlest);
-}
-
-.env-dot-active {
-  background: var(--primary);
-}
-
-.menu-item-main {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* The label takes the spare width so the close button sits at the tab's right edge. */
-.tab .tab-label {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.tab-badge {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  flex: 0 0 auto;
-}
-
-.tab-badge-muted {
-  color: var(--text-subtlest);
-}
-
-/* VarInput renders a wrapper div, so the toolbar grows the wrapper rather than the input. */
-.url-field {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-/* Cmd/Ctrl+B hides the sidebar with CSS, so its search text and scroll position survive. */
-.sidebar-hidden .sidebar {
-  display: none;
-}
-
-.platform-mac.sidebar-hidden .tabbar {
-  padding-left: 92px;
 }
