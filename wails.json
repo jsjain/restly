@@ -7,14 +7,14 @@
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "auto",
   "author": {
-    "name": "Shubham Jain",
+    "name": "jsjain",
     "email": "6463002+jsjain@users.noreply.github.com"
   },
   "info": {
     "companyName": "Restly",
     "productName": "Restly",
     "productVersion": "0.2.0",
-    "copyright": "Copyright © 2026 Shubham Jain",
+    "copyright": "Copyright © 2026 jsjain",
     "comments": "A fast local API client"
   }
 }
