@@ -22,7 +22,8 @@ const testTimeout = 5 * time.Second
 
 // recorder collects Events off a channel so tests never need to sleep.
 type recorder struct {
-	events chan ws.Event
+	events  chan ws.Event
+	skipped []ws.Event // read while waiting for another type, kept because events can arrive out of order
 }
 
 func newRecorder() *recorder {
@@ -33,9 +34,17 @@ func (rec *recorder) emit(event ws.Event) {
 	rec.events <- event
 }
 
-// waitFor returns the next event of eventType, ignoring others, or fails the test after testTimeout.
+// waitFor returns the next event of eventType, or fails the test after testTimeout. Events of
+// other types are kept for later calls: Send emits EventSent after its write returns, so an echo's
+// EventReceived can arrive first.
 func (rec *recorder) waitFor(t *testing.T, eventType string) ws.Event {
 	t.Helper()
+	for i, event := range rec.skipped {
+		if event.Type == eventType {
+			rec.skipped = append(rec.skipped[:i], rec.skipped[i+1:]...)
+			return event
+		}
+	}
 	deadline := time.After(testTimeout)
 	for {
 		select {
@@ -43,6 +52,7 @@ func (rec *recorder) waitFor(t *testing.T, eventType string) ws.Event {
 			if event.Type == eventType {
 				return event
 			}
+			rec.skipped = append(rec.skipped, event)
 		case <-deadline:
 			t.Fatalf("timed out waiting for event %q", eventType)
 		}
@@ -54,6 +64,12 @@ func (rec *recorder) waitFor(t *testing.T, eventType string) ws.Event {
 func (rec *recorder) countClosed(t *testing.T, window time.Duration) int {
 	t.Helper()
 	count := 0
+	for _, event := range rec.skipped {
+		if event.Type == ws.EventClosed {
+			count++
+		}
+	}
+	rec.skipped = nil
 	deadline := time.After(window)
 	for {
 		select {
