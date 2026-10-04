@@ -107,6 +107,24 @@ func (store *Store) Add(entry Entry) (Entry, error) {
 	return stored, nil
 }
 
+// SetLimit changes how many entries are kept. Lowering it drops the oldest entries from memory and disk.
+func (store *Store) SetLimit(limit int) error {
+	store.mu.Lock()
+	defer store.mu.Unlock()
+
+	store.limit = limit
+	kept := trimNewest(store.entries, limit)
+	if len(kept) == len(store.entries) {
+		return nil
+	}
+	if err := writeEntriesAtomic(store.path, kept); err != nil {
+		return err
+	}
+	store.entries = kept
+	store.lineCount = len(kept)
+	return nil
+}
+
 // List returns the entries newest first.
 func (store *Store) List() []Entry {
 	store.mu.Lock()

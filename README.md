@@ -26,7 +26,7 @@
 - **Code generation.** cURL, JavaScript fetch, Python requests, and Go, in a side panel that updates as you edit.
 - **cURL import.** Paste a cURL command into the URL bar or the import dialog.
 - **WebSocket requests.** Connect, send text messages, and read the event log.
-- **History and cookies.** The last 500 sends reopen as editable requests, and the cookie jar can be viewed and edited.
+- **History and cookies.** The last 50 sends (configurable) reopen as editable requests, and the cookie jar can be viewed and edited.
 - **Network settings.** Proxy with a bypass list, TLS verification toggle, extra CA certificates, and client certificates per host.
 - **Collections.** Import and export Postman files, clone collections, and edit the description, auth, and scripts of collections and folders, and collection variables.
 - **Themes.** Dark, Light, and One Dark built in, plus any imported VS Code color theme, with configurable UI and editor fonts.
@@ -62,7 +62,7 @@ Settings > Appearance lists the built-in themes and imports any VS Code color th
 
 Collections and environments live in `~/Restly`. Import copies Postman exports there, and Export copies them out unchanged. Restly adds two members that Postman ignores: `x-restly-collection` on an environment that belongs to one collection, and `x-restly-type` on WebSocket requests, which Postman imports as plain GET requests.
 
-Settings, cookies, history, imported themes, and `keybindings.json` stay on the machine: `~/Library/Application Support/Restly` on macOS, `%AppData%\Restly` on Windows, and `~/.config/Restly` on Linux. They can hold tokens and session cookies in plain text, which is why they are kept out of a workspace you might share. Environment values are also plain text, as in Postman exports.
+Settings, cookies, history, imported themes, and `keybindings.json` stay on the machine: `~/Library/Application Support/Restly` on macOS, `%AppData%\Restly` on Windows, and `~/.config/Restly` on Linux. `restly.log`, a log of errors and startup that you can share when reporting a problem, is kept there too (at most about 2 MB). They can hold tokens and session cookies in plain text, which is why they are kept out of a workspace you might share. Environment values are also plain text, as in Postman exports.
 
 ## Build from source
 

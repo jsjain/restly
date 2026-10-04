@@ -66,7 +66,7 @@ func TestResolve_VariableSubstitutionInURLHeaderAndBody(t *testing.T) {
 	}`)
 	scope := scopeWith(map[string]string{"base": "http://example.com", "token": "abc123", "name": "world"})
 
-	prep, err := Resolve(req, nil, scope)
+	prep, err := Resolve(req, nil, scope, "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}
@@ -78,6 +78,41 @@ func TestResolve_VariableSubstitutionInURLHeaderAndBody(t *testing.T) {
 	}
 	assertEqual(t, "header value", value, "abc123")
 	assertEqual(t, "body", string(prep.Body), "hello world")
+}
+
+func TestResolve_UserAgent(t *testing.T) {
+	tests := []struct {
+		name      string
+		header    string
+		userAgent string
+		want      string
+	}{
+		{name: "empty uses the default", userAgent: "", want: "Restly/0.1"},
+		{name: "configured value", userAgent: "Custom/1", want: "Custom/1"},
+		{name: "request header wins", header: `[{"key": "User-Agent", "value": "FromRequest/2"}]`, userAgent: "Custom/1", want: "FromRequest/2"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			header := test.header
+			if header == "" {
+				header = "[]"
+			}
+			req := mustRequest(t, `{"method": "GET", "url": {"raw": "http://example.com"}, "header": `+header+`}`)
+			prep, err := Resolve(req, nil, vars.New(), test.userAgent)
+			if err != nil {
+				t.Fatalf("Resolve failed: %v", err)
+			}
+			var agents []string
+			for _, field := range prep.Header {
+				if strings.EqualFold(field.Key, "User-Agent") {
+					agents = append(agents, field.Value)
+				}
+			}
+			if len(agents) != 1 || agents[0] != test.want {
+				t.Fatalf("User-Agent headers = %q, want exactly [%q]", agents, test.want)
+			}
+		})
+	}
 }
 
 func TestResolve_QueryArrayReplacesRawQuery(t *testing.T) {
@@ -95,7 +130,7 @@ func TestResolve_QueryArrayReplacesRawQuery(t *testing.T) {
 	}`)
 	scope := scopeWith(map[string]string{"term": "cats"})
 
-	prep, err := Resolve(req, nil, scope)
+	prep, err := Resolve(req, nil, scope, "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}
@@ -114,7 +149,7 @@ func TestResolve_SkipsEmptyRows(t *testing.T) {
 		},
 		"body": {"mode": "urlencoded", "urlencoded": [{"key": "", "value": ""}, {"key": "a", "value": "1"}, {"key": "", "value": "orphan"}]}
 	}`)
-	prep, err := Resolve(req, nil, vars.New())
+	prep, err := Resolve(req, nil, vars.New(), "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}
@@ -126,7 +161,7 @@ func TestResolve_SkipsEmptyRows(t *testing.T) {
 		"url": {"raw": "http://example.com/upload"},
 		"body": {"mode": "formdata", "formdata": [{"key": "", "value": "orphan", "type": "text"}, {"key": "f", "value": "v", "type": "text"}]}
 	}`)
-	prep, err = Resolve(form, nil, vars.New())
+	prep, err = Resolve(form, nil, vars.New(), "")
 	if err != nil {
 		t.Fatalf("Resolve failed for form data: %v", err)
 	}
@@ -148,7 +183,7 @@ func TestResolve_PathVariables(t *testing.T) {
 	}`)
 	scope := scopeWith(map[string]string{"userID": "42"})
 
-	prep, err := Resolve(req, nil, scope)
+	prep, err := Resolve(req, nil, scope, "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}
@@ -162,7 +197,7 @@ func TestResolve_RawJSONDefaultContentType(t *testing.T) {
 		"body": {"mode": "raw", "raw": "{}", "options": {"raw": {"language": "json"}}}
 	}`)
 
-	prep, err := Resolve(req, nil, vars.New())
+	prep, err := Resolve(req, nil, vars.New(), "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}
@@ -188,7 +223,7 @@ func TestResolve_URLEncodedOrderAndEncoding(t *testing.T) {
 	}`)
 	scope := scopeWith(map[string]string{"val": "z"})
 
-	prep, err := Resolve(req, nil, scope)
+	prep, err := Resolve(req, nil, scope, "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}
@@ -209,7 +244,7 @@ func TestResolve_FileBody(t *testing.T) {
 	}`)
 	scope := scopeWith(map[string]string{"path": tempFile})
 
-	prep, err := Resolve(req, nil, scope)
+	prep, err := Resolve(req, nil, scope, "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}
@@ -259,7 +294,7 @@ func TestResolve_FormData(t *testing.T) {
 	req.Body.FormData[1].Src = src
 	scope := scopeWith(map[string]string{"who": "restly"})
 
-	prep, err := Resolve(req, nil, scope)
+	prep, err := Resolve(req, nil, scope, "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}
@@ -303,7 +338,7 @@ func TestResolve_GraphQLBody(t *testing.T) {
 	}`)
 	scope := scopeWith(map[string]string{"field": "ping"})
 
-	prep, err := Resolve(req, nil, scope)
+	prep, err := Resolve(req, nil, scope, "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}
@@ -319,7 +354,7 @@ func TestResolve_GraphQLInvalidVariablesErrors(t *testing.T) {
 		"body": {"mode": "graphql", "graphql": {"query": "{ ping }", "variables": "not json"}}
 	}`)
 
-	if _, err := Resolve(req, nil, vars.New()); err == nil {
+	if _, err := Resolve(req, nil, vars.New(), ""); err == nil {
 		t.Fatal("expected an error for invalid graphql variables JSON")
 	}
 }
@@ -329,7 +364,7 @@ func TestResolve_AuthBasic(t *testing.T) {
 	auth := mustAuth(t, `{"type": "basic", "basic": [{"key": "username", "value": "{{user}}"}, {"key": "password", "value": "secret"}]}`)
 	scope := scopeWith(map[string]string{"user": "alice"})
 
-	prep, err := Resolve(req, auth, scope)
+	prep, err := Resolve(req, auth, scope, "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}
@@ -345,7 +380,7 @@ func TestResolve_AuthBearer(t *testing.T) {
 	auth := mustAuth(t, `{"type": "bearer", "bearer": [{"key": "token", "value": "{{tok}}"}]}`)
 	scope := scopeWith(map[string]string{"tok": "xyz"})
 
-	prep, err := Resolve(req, auth, scope)
+	prep, err := Resolve(req, auth, scope, "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}
@@ -358,7 +393,7 @@ func TestResolve_AuthAPIKeyHeader(t *testing.T) {
 	auth := mustAuth(t, `{"type": "apikey", "apikey": [{"key": "key", "value": "X-Api-Key"}, {"key": "value", "value": "{{secret}}"}, {"key": "in", "value": "header"}]}`)
 	scope := scopeWith(map[string]string{"secret": "s3cret"})
 
-	prep, err := Resolve(req, auth, scope)
+	prep, err := Resolve(req, auth, scope, "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}
@@ -373,7 +408,7 @@ func TestResolve_AuthAPIKeyQuery(t *testing.T) {
 	req := mustRequest(t, `{"method": "GET", "url": {"raw": "http://example.com/x"}}`)
 	auth := mustAuth(t, `{"type": "apikey", "apikey": [{"key": "key", "value": "token"}, {"key": "value", "value": "abc"}, {"key": "in", "value": "query"}]}`)
 
-	prep, err := Resolve(req, auth, vars.New())
+	prep, err := Resolve(req, auth, vars.New(), "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}
@@ -388,7 +423,7 @@ func TestResolve_ExistingAuthorizationHeaderNotOverwritten(t *testing.T) {
 	}`)
 	auth := mustAuth(t, `{"type": "bearer", "bearer": [{"key": "token", "value": "should-not-appear"}]}`)
 
-	prep, err := Resolve(req, auth, vars.New())
+	prep, err := Resolve(req, auth, vars.New(), "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}
@@ -407,7 +442,7 @@ func TestResolve_ExistingAuthorizationHeaderNotOverwritten(t *testing.T) {
 func TestResolve_MissingSchemeGetsHTTP(t *testing.T) {
 	req := mustRequest(t, `{"method": "GET", "url": {"raw": "example.com/path"}}`)
 
-	prep, err := Resolve(req, nil, vars.New())
+	prep, err := Resolve(req, nil, vars.New(), "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}
@@ -416,7 +451,7 @@ func TestResolve_MissingSchemeGetsHTTP(t *testing.T) {
 
 func TestResolve_MissingURLErrors(t *testing.T) {
 	req := mustRequest(t, `{"method": "GET", "url": {"raw": ""}}`)
-	if _, err := Resolve(req, nil, vars.New()); err == nil {
+	if _, err := Resolve(req, nil, vars.New(), ""); err == nil {
 		t.Fatal("expected an error for an empty URL")
 	}
 }
@@ -442,7 +477,7 @@ func TestSend_CookiesPersistAcrossRequests(t *testing.T) {
 	client := NewClient(t.TempDir())
 	req := mustRequest(t, `{"method": "GET", "url": {"raw": "PLACEHOLDER"}}`)
 	req.URL.Raw = server.URL
-	prep, err := Resolve(req, nil, vars.New())
+	prep, err := Resolve(req, nil, vars.New(), "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}
@@ -477,7 +512,7 @@ func TestSend_GzipResponseDecompressed(t *testing.T) {
 	client := NewClient(t.TempDir())
 	req := mustRequest(t, `{"method": "GET", "url": {"raw": "PLACEHOLDER"}}`)
 	req.URL.Raw = server.URL
-	prep, err := Resolve(req, nil, vars.New())
+	prep, err := Resolve(req, nil, vars.New(), "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}
@@ -502,7 +537,7 @@ func TestSend_TimingsTotalPositive(t *testing.T) {
 	client := NewClient(t.TempDir())
 	req := mustRequest(t, `{"method": "GET", "url": {"raw": "PLACEHOLDER"}}`)
 	req.URL.Raw = server.URL
-	prep, err := Resolve(req, nil, vars.New())
+	prep, err := Resolve(req, nil, vars.New(), "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}

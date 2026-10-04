@@ -255,10 +255,12 @@ export interface Network {
   verifyTls: boolean;
   caFile: string; // extra PEM CA bundle, "" for none
   clientCerts: ClientCert[];
+  userAgent: string; // "" for Restly's own default
 }
 
 export interface Settings {
   network: Network;
+  historyLimit: number; // sent requests the History list keeps
 }
 
 // Shown in Settings > About. Commit, buildTime, and goVersion are "" when built without vcs info.

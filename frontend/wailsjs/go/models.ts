@@ -457,6 +457,7 @@ export namespace httpx {
 	    verifyTls: boolean;
 	    caFile: string;
 	    clientCerts: ClientCert[];
+	    userAgent: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Network(source);
@@ -470,6 +471,7 @@ export namespace httpx {
 	        this.verifyTls = source["verifyTls"];
 	        this.caFile = source["caFile"];
 	        this.clientCerts = this.convertValues(source["clientCerts"], ClientCert);
+	        this.userAgent = source["userAgent"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -695,6 +697,7 @@ export namespace main {
 	}
 	export class Settings {
 	    network: httpx.Network;
+	    historyLimit: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -703,6 +706,7 @@ export namespace main {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.network = this.convertValues(source["network"], httpx.Network);
+	        this.historyLimit = source["historyLimit"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

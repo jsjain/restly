@@ -170,11 +170,16 @@ export function createSearchPanel(view: EditorView): Panel {
     dom,
     top: true,
     // openSearchPanel finds the field by its main-field attribute, and expects it focused on open.
+    // CodeMirror calls mount() in the middle of a view update. flushSync there would also flush the
+    // app root's pending effects, and CodeEditor's value sync would dispatch into this view while
+    // it is still updating, which throws. So render once the update has returned.
     mount() {
-      flushSync(render);
-      const field = dom.querySelector<HTMLInputElement>("[main-field]");
-      field?.focus();
-      field?.select();
+      queueMicrotask(() => {
+        flushSync(render);
+        const field = dom.querySelector<HTMLInputElement>("[main-field]");
+        field?.focus();
+        field?.select();
+      });
     },
     update(update: ViewUpdate) {
       const queryChanged = update.transactions.some((tr) => tr.effects.some((effect) => effect.is(setSearchQuery)));

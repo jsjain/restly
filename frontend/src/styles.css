@@ -1084,13 +1084,26 @@ textarea::placeholder {
 .cm-wrapper {
   flex: 1 1 auto;
   min-height: 0;
+  min-width: 0;
   overflow: hidden;
-  display: flex;
+  position: relative;
 }
 
+/* Fill the wrapper absolutely: a percentage height can resolve to auto through the nested flex
+   containers, which lets the editor grow to its content and clips its scrollbars. !important
+   because CodeMirror's base theme sets position: relative !important on .cm-editor. */
 .cm-wrapper .cm-editor {
-  flex: 1 1 auto;
-  height: 100%;
+  position: absolute !important;
+  inset: 0;
+}
+
+.cm-wrapper .cm-scroller {
+  overflow: auto;
+}
+
+/* The global scrollbar thumbs only appear on hover, so an overflowing editor looked unscrollable. */
+.cm-wrapper .cm-scroller::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
 }
 
 /* --- window chrome --- */

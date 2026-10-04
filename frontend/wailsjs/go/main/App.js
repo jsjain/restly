@@ -74,6 +74,14 @@ export function ListThemes() {
   return window['go']['main']['App']['ListThemes']();
 }
 
+export function LogFilePath() {
+  return window['go']['main']['App']['LogFilePath']();
+}
+
+export function LogFrontendError(arg1) {
+  return window['go']['main']['App']['LogFrontendError'](arg1);
+}
+
 export function NewCollection(arg1) {
   return window['go']['main']['App']['NewCollection'](arg1);
 }
@@ -106,6 +114,10 @@ export function QuitApp() {
   return window['go']['main']['App']['QuitApp']();
 }
 
+export function RevealLogFile() {
+  return window['go']['main']['App']['RevealLogFile']();
+}
+
 export function Run(arg1) {
   return window['go']['main']['App']['Run'](arg1);
 }
@@ -132,6 +144,10 @@ export function SaveSettings(arg1) {
 
 export function Send(arg1) {
   return window['go']['main']['App']['Send'](arg1);
+}
+
+export function SetHistoryLimit(arg1) {
+  return window['go']['main']['App']['SetHistoryLimit'](arg1);
 }
 
 export function SetUnsaved(arg1) {

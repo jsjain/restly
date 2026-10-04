@@ -43,15 +43,26 @@ export interface RequestTab extends TabBase {
   snippetLang: string;
   snippetCode: string;
   bodyView: "pretty" | "raw";
+  requestSub?: RequestSubTab; // sub-tab selections live here so they survive switching tabs
+  responseSub?: ResponseSubTab;
+  wsSub?: WsSubTab;
 }
+
+export type RequestSubTab = "params" | "headers" | "body" | "auth" | "prerequest" | "tests";
+export type ResponseSubTab = "body" | "headers" | "cookies" | "tests" | "console";
+export type WsSubTab = "params" | "headers" | "auth";
+export type SettingsSubTab = "overview" | "auth" | "scripts" | "variables" | "environments" | "runs";
 
 export interface CollectionTab extends TabBase {
   kind: "collection";
-  initialSub?: string; // sub-tab to show next render, e.g. "environments"; SettingsTab clears it
+  sub?: SettingsSubTab;
+  scriptView?: "prerequest" | "test";
 }
 
 export interface FolderTab extends TabBase {
   kind: "folder";
+  sub?: SettingsSubTab;
+  scriptView?: "prerequest" | "test";
 }
 
 export interface EnvironmentTab extends TabBase {
@@ -323,13 +334,21 @@ export function envOwner(tab: Tab | null = state.activeTab): string {
   return tab.kind === "request" || tab.kind === "collection" || tab.kind === "folder" || tab.kind === "runner" ? tab.file : "";
 }
 
-// usableEnvs lists the owner's own environments first, then shared ones. An environment whose
-// collection was deleted counts as shared, so it stays reachable.
+// usableEnvs lists the owner's own environments first, then shared ones. Another collection's
+// environment never appears, even when that collection was deleted.
 export function usableEnvs(owner = envOwner()): FileRef[] {
-  const collections = new Set((state.workspace?.collections ?? []).map((c) => c.file));
   const envs = state.workspace?.environments ?? [];
-  const isShared = (e: FileRef) => !e.collection || !collections.has(e.collection);
-  return [...envs.filter((e) => owner !== "" && e.collection === owner), ...envs.filter(isShared)];
+  return [...envs.filter((e) => owner !== "" && e.collection === owner), ...envs.filter((e) => !e.collection)];
+}
+
+// orphanedEnv reports an environment whose collection was deleted. No request can use it until it is made shared.
+export function orphanedEnv(ref: FileRef): boolean {
+  return !!ref.collection && !(state.workspace?.collections ?? []).some((c) => c.file === ref.collection);
+}
+
+// sidebarEnvs lists shared environments plus orphaned ones, so an orphan can still be opened and made shared.
+export function sidebarEnvs(): FileRef[] {
+  return (state.workspace?.environments ?? []).filter((e) => !e.collection || orphanedEnv(e));
 }
 
 export function collectionEnvs(collFile: string): FileRef[] {
@@ -438,15 +457,15 @@ export function closeSaveDraftModal(): void {
   bump();
 }
 
-export function openCollectionTab(file: string, sub?: string): CollectionTab {
+export function openCollectionTab(file: string, sub?: SettingsSubTab): CollectionTab {
   const existing = findTab("collection", file, []) as CollectionTab | undefined;
   if (existing) {
-    if (sub) existing.initialSub = sub;
+    if (sub) existing.sub = sub;
     state.activeTab = existing;
     bump();
     return existing;
   }
-  const tab: CollectionTab = { kind: "collection", file, path: [], initialSub: sub };
+  const tab: CollectionTab = { kind: "collection", file, path: [], sub };
   state.tabs.push(tab);
   state.activeTab = tab;
   bump();
@@ -616,7 +635,8 @@ export function openAppSettingsTab(): AppSettingsTab {
 
 // --- events from Go ---
 
-const HISTORY_LIMIT = 500; // historyLimit in Go
+// Mirrors Settings.historyLimit from Go, which trims the stored list. Set by loadHistory.
+let historyLimit = 50;
 let eventsStarted = false;
 
 // startEvents subscribes once to Go events that outlive any one tab.
@@ -626,7 +646,7 @@ export function startEvents(): void {
   api.onWsEvent(routeWsEvent);
   api.onHistoryAdded((entry) => {
     state.history.unshift(entry);
-    state.history.length = Math.min(state.history.length, HISTORY_LIMIT);
+    state.history.length = Math.min(state.history.length, historyLimit);
     bump();
   });
 }
@@ -641,8 +661,19 @@ function routeWsEvent(event: WsEvent): void {
 }
 
 export async function loadHistory(): Promise<void> {
+  const [history, settings] = await Promise.all([api.getHistory(), api.getSettings()]);
+  historyLimit = settings.historyLimit;
+  state.history = history;
+  bump();
+}
+
+// Lowering the limit deletes the oldest entries in Go, so the list is re-read.
+export async function setHistoryLimit(limit: number): Promise<number> {
+  const applied = await api.setHistoryLimit(limit);
+  historyLimit = applied;
   state.history = await api.getHistory();
   bump();
+  return applied;
 }
 
 // --- tree edits ---

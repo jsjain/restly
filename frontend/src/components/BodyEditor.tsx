@@ -127,9 +127,9 @@ export default function BodyEditor({ item, onChange }: Props) {
         </>
       ) : null}
 
-      {mode === "urlencoded" ? <KvTable rows={req.body!.urlencoded!} onChange={onChange} /> : null}
+      {mode === "urlencoded" ? <KvTable rows={(req.body!.urlencoded ??= [])} onChange={onChange} /> : null}
 
-      {mode === "formdata" ? <KvTable rows={req.body!.formdata!} onChange={onChange} formdata /> : null}
+      {mode === "formdata" ? <KvTable rows={(req.body!.formdata ??= [])} onChange={onChange} formdata /> : null}
 
       {mode === "file" ? (
         <div className="field-row">

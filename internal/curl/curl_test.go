@@ -32,7 +32,7 @@ func mustParse(t *testing.T, command string) *collection.Item {
 
 func mustResolve(t *testing.T, item *collection.Item) *httpx.Prepared {
 	t.Helper()
-	prep, err := httpx.Resolve(item.Request, item.Request.Auth, vars.New())
+	prep, err := httpx.Resolve(item.Request, item.Request.Auth, vars.New(), "")
 	if err != nil {
 		t.Fatalf("Resolve failed: %v", err)
 	}
@@ -388,7 +388,7 @@ func TestParse_RoundTrip(t *testing.T) {
 
 	for _, fixture := range fixtures {
 		t.Run(fixture.name, func(t *testing.T) {
-			originalPrep, err := httpx.Resolve(fixture.req, fixture.auth, vars.New())
+			originalPrep, err := httpx.Resolve(fixture.req, fixture.auth, vars.New(), "")
 			if err != nil {
 				t.Fatalf("Resolve original request: %v", err)
 			}
@@ -401,7 +401,7 @@ func TestParse_RoundTrip(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Parse(%q): %v", snippetText, err)
 			}
-			reparsedPrep, err := httpx.Resolve(item.Request, item.Request.Auth, vars.New())
+			reparsedPrep, err := httpx.Resolve(item.Request, item.Request.Auth, vars.New(), "")
 			if err != nil {
 				t.Fatalf("Resolve reparsed request: %v", err)
 			}

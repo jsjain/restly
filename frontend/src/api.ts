@@ -174,11 +174,31 @@ export function setUnsaved(unsaved: boolean): Promise<void> {
 export async function getSettings(): Promise<Settings> {
   const settings = (await Backend.GetSettings()) as unknown as Settings;
   settings.network.clientCerts ??= [];
+  settings.network.userAgent ??= "";
   return settings;
 }
 
 export function saveSettings(settings: Settings): Promise<void> {
   return Backend.SaveSettings(settings as unknown as Parameters<typeof Backend.SaveSettings>[0]);
+}
+
+// Resolves the limit Go actually applied (clamped), and deletes the oldest entries beyond it.
+export function setHistoryLimit(limit: number): Promise<number> {
+  return Backend.SetHistoryLimit(limit);
+}
+
+// Appends a crash report to the log file. Callers must not include request content.
+export function logFrontendError(report: string): Promise<void> {
+  return Backend.LogFrontendError(report);
+}
+
+export function logFilePath(): Promise<string> {
+  return Backend.LogFilePath();
+}
+
+// Shows the log file in the system file manager.
+export function revealLogFile(): Promise<void> {
+  return Backend.RevealLogFile();
 }
 
 export function getAppInfo(): Promise<AppInfo> {

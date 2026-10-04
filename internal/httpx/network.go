@@ -54,6 +54,7 @@ type netConfig struct {
 	tlsConfig *tls.Config // base: RootCAs and InsecureSkipVerify, no client certificates
 	hostCerts []hostCert
 	transport *hostRoundTripper
+	userAgent string // "" means defaultUserAgent
 }
 
 // DefaultNetwork is used until the user saves settings.
@@ -104,6 +105,7 @@ func (client *Client) Configure(network Network) error {
 		tlsConfig: baseTLSConfig,
 		hostCerts: hostCerts,
 		transport: &hostRoundTripper{base: baseTransport, perHost: perHost},
+		userAgent: network.UserAgent,
 	}
 
 	oldConfig := client.config.Swap(newConfig)
@@ -126,6 +128,11 @@ func (client *Client) DialSettings(host string) DialSettings {
 		TLSConfig: tlsConfig,
 		Jar:       client.jar,
 	}
+}
+
+// UserAgent returns the configured User-Agent, "" when the default applies.
+func (client *Client) UserAgent() string {
+	return client.config.Load().userAgent
 }
 
 func (client *Client) Jar() *Jar {

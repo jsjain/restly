@@ -42,6 +42,10 @@ export function ListCookies():Promise<Array<httpx.Cookie>>;
 
 export function ListThemes():Promise<Array<main.TextFile>>;
 
+export function LogFilePath():Promise<string>;
+
+export function LogFrontendError(arg1:string):Promise<void>;
+
 export function NewCollection(arg1:string):Promise<main.FileRef>;
 
 export function NewEnvironment(arg1:string,arg2:string):Promise<main.FileRef>;
@@ -58,6 +62,8 @@ export function PickFile(arg1:string):Promise<string>;
 
 export function QuitApp():Promise<void>;
 
+export function RevealLogFile():Promise<void>;
+
 export function Run(arg1:main.RunInput):Promise<void>;
 
 export function SaveCollection(arg1:string,arg2:jsontext.Value):Promise<void>;
@@ -71,6 +77,8 @@ export function SaveLastBody():Promise<string>;
 export function SaveSettings(arg1:main.Settings):Promise<void>;
 
 export function Send(arg1:main.SendInput):Promise<main.SendResult>;
+
+export function SetHistoryLimit(arg1:number):Promise<number>;
 
 export function SetUnsaved(arg1:boolean):Promise<void>;
 

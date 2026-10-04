@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { EditorState, Prec, Transaction, type Extension } from "@codemirror/state";
+import { Compartment, EditorState, Prec, Transaction, type Extension } from "@codemirror/state";
 import { EditorView, basicSetup } from "codemirror";
 import { keymap } from "@codemirror/view";
 import { search } from "@codemirror/search";
@@ -13,6 +13,9 @@ import { go } from "@codemirror/legacy-modes/mode/go";
 import { restlyEditorTheme } from "../theme/codemirror";
 import { variablesExtension } from "../editor/variablesExtension";
 import { createSearchPanel } from "../editor/SearchPanel";
+import { loadWrap, onWrapChange } from "../editorPrefs";
+
+const wrapExtension = (wrap: boolean): Extension => (wrap ? EditorView.lineWrapping : []);
 
 // basicSetup's defaultKeymap binds Mod-Enter to insertBlankLine and does not stop
 // propagation. The app uses Mod-Enter to send the active request, so swallow it here
@@ -54,6 +57,8 @@ export default function CodeEditor({ value, language, readOnly, onChange, variab
   // edit (which would report a false change) and never recorded in undo history (which
   // would let Cmd+Z restore another tab's content into this one).
   const syncing = useRef(false);
+  // Line wrapping is reconfigured in place when the setting changes, so the view is not recreated.
+  const wrapCompartment = useRef(new Compartment());
 
   // Recreate the view when language/readOnly change; StrictMode mounts this effect twice,
   // so the cleanup must destroy the view it created.
@@ -65,6 +70,7 @@ export default function CodeEditor({ value, language, readOnly, onChange, variab
         basicSetup,
         search({ top: true, createPanel: createSearchPanel }),
         noModEnter,
+        wrapCompartment.current.of(wrapExtension(loadWrap())),
         ...restlyEditorTheme,
         ...langExtension(language),
         ...(variables ? [variablesExtension()] : []),
@@ -84,6 +90,14 @@ export default function CodeEditor({ value, language, readOnly, onChange, variab
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language, readOnly, variables]);
+
+  useEffect(
+    () =>
+      onWrapChange((wrap) =>
+        view.current?.dispatch({ effects: wrapCompartment.current.reconfigure(wrapExtension(wrap)) })
+      ),
+    []
+  );
 
   // Sync an externally-changed value (e.g. switching tabs) without recreating the view or
   // fighting the user's cursor: only dispatch when the doc actually differs.

@@ -18,7 +18,15 @@ const (
 	settingsFile = "settings.json"
 	cookiesFile  = "cookies.json"
 	historyFile  = "history.jsonl"
-	historyLimit = 500
+
+	defaultHistoryLimit = 50
+	maxHistoryLimit     = 10000
+
+	// logFile is kept in the data folder. At maxLogBytes it is moved to logFile+".1" at the next start.
+	logFile     = "restly.log"
+	maxLogBytes = 1 << 20
+	// maxFrontendReportBytes caps one error report from the webview.
+	maxFrontendReportBytes = 64 << 10
 
 	themesDir       = "themes" // imported VS Code color themes, kept as the original files
 	keybindingsFile = "keybindings.json"

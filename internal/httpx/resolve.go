@@ -15,8 +15,9 @@ import (
 )
 
 // Resolve substitutes variables in the request and applies auth, the effective auth
-// after inheritance, or nil for none.
-func Resolve(req *collection.Request, auth *collection.Auth, scope *vars.Scope) (*Prepared, error) {
+// after inheritance, or nil for none. userAgent is sent when the request has no User-Agent header,
+// and "" means defaultUserAgent.
+func Resolve(req *collection.Request, auth *collection.Auth, scope *vars.Scope, userAgent string) (*Prepared, error) {
 	method := strings.ToUpper(scope.Replace(req.Method))
 	if method == "" {
 		method = "GET"
@@ -34,7 +35,7 @@ func Resolve(req *collection.Request, auth *collection.Auth, scope *vars.Scope) 
 		return nil, err
 	}
 	applyAuth(prep, auth, scope)
-	applyDefaultHeaders(prep)
+	applyDefaultHeaders(prep, userAgent)
 	return prep, nil
 }
 
@@ -324,9 +325,12 @@ func applyAuth(prep *Prepared, auth *collection.Auth, scope *vars.Scope) {
 	}
 }
 
-func applyDefaultHeaders(prep *Prepared) {
+func applyDefaultHeaders(prep *Prepared, userAgent string) {
 	if !hasHeader(prep.Header, "User-Agent") {
-		prep.Header = append(prep.Header, Header{Key: "User-Agent", Value: defaultUserAgent})
+		if userAgent == "" {
+			userAgent = defaultUserAgent
+		}
+		prep.Header = append(prep.Header, Header{Key: "User-Agent", Value: userAgent})
 	}
 	if !hasHeader(prep.Header, "Accept") {
 		prep.Header = append(prep.Header, Header{Key: "Accept", Value: defaultAccept})

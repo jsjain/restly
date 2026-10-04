@@ -24,7 +24,8 @@ type Workspace struct {
 
 // Settings are per-machine preferences stored outside the workspace.
 type Settings struct {
-	Network httpx.Network `json:"network"`
+	Network      httpx.Network `json:"network"`
+	HistoryLimit int           `json:"historyLimit"` // entries kept, defaultHistoryLimit when unset
 }
 
 type FileRef struct {

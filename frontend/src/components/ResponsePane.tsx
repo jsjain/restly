@@ -3,7 +3,7 @@ import CodeEditor from "./CodeEditor";
 import Select from "./Select";
 import * as api from "../api";
 import { toast } from "../store";
-import type { RequestTab } from "../store";
+import type { RequestTab, ResponseSubTab as SubTab } from "../store";
 import type { SendResult } from "../types";
 
 interface Props {
@@ -11,8 +11,6 @@ interface Props {
   result: SendResult;
   onChange: () => void;
 }
-
-type SubTab = "body" | "headers" | "cookies" | "tests" | "console";
 
 function statusClass(code: number): string {
   if (code >= 500) return "status-5xx";
@@ -33,7 +31,7 @@ async function saveFullBody() {
 }
 
 export default function ResponsePane({ tab, result, onChange }: Props) {
-  const [sub, setSub] = useState<SubTab>("body");
+  const sub = tab.responseSub ?? "body";
   const response = result.response;
 
   const parsed = useMemo(() => {
@@ -69,7 +67,7 @@ export default function ResponsePane({ tab, result, onChange }: Props) {
           </div>
           <div className="subtabs">
             {(["body", "headers", "cookies", "tests", "console"] as SubTab[]).map((s) => (
-              <button key={s} className={sub === s ? "active" : ""} onClick={() => setSub(s)}>
+              <button key={s} className={sub === s ? "active" : ""} onClick={() => { tab.responseSub = s; onChange(); }}>
                 {s === "tests" ? `Tests (${passed}/${result.tests.length})` : s[0].toUpperCase() + s.slice(1)}
               </button>
             ))}

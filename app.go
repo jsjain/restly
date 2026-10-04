@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	goruntime "runtime"
 	"slices"
 	"strings"
 	"sync"
@@ -44,6 +45,9 @@ type App struct {
 	quitting atomic.Bool    // the user confirmed quitting in the webview
 	emit     func(event string, data any)
 	logError func(format string, args ...any)
+	logFile  *os.File    // nil when the log file failed to open
+	fileLog  *log.Logger // writes to logFile, nil when logFile is nil
+	logPath  string      // "" when the log file failed to open
 
 	mu           sync.Mutex // guards the fields below
 	collections  map[string]*collection.Collection
@@ -60,7 +64,7 @@ func NewApp() *App {
 		collections:  map[string]*collection.Collection{},
 		environments: map[string]*collection.Environment{},
 		sends:        map[string]context.CancelFunc{},
-		settings:     Settings{Network: httpx.DefaultNetwork()},
+		settings:     defaultSettings(),
 		emit:         func(string, any) {},
 		logError:     log.Printf,
 	}
@@ -71,19 +75,61 @@ func NewApp() *App {
 func (app *App) startup(ctx context.Context) {
 	app.ctx = ctx
 	app.emit = func(event string, data any) { runtime.EventsEmit(ctx, event, data) }
-	app.logError = func(format string, args ...any) { runtime.LogErrorf(ctx, format, args...) }
+	app.logError = func(format string, args ...any) {
+		runtime.LogErrorf(ctx, format, args...)
+		if app.fileLog != nil {
+			app.fileLog.Printf(format, args...)
+		}
+	}
+	dir, dirErr := dataFolder()
+	if dirErr != nil {
+		app.logError("%v", dirErr)
+	} else if err := app.openLog(filepath.Join(dir, logFile)); err != nil {
+		runtime.LogErrorf(ctx, "failed to start the log file: %v", err)
+	}
 	if err := app.openWorkspace(); err != nil {
 		app.logError("failed to open workspace: %v", err)
 		return
 	}
-	configDir, err := os.UserConfigDir()
-	if err != nil {
-		app.logError("failed to find the settings folder: %v", err)
+	if dirErr != nil {
 		return
 	}
-	if err := app.openData(filepath.Join(configDir, "Restly")); err != nil {
+	if err := app.openData(dir); err != nil {
 		app.logError("failed to load settings, cookies, or history: %v", err)
 	}
+}
+
+// dataFolder returns the per-machine data folder, creating it.
+func dataFolder() (string, error) {
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", fmt.Errorf("failed to find the settings folder: %w", err)
+	}
+	dir := filepath.Join(configDir, "Restly")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		return "", fmt.Errorf("failed to create data folder %s: %w", dir, err)
+	}
+	return dir, nil
+}
+
+// openLog starts the file logger at path and writes the startup line.
+func (app *App) openLog(path string) error {
+	file, err := openLogFile(path)
+	if err != nil {
+		return err
+	}
+	app.logFile, app.logPath = file, path
+	app.fileLog = log.New(file, "", log.LstdFlags|log.Lmicroseconds)
+	info, err := buildAppInfo()
+	if err != nil {
+		app.fileLog.Printf("failed to read app info: %v", err)
+	}
+	version := info.Version
+	if info.Commit != "" {
+		version += " (" + info.Commit + ")"
+	}
+	app.fileLog.Printf("Restly %s %s/%s started", version, goruntime.GOOS, goruntime.GOARCH)
+	return nil
 }
 
 func (app *App) openWorkspace() error {
@@ -127,7 +173,7 @@ func (app *App) openData(dir string) error {
 	if err := app.client.Jar().Load(filepath.Join(dir, cookiesFile)); err != nil {
 		errs = append(errs, fmt.Errorf("failed to load cookies: %w", err))
 	}
-	store, err := history.Open(filepath.Join(dir, historyFile), historyLimit)
+	store, err := history.Open(filepath.Join(dir, historyFile), settings.HistoryLimit)
 	if err != nil {
 		errs = append(errs, fmt.Errorf("failed to load history: %w", err))
 	}
@@ -139,6 +185,11 @@ func (app *App) shutdown(ctx context.Context) {
 	app.sockets.CloseAll()
 	if err := app.saveCookies(); err != nil {
 		app.logError("%v", err)
+	}
+	if app.logFile != nil {
+		if err := app.logFile.Close(); err != nil {
+			runtime.LogErrorf(ctx, "failed to close the log file: %v", err)
+		}
 	}
 }
 
@@ -183,20 +234,76 @@ func (app *App) SaveSettings(settings Settings) error {
 	if app.dataDir == "" {
 		return errors.New("settings folder failed to open, see the log for details")
 	}
+	settings.HistoryLimit = normalizeHistoryLimit(settings.HistoryLimit)
 	if err := app.client.Configure(settings.Network); err != nil {
 		return err
 	}
-	data, err := json.Marshal(settings)
-	if err != nil {
-		return fmt.Errorf("failed to encode settings: %w", err)
-	}
-	if err := collection.WriteJSON(filepath.Join(app.dataDir, settingsFile), json.RawMessage(data)); err != nil {
+	if err := app.writeSettings(settings); err != nil {
 		return err
 	}
 	app.mu.Lock()
 	app.settings = settings
 	app.mu.Unlock()
+	if app.history != nil {
+		if err := app.history.SetLimit(settings.HistoryLimit); err != nil {
+			return fmt.Errorf("failed to apply history limit: %w", err)
+		}
+	}
 	return nil
+}
+
+// SetHistoryLimit saves a new history length and trims the history to it. It leaves the network
+// transports alone, unlike SaveSettings. It returns the limit in effect.
+func (app *App) SetHistoryLimit(limit int) (int, error) {
+	if app.dataDir == "" {
+		return 0, errors.New("settings folder failed to open, see the log for details")
+	}
+	limit = normalizeHistoryLimit(limit)
+	app.mu.Lock()
+	settings := app.settings
+	app.mu.Unlock()
+	settings.HistoryLimit = limit
+	if err := app.writeSettings(settings); err != nil {
+		return 0, err
+	}
+	app.mu.Lock()
+	app.settings = settings
+	app.mu.Unlock()
+	if app.history != nil {
+		if err := app.history.SetLimit(limit); err != nil {
+			return 0, fmt.Errorf("failed to apply history limit: %w", err)
+		}
+	}
+	return limit, nil
+}
+
+func (app *App) writeSettings(settings Settings) error {
+	data, err := json.Marshal(settings)
+	if err != nil {
+		return fmt.Errorf("failed to encode settings: %w", err)
+	}
+	return collection.WriteJSON(filepath.Join(app.dataDir, settingsFile), json.RawMessage(data))
+}
+
+// LogFrontendError records an error report from the webview in the log file.
+func (app *App) LogFrontendError(report string) {
+	if len(report) > maxFrontendReportBytes {
+		report = strings.ToValidUTF8(report[:maxFrontendReportBytes], "")
+	}
+	app.logError("frontend error:\n%s", report)
+}
+
+// LogFilePath returns the absolute path of the log file, "" when it failed to open.
+func (app *App) LogFilePath() string {
+	return app.logPath
+}
+
+// RevealLogFile shows the log file in the system file manager.
+func (app *App) RevealLogFile() error {
+	if app.logPath == "" {
+		return errors.New("the log file is not available")
+	}
+	return revealInFileManager(app.logPath)
 }
 
 // PickFile shows a native file picker and returns the chosen path, or "" when cancelled.
@@ -403,7 +510,7 @@ func (app *App) WSConnect(id string, input SendInput) error {
 		return err
 	}
 	auth := runner.EffectiveAuth(tgt.coll, ancestors, input.Item.Request)
-	prep, err := httpx.Resolve(input.Item.Request, auth, tgt.scope)
+	prep, err := httpx.Resolve(input.Item.Request, auth, tgt.scope, app.client.UserAgent())
 	if err != nil {
 		return err
 	}
@@ -810,7 +917,7 @@ func (app *App) Snippet(input SendInput, lang string) (string, error) {
 		return "", err
 	}
 	auth := runner.EffectiveAuth(tgt.coll, ancestors, input.Item.Request)
-	prep, err := httpx.Resolve(input.Item.Request, auth, tgt.scope)
+	prep, err := httpx.Resolve(input.Item.Request, auth, tgt.scope, app.client.UserAgent())
 	if err != nil {
 		return "", err
 	}
@@ -853,7 +960,7 @@ func (app *App) Run(input RunInput) error {
 			runtime.EventsEmit(app.ctx, eventRunResult, result)
 		})
 		if err := app.persistScope(tgt, before); err != nil {
-			runtime.LogErrorf(app.ctx, "failed to save variables after running %s: %v", tgt.collFile, err)
+			app.logError("failed to save variables after running %s: %v", tgt.collFile, err)
 		}
 		app.mu.Lock()
 		app.stopRun = nil
@@ -1105,7 +1212,7 @@ func (app *App) globalsPath() string {
 
 // readSettings returns the defaults when the file does not exist yet.
 func readSettings(path string) (Settings, error) {
-	settings := Settings{Network: httpx.DefaultNetwork()}
+	settings := defaultSettings()
 	data, err := os.ReadFile(path)
 	if errors.Is(err, fs.ErrNotExist) {
 		return settings, nil
@@ -1114,8 +1221,9 @@ func readSettings(path string) (Settings, error) {
 		return settings, fmt.Errorf("failed to read settings: %w", err)
 	}
 	if err := json.Unmarshal(data, &settings); err != nil {
-		return Settings{Network: httpx.DefaultNetwork()}, fmt.Errorf("failed to parse %s: %w", path, err)
+		return defaultSettings(), fmt.Errorf("failed to parse %s: %w", path, err)
 	}
+	settings.HistoryLimit = normalizeHistoryLimit(settings.HistoryLimit)
 	return settings, nil
 }
 

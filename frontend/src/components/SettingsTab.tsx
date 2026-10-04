@@ -11,6 +11,7 @@ import {
   getEnvironment,
   isCollectionDirty,
   markCollectionDirty,
+  notifyChange,
   openRunnerTab,
   refreshWorkspace,
   saveCollectionFile,
@@ -18,7 +19,7 @@ import {
   setSelectedEnv,
   toast,
 } from "../store";
-import type { CollectionTab, EnvironmentTab as EnvironmentTabState, FolderTab } from "../store";
+import type { CollectionTab, EnvironmentTab as EnvironmentTabState, FolderTab, SettingsSubTab as Sub } from "../store";
 import { itemAt } from "../tree";
 import { isFolder } from "../types";
 import type { Collection, FileRef, Item, Variable } from "../types";
@@ -89,23 +90,14 @@ export default function SettingsTab({ tab }: Props) {
   return <Loaded tab={tab} coll={coll} />;
 }
 
-type Sub = "overview" | "auth" | "scripts" | "variables" | "environments" | "runs";
-
 function Loaded({ tab, coll }: { tab: CollectionTab | FolderTab; coll: Collection }) {
   const isCollection = tab.kind === "collection";
   const target: Collection | Item | undefined = isCollection ? coll : itemAt(coll, tab.path);
 
-  const [sub, setSub] = useState<Sub>("overview");
-  const [scriptView, setScriptView] = useState<"prerequest" | "test">("prerequest");
+  const sub = tab.sub ?? "overview";
+  const scriptView = tab.scriptView ?? "prerequest";
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
-
-  // Menus and the environment picker open this tab straight on a sub-tab.
-  useEffect(() => {
-    if (tab.kind !== "collection" || !tab.initialSub) return;
-    setSub(tab.initialSub as Sub);
-    tab.initialSub = undefined;
-  });
 
   if (!target) return <div className="ov-empty">This folder was deleted.</div>;
 
@@ -197,7 +189,7 @@ function Loaded({ tab, coll }: { tab: CollectionTab | FolderTab; coll: Collectio
 
       <div className="ov-subtabs">
         {subs.map((s) => (
-          <button key={s.key} className={`ov-subtab ${sub === s.key ? "active" : ""}`} onClick={() => setSub(s.key)}>
+          <button key={s.key} className={`ov-subtab ${sub === s.key ? "active" : ""}`} onClick={() => { tab.sub = s.key; notifyChange(); }}>
             {s.label}
           </button>
         ))}
@@ -211,10 +203,10 @@ function Loaded({ tab, coll }: { tab: CollectionTab | FolderTab; coll: Collectio
         {sub === "scripts" ? (
           <div className="ov-scripts">
             <div className="segmented">
-              <button className={scriptView === "prerequest" ? "active" : ""} onClick={() => setScriptView("prerequest")}>
+              <button className={scriptView === "prerequest" ? "active" : ""} onClick={() => { tab.scriptView = "prerequest"; notifyChange(); }}>
                 Pre-request
               </button>
-              <button className={scriptView === "test" ? "active" : ""} onClick={() => setScriptView("test")}>
+              <button className={scriptView === "test" ? "active" : ""} onClick={() => { tab.scriptView = "test"; notifyChange(); }}>
                 Post-response
               </button>
             </div>

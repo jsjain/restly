@@ -360,3 +360,31 @@ func TestConcurrentAddsAllLand(t *testing.T) {
 		seen[entry.ID] = true
 	}
 }
+
+func TestSetLimitTrimsMemoryAndFile(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "history.jsonl")
+	writeRawEntries(t, path, makeSequentialEntries(10))
+	store, err := Open(path, 10)
+	requireOK(t, err)
+
+	requireOK(t, store.SetLimit(3))
+
+	wantIDs := []string{"e9", "e8", "e7"}
+	assertIDs := func(label string, entries []Entry) {
+		t.Helper()
+		var got []string
+		for _, entry := range entries {
+			got = append(got, entry.ID)
+		}
+		if !reflect.DeepEqual(got, wantIDs) {
+			t.Fatalf("%s: IDs = %v, want %v", label, got, wantIDs)
+		}
+	}
+	assertIDs("List", store.List())
+	if lines := readLines(t, path); len(lines) != 3 {
+		t.Fatalf("file has %d lines, want 3", len(lines))
+	}
+	reopened, err := Open(path, 3)
+	requireOK(t, err)
+	assertIDs("reopened List", reopened.List())
+}

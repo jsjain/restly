@@ -35,7 +35,7 @@ func Exec(ctx context.Context, client *httpx.Client, scope *vars.Scope, step Ste
 		Info:    step.Info,
 		Send: func(ctx context.Context, sub *collection.Request) (*httpx.Response, error) {
 			// Postman does not substitute variables here, and reading scope would race with the script.
-			prep, err := httpx.Resolve(sub, nil, vars.New())
+			prep, err := httpx.Resolve(sub, nil, vars.New(), client.UserAgent())
 			if err != nil {
 				return nil, err
 			}
@@ -46,7 +46,7 @@ func Exec(ctx context.Context, client *httpx.Client, scope *vars.Scope, step Ste
 		return outcome
 	}
 
-	prep, err := httpx.Resolve(req, EffectiveAuth(step.Collection, step.Ancestors, req), scope)
+	prep, err := httpx.Resolve(req, EffectiveAuth(step.Collection, step.Ancestors, req), scope, client.UserAgent())
 	if err != nil {
 		outcome.Err = fmt.Errorf("failed to build request: %w", err)
 		return outcome

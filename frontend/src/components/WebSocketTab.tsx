@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { RequestTab as RequestTabState } from "../store";
+import type { RequestTab as RequestTabState, WsSubTab as SubTab } from "../store";
 import { markCollectionDirty, notifyChange, saveCollectionFile, openSaveDraftModal, toast, getCollection, selectedEnv } from "../store";
 import { itemAt } from "../tree";
 import * as api from "../api";
@@ -14,8 +14,6 @@ import { FOCUS_URL, SEND } from "../commands";
 interface Props {
   tab: RequestTabState;
 }
-
-type SubTab = "params" | "headers" | "auth";
 
 function formatTime(ms: number): string {
   const d = new Date(ms);
@@ -103,7 +101,7 @@ function LogRow({ event, expanded, onToggle }: { event: WsEvent; expanded: boole
 }
 
 export default function WebSocketTab({ tab }: Props) {
-  const [sub, setSub] = useState<SubTab>("params");
+  const sub = tab.wsSub ?? "params";
   const [localMessage, setLocalMessage] = useState("");
   const [filter, setFilter] = useState("");
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
@@ -270,7 +268,7 @@ export default function WebSocketTab({ tab }: Props) {
 
         <div className="subtabs">
           {(["params", "headers", "auth"] as SubTab[]).map((s) => (
-            <button key={s} className={sub === s ? "active" : ""} onClick={() => setSub(s)}>
+            <button key={s} className={sub === s ? "active" : ""} onClick={() => { tab.wsSub = s; notifyChange(); }}>
               {s[0].toUpperCase() + s.slice(1)}
             </button>
           ))}

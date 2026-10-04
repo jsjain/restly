@@ -28,6 +28,7 @@ import EnvironmentTab from "./EnvironmentTab";
 import RunnerTab from "./RunnerTab";
 import CookiesTab from "./CookiesTab";
 import AppSettingsTab from "./AppSettingsTab";
+import ErrorBoundary from "./ErrorBoundary";
 import TabContextMenu from "./TabContextMenu";
 import { requestClose } from "../tabActions";
 import { requestTitle } from "../requestName";
@@ -238,23 +239,25 @@ export default function Tabs() {
       </div>
       {menu ? <TabContextMenu tab={menu.tab} x={menu.x} y={menu.y} onClose={() => setMenu(null)} /> : null}
       <div className="tab-content">
-        {state.activeTab?.kind === "request" ? (
-          isWebSocket(requestTabItem(state.activeTab)) ? (
-            <WebSocketTab key={tabKey(state.activeTab)} tab={state.activeTab} />
-          ) : (
-            <RequestTab key={tabKey(state.activeTab)} tab={state.activeTab} />
-          )
-        ) : null}
-        {state.activeTab?.kind === "collection" || state.activeTab?.kind === "folder" ? (
-          <SettingsTab key={tabKey(state.activeTab)} tab={state.activeTab} />
-        ) : null}
-        {state.activeTab?.kind === "environment" ? (
-          <EnvironmentTab key={tabKey(state.activeTab)} tab={state.activeTab} />
-        ) : null}
-        {state.activeTab?.kind === "runner" ? <RunnerTab key={tabKey(state.activeTab)} tab={state.activeTab} /> : null}
-        {state.activeTab?.kind === "cookies" ? <CookiesTab key={tabKey(state.activeTab)} /> : null}
-        {state.activeTab?.kind === "appsettings" ? <AppSettingsTab key={tabKey(state.activeTab)} /> : null}
-        {!state.activeTab ? <div className="empty-state">Open a request from the sidebar to get started.</div> : null}
+        <ErrorBoundary resetKey={state.activeTab}>
+          {state.activeTab?.kind === "request" ? (
+            isWebSocket(requestTabItem(state.activeTab)) ? (
+              <WebSocketTab key={tabKey(state.activeTab)} tab={state.activeTab} />
+            ) : (
+              <RequestTab key={tabKey(state.activeTab)} tab={state.activeTab} />
+            )
+          ) : null}
+          {state.activeTab?.kind === "collection" || state.activeTab?.kind === "folder" ? (
+            <SettingsTab key={tabKey(state.activeTab)} tab={state.activeTab} />
+          ) : null}
+          {state.activeTab?.kind === "environment" ? (
+            <EnvironmentTab key={tabKey(state.activeTab)} tab={state.activeTab} />
+          ) : null}
+          {state.activeTab?.kind === "runner" ? <RunnerTab key={tabKey(state.activeTab)} tab={state.activeTab} /> : null}
+          {state.activeTab?.kind === "cookies" ? <CookiesTab key={tabKey(state.activeTab)} /> : null}
+          {state.activeTab?.kind === "appsettings" ? <AppSettingsTab key={tabKey(state.activeTab)} /> : null}
+          {!state.activeTab ? <div className="empty-state">Open a request from the sidebar to get started.</div> : null}
+        </ErrorBoundary>
       </div>
     </div>
   );

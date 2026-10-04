@@ -80,6 +80,7 @@ type Network struct {
 	VerifyTLS   bool         `json:"verifyTls"`
 	CAFile      string       `json:"caFile"` // PEM bundle trusted in addition to the system roots, "" for none
 	ClientCerts []ClientCert `json:"clientCerts"`
+	UserAgent   string       `json:"userAgent"` // "" sends the default, Restly/0.1
 }
 
 // ClientCert is a PEM certificate and key presented to one host.

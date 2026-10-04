@@ -360,3 +360,28 @@ func TestCancelSendStopsTheRequest(t *testing.T) {
 		t.Fatalf("sends = %v, want empty after the send returns", app.sends)
 	}
 }
+
+func TestSetHistoryLimit(t *testing.T) {
+	app := newTestApp(t)
+	for _, test := range []struct{ in, want int }{
+		{0, defaultHistoryLimit},
+		{-5, defaultHistoryLimit},
+		{7, 7},
+		{maxHistoryLimit + 1, maxHistoryLimit},
+	} {
+		got, err := app.SetHistoryLimit(test.in)
+		if err != nil {
+			t.Fatalf("SetHistoryLimit(%d) failed: %v", test.in, err)
+		}
+		if got != test.want || app.GetSettings().HistoryLimit != test.want {
+			t.Fatalf("SetHistoryLimit(%d) = %d, saved %d, want %d", test.in, got, app.GetSettings().HistoryLimit, test.want)
+		}
+	}
+	saved, err := readSettings(filepath.Join(app.dataDir, settingsFile))
+	if err != nil {
+		t.Fatalf("readSettings failed: %v", err)
+	}
+	if saved.HistoryLimit != maxHistoryLimit {
+		t.Fatalf("saved HistoryLimit = %d, want %d", saved.HistoryLimit, maxHistoryLimit)
+	}
+}

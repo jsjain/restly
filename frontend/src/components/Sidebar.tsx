@@ -27,7 +27,7 @@ import {
   saveEnvironmentFile,
   isEnvironmentDirty,
   remapTabsAfter,
-  usableEnvs,
+  sidebarEnvs,
   deleteEnvironmentFile,
   confirmDelete,
   toast,
@@ -826,6 +826,13 @@ export default function Sidebar() {
               placeholder="curl https://example.com"
               value={curlText}
               onChange={(e) => setCurlText(e.target.value)}
+              // Enter imports. Shift+Enter still adds a line for typing a multi-line command.
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                  e.preventDefault();
+                  handleImportCurl();
+                }
+              }}
             />
             {curlError ? <div className="hint" style={{ color: "var(--danger)" }}>{curlError}</div> : null}
             <div className="modal-actions">
@@ -962,7 +969,7 @@ export default function Sidebar() {
                     />
                   </div>
                 ) : null}
-                {usableEnvs("")
+                {sidebarEnvs()
                   .filter((ref) => {
                     const q = search.trim().toLowerCase();
                     if (!q) return true;

@@ -31,7 +31,7 @@ interface Lookup {
 // Narrowest to widest: selected environment, then the active tab's collection, then globals.
 function lookupDefined(name: string): Lookup | undefined {
   const env = state.environments.get(selectedEnv());
-  const envValue = env?.values.find((v) => v.key === name && v.enabled !== false);
+  const envValue = env?.values?.find((v) => v.key === name && v.enabled !== false);
   if (env && envValue) {
     return { value: envValue.value ?? "", scope: "environment", scopeLabel: env.name, secret: envValue.type === "secret" };
   }

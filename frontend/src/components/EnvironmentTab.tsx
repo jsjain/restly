@@ -1,6 +1,15 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { Plus, X } from "lucide-react";
-import { getEnvironment, markEnvironmentDirty, notifyChange, saveEnvironmentFile, toast } from "../store";
+import {
+  findFileRef,
+  getEnvironment,
+  markEnvironmentDirty,
+  notifyChange,
+  orphanedEnv,
+  refreshWorkspace,
+  saveEnvironmentFile,
+  toast,
+} from "../store";
 import type { EnvironmentTab as EnvironmentTabState } from "../store";
 import type { Environment } from "../types";
 import Select from "./Select";
@@ -59,8 +68,28 @@ function Loaded({
     edit();
   }
 
+  // The workspace reads the owner from the saved file, so the change is saved before it is re-read.
+  async function makeShared() {
+    delete env["x-restly-collection"];
+    try {
+      await saveEnvironmentFile(tab.file);
+      await refreshWorkspace();
+      toast("Environment is now shared");
+    } catch (err) {
+      toast(String(err), "error");
+    }
+  }
+
+  const ref = findFileRef("environment", tab.file);
+
   return (
     <div className="subtab-body">
+      {ref && orphanedEnv(ref) ? (
+        <div className="field-row">
+          <span className="hint">The collection this environment belonged to was deleted, so no request can use it.</span>
+          <button onClick={makeShared}>Make shared</button>
+        </div>
+      ) : null}
       <div className="field-row">
         <label>Name</label>
         <input

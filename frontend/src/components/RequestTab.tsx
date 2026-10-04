@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { RequestTab as RequestTabState } from "../store";
+import type { RequestSubTab as SubTab, RequestTab as RequestTabState } from "../store";
 import {
   state,
   markCollectionDirty,
@@ -30,8 +30,6 @@ import "../codePanel.css";
 interface Props {
   tab: RequestTabState;
 }
-
-type SubTab = "params" | "headers" | "body" | "auth" | "prerequest" | "tests";
 
 const SUBTAB_LABEL: Record<SubTab, string> = {
   params: "Params",
@@ -67,7 +65,7 @@ function scriptNonEmpty(item: Item, listen: "prerequest" | "test"): boolean {
 const sendKeys = (listCommands().find((c) => c.id === "send")?.keys?.[0] ?? "mod+enter").split("+");
 
 export default function RequestTab({ tab }: Props) {
-  const [sub, setSub] = useState<SubTab>("params");
+  const sub = tab.requestSub ?? "params";
   const isDraft = tab.file === "";
   const coll = isDraft ? undefined : getCollection(tab.file);
   const item = isDraft ? tab.draft : coll ? itemAt(coll, tab.path) : undefined;
@@ -232,7 +230,7 @@ export default function RequestTab({ tab }: Props) {
                     : undefined;
               const dot = (s === "body" && hasBody(req)) || (s === "prerequest" && scriptNonEmpty(item, "prerequest")) || (s === "tests" && scriptNonEmpty(item, "test"));
               return (
-                <button key={s} className={sub === s ? "active" : ""} onClick={() => setSub(s)}>
+                <button key={s} className={sub === s ? "active" : ""} onClick={() => { tab.requestSub = s; notifyChange(); }}>
                   {SUBTAB_LABEL[s]}
                   {count ? <span className="subtab-count">{count}</span> : null}
                   {dot ? <span className="subtab-dot" /> : null}

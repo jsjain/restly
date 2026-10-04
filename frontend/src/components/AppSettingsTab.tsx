@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as api from "../api";
-import { toast } from "../store";
+import { toast, setHistoryLimit } from "../store";
 import type { AppInfo, ClientCert, Settings } from "../types";
 import { type AutosaveSettings, loadAutosaveSettings, saveAutosaveSettings } from "../autosave";
+import { loadWrap, saveWrap } from "../editorPrefs";
 import ThemePicker from "../theme/ThemePicker";
 import FontPicker from "../theme/FontPicker";
+import Select from "./Select";
 import logo from "../assets/logo.png";
 import "../about.css";
 import "../settings.css";
@@ -19,6 +21,36 @@ const SECTIONS = [
 
 type SectionId = (typeof SECTIONS)[number]["id"];
 
+const USER_AGENT_PRESETS = [
+  { label: "Restly (default)", value: "" },
+  {
+    label: "Chrome (Windows)",
+    value: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+  },
+  {
+    label: "Chrome (macOS)",
+    value: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+  },
+  {
+    label: "Chrome (Android)",
+    value: "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36",
+  },
+  { label: "Firefox (Windows)", value: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0" },
+  { label: "Firefox (Android)", value: "Mozilla/5.0 (Android 15; Mobile; rv:143.0) Gecko/143.0 Firefox/143.0" },
+  {
+    label: "Safari (macOS)",
+    value: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15",
+  },
+  {
+    label: "Safari (iPhone)",
+    value:
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Mobile/15E148 Safari/604.1",
+  },
+];
+
+// Select values are the UA strings themselves, which are never this.
+const CUSTOM_UA = "custom";
+
 export default function AppSettingsTab() {
   const [section, setSection] = useState<SectionId>("general");
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -26,12 +58,23 @@ export default function AppSettingsTab() {
   const [saving, setSaving] = useState(false);
   const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
   const [autosave, setAutosave] = useState<AutosaveSettings>(() => loadAutosaveSettings());
+  const [wrap, setWrap] = useState(() => loadWrap());
   const [secondsText, setSecondsText] = useState(() => String(autosave.seconds));
+  const [historyText, setHistoryText] = useState("");
+  const [logPath, setLogPath] = useState("");
+  const uaInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     api
       .getSettings()
-      .then(setSettings)
+      .then((s) => {
+        setSettings(s);
+        setHistoryText(String(s.historyLimit));
+      })
+      .catch((err) => toast(String(err), "error"));
+    api
+      .logFilePath()
+      .then(setLogPath)
       .catch((err) => toast(String(err), "error"));
     api
       .getAppInfo()
@@ -119,6 +162,33 @@ export default function AppSettingsTab() {
     if (raw.trim() !== "" && Number.isFinite(n)) commitAutosave({ ...autosave, seconds: n });
   }
 
+  // Lowering the limit deletes entries, so it commits on blur/Enter, not per keystroke. A blank
+  // or non-numeric value reverts. The applied (clamped) value goes into settings too, or a
+  // later Network Save would send the stale one back.
+  async function commitHistoryLimit() {
+    const n = Number(historyText);
+    if (historyText.trim() === "" || !Number.isFinite(n)) {
+      setHistoryText(String(settings?.historyLimit ?? ""));
+      return;
+    }
+    try {
+      const applied = await setHistoryLimit(Math.round(n));
+      update((s) => (s.historyLimit = applied));
+      setHistoryText(String(applied));
+    } catch (err) {
+      setHistoryText(String(settings?.historyLimit ?? ""));
+      toast(String(err), "error");
+    }
+  }
+
+  async function showLogFile() {
+    try {
+      await api.revealLogFile();
+    } catch (err) {
+      toast(String(err), "error");
+    }
+  }
+
   async function openKeybindingsFile() {
     try {
       await api.openKeybindings();
@@ -160,39 +230,85 @@ export default function AppSettingsTab() {
           ) : null}
 
           {section === "general" ? (
-            <div className="settings-section">
-              <div className="settings-section-head">
-                <h3>General</h3>
-                <p>
-                  Auto-save writes every collection and environment file with unsaved changes on a timer. Applies
-                  immediately. Drafts that were never saved are not auto-saved.
-                </p>
-              </div>
-              <label className="settings-checkbox-row">
-                <input
-                  type="checkbox"
-                  checked={autosave.enabled}
-                  onChange={(e) => commitAutosave({ ...autosave, enabled: e.target.checked })}
-                />
-                Auto-save
-              </label>
-              <div className="settings-row">
-                <label>Every</label>
-                <div className="settings-control-group">
+            <>
+              <div className="settings-section">
+                <div className="settings-section-head">
+                  <h3>General</h3>
+                  <p>
+                    Auto-save writes every collection and environment file with unsaved changes on a timer. Applies
+                    immediately. Drafts that were never saved are not auto-saved.
+                  </p>
+                </div>
+                <label className="settings-checkbox-row">
                   <input
-                    type="number"
-                    className="mono settings-seconds-input"
-                    min={1}
-                    max={600}
-                    disabled={!autosave.enabled}
-                    value={secondsText}
-                    onChange={(e) => handleSecondsChange(e.target.value)}
-                    onBlur={() => setSecondsText(String(autosave.seconds))}
+                    type="checkbox"
+                    checked={autosave.enabled}
+                    onChange={(e) => commitAutosave({ ...autosave, enabled: e.target.checked })}
                   />
-                  seconds
+                  Auto-save
+                </label>
+                <div className="settings-row">
+                  <label>Every</label>
+                  <div className="settings-control-group">
+                    <input
+                      type="number"
+                      className="mono settings-seconds-input"
+                      min={1}
+                      max={600}
+                      disabled={!autosave.enabled}
+                      value={secondsText}
+                      onChange={(e) => handleSecondsChange(e.target.value)}
+                      onBlur={() => setSecondsText(String(autosave.seconds))}
+                    />
+                    seconds
+                  </div>
                 </div>
               </div>
-            </div>
+              <div className="settings-section">
+                <div className="settings-section-head">
+                  <h3>Editor</h3>
+                  <p>Long lines in the request body, response, and scripts. Applies immediately.</p>
+                </div>
+                <label className="settings-checkbox-row">
+                  <input
+                    type="checkbox"
+                    checked={wrap}
+                    onChange={(e) => {
+                      setWrap(e.target.checked);
+                      saveWrap(e.target.checked);
+                    }}
+                  />
+                  Wrap long lines
+                </label>
+              </div>
+              <div className="settings-section">
+                <div className="settings-section-head">
+                  <h3>History</h3>
+                  <p>
+                    How many sent requests the History list keeps. Lowering it deletes the oldest entries. Applies
+                    immediately.
+                  </p>
+                </div>
+                <div className="settings-row">
+                  <label>Keep the last</label>
+                  <div className="settings-control-group">
+                    <input
+                      type="number"
+                      className="mono settings-seconds-input"
+                      min={1}
+                      max={10000}
+                      value={historyText}
+                      onChange={(e) => setHistoryText(e.target.value)}
+                      onBlur={commitHistoryLimit}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") commitHistoryLimit();
+                      }}
+                    />
+                    requests
+                  </div>
+                </div>
+              </div>
+            </>
           ) : null}
 
           {section === "network" ? (
@@ -246,6 +362,34 @@ export default function AppSettingsTab() {
                     </div>
                   </>
                 ) : null}
+              </div>
+
+              <div className="settings-section">
+                <div className="settings-section-head">
+                  <h3>User-Agent</h3>
+                  <p>
+                    Sent when a request has no User-Agent header of its own. Used by sends, collection runs,
+                    WebSockets, and code snippets.
+                  </p>
+                </div>
+                <Select
+                  value={USER_AGENT_PRESETS.some((p) => p.value === net.userAgent) ? net.userAgent : CUSTOM_UA}
+                  options={[...USER_AGENT_PRESETS, { label: "Custom", value: CUSTOM_UA }]}
+                  ariaLabel="User-Agent preset"
+                  onChange={(v) => {
+                    if (v === CUSTOM_UA) uaInputRef.current?.focus();
+                    else update((s) => (s.network.userAgent = v));
+                  }}
+                />
+                <input
+                  type="text"
+                  className="mono"
+                  ref={uaInputRef}
+                  placeholder="Restly/0.1"
+                  aria-label="User-Agent"
+                  value={net.userAgent}
+                  onChange={(e) => update((s) => (s.network.userAgent = e.target.value))}
+                />
               </div>
 
               <div className="settings-section">
@@ -335,7 +479,7 @@ export default function AppSettingsTab() {
           ) : null}
 
           {section === "keyboard" ? (
-            <div className="settings-section">
+              <div className="settings-section">
               <div className="settings-section-head">
                 <h3>Keyboard</h3>
                 <p>⌘/ (Ctrl+/ on Windows/Linux) lists every keyboard shortcut.</p>
@@ -345,7 +489,7 @@ export default function AppSettingsTab() {
           ) : null}
 
           {section === "about" ? (
-            <div className="settings-section">
+              <div className="settings-section">
               <div className="settings-section-head">
                 <h3>About</h3>
                 <p>Version and build details.</p>
@@ -372,6 +516,15 @@ export default function AppSettingsTab() {
                   Copy
                 </button>
               </div>
+              {logPath ? (
+                <div className="about-row">
+                  <div className="about-text">
+                    <div className="about-version">Log file</div>
+                    <div className="mono about-version">{logPath}</div>
+                  </div>
+                  <button onClick={showLogFile}>Show log file</button>
+                </div>
+              ) : null}
             </div>
           ) : null}
         </div>
