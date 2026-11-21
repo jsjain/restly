@@ -310,6 +310,56 @@ func TestParse_MultipartFormSample(t *testing.T) {
 	}
 }
 
+func TestParse_BrowserMultipartDataRaw(t *testing.T) {
+	cases := map[string]string{
+		// Postman-style export: bare LF line endings inside a single-quoted body.
+		"lf": `curl --location --request POST 'https://example.com/apps' ` +
+			`--header 'content-type: multipart/form-data; boundary=----WebKitFormBoundaryX' ` +
+			`--header 'accept: application/json' ` +
+			`--data-raw '------WebKitFormBoundaryX
+Content-Disposition: form-data; name="name"
+
+my app
+------WebKitFormBoundaryX
+Content-Disposition: form-data; name="logo"; filename="logo.png"
+Content-Type: image/png
+
+
+------WebKitFormBoundaryX
+Content-Disposition: form-data; name="url"
+
+https://a.com
+------WebKitFormBoundaryX--
+'`,
+		// Chrome "Copy as cURL (bash)": CRLF inside $'...'.
+		"crlf": `curl 'https://example.com/apps' ` +
+			`-H 'content-type: multipart/form-data; boundary=----WebKitFormBoundaryX' ` +
+			`-H 'accept: application/json' ` +
+			`--data-raw $'------WebKitFormBoundaryX\r\nContent-Disposition: form-data; name="name"\r\n\r\nmy app\r\n` +
+			`------WebKitFormBoundaryX\r\nContent-Disposition: form-data; name="logo"; filename="logo.png"\r\nContent-Type: image/png\r\n\r\n\r\n` +
+			`------WebKitFormBoundaryX\r\nContent-Disposition: form-data; name="url"\r\n\r\nhttps://a.com\r\n` +
+			`------WebKitFormBoundaryX--\r\n'`,
+	}
+	for name, command := range cases {
+		t.Run(name, func(t *testing.T) {
+			item := mustParse(t, command)
+			assertEqual(t, "method", item.Request.Method, "POST")
+			assertEqual(t, "mode", item.Request.Body.Mode, "formdata")
+			form := item.Request.Body.FormData
+			assertEqual(t, "field count", len(form), 3)
+			assertEqual(t, "name", form[0].Key+"="+form[0].Value, "name=my app")
+			assertEqual(t, "logo type", form[1].Type, "file")
+			assertEqual(t, "logo files", len(form[1].Files()), 0)
+			assertEqual(t, "url", form[2].Key+"="+form[2].Value, "url=https://a.com")
+			_, hasContentType := findHeaderKV(item.Request.Header, "Content-Type")
+			assertEqual(t, "stale content-type dropped", hasContentType, false)
+			_, hasAccept := findHeaderKV(item.Request.Header, "accept")
+			assertEqual(t, "other headers kept", hasAccept, true)
+			assertEqual(t, "parts sent", len(mustResolve(t, item).Form), 2)
+		})
+	}
+}
+
 func TestParse_Errors(t *testing.T) {
 	cases := []struct {
 		name    string

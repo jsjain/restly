@@ -8,7 +8,7 @@ A request tab can exist without a collection. It sends with `file` empty and see
 
 ## D11 cURL import
 
-`internal/curl` parses a pasted command in Go into a Postman item, round-trip tested against the cURL snippet generator. Reached from a sidebar "Import cURL" dialog, which opens a standalone request, or by pasting a cURL command into any URL field, which replaces that request's method, URL, headers, body, and auth.
+`internal/curl` parses a pasted command in Go into a Postman item, round-trip tested against the cURL snippet generator. Reached from a sidebar "Import cURL" dialog, which opens a standalone request, or by pasting a cURL command into any URL field, which replaces that request's method, URL, headers, body, and auth. A multipart body sent as `--data-raw` with a `multipart/form-data; boundary=...` Content-Type (browser "Copy as cURL" output) imports as form-data fields, not raw text, and drops that Content-Type, since the sender writes its own boundary. A file part imports as a file field with no file chosen, because a copied command never holds the file content (2026-11-21).
 
 ## D27 Request names
 

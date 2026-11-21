@@ -177,13 +177,15 @@ func buildItem(parsed *parsedCommand) (*collection.Item, error) {
 		parsed.dataParts = nil
 	}
 
-	request := postmanRequest{Method: method, URL: buildURLObject(rawURL)}
+	body, extraHeader := buildBody(parsed)
+	request := postmanRequest{Method: method, URL: buildURLObject(rawURL), Body: body}
 	for _, header := range parsed.headers {
+		// httpx writes its own multipart Content-Type with a fresh boundary, so a copied one is stale.
+		if body != nil && body.Mode == "formdata" && strings.EqualFold(header.Key, "Content-Type") {
+			continue
+		}
 		request.Header = append(request.Header, postmanKV{Key: header.Key, Value: header.Value})
 	}
-
-	body, extraHeader := buildBody(parsed)
-	request.Body = body
 	if extraHeader != nil {
 		request.Header = append(request.Header, *extraHeader)
 	}
@@ -264,6 +266,10 @@ func buildBody(parsed *parsedCommand) (*postmanBody, *postmanKV) {
 	}
 
 	contentType, hasContentType := findHeader(parsed.headers, "Content-Type")
+	// Browsers' "Copy as cURL" sends a multipart form as --data-raw with the boundary in Content-Type.
+	if fields, ok := decodeMultipartBody(contentType, dataText); ok {
+		return &postmanBody{Mode: "formdata", FormData: fields}, nil
+	}
 	// JSON sent without a Content-Type is common in hand-written commands, and a value like {"a":"b=c"} would split as a form pair.
 	isJSON := json.Valid([]byte(dataText))
 	treatAsForm := !isJSON && (!hasContentType || strings.Contains(strings.ToLower(contentType), defaultContentTypeForData))

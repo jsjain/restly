@@ -3,6 +3,9 @@ package curl
 import (
 	"errors"
 	"fmt"
+	"io"
+	"mime"
+	"mime/multipart"
 	"net/url"
 	"strconv"
 	"strings"
@@ -287,6 +290,37 @@ func decodeFormBody(data string) ([]kvPair, bool) {
 		return nil, false
 	}
 	return pairs, true
+}
+
+// decodeMultipartBody splits a multipart/form-data body into formdata fields. A file
+// part becomes a file field with no path, since a copied command never holds the file
+// itself (browsers leave its content out), so the user picks the file before sending.
+func decodeMultipartBody(contentType, data string) ([]postmanKV, bool) {
+	mediaType, params, err := mime.ParseMediaType(contentType)
+	if err != nil || mediaType != "multipart/form-data" || params["boundary"] == "" {
+		return nil, false
+	}
+	// mime/multipart also accepts the bare-LF line endings of a body pasted without $'...\r\n'.
+	reader := multipart.NewReader(strings.NewReader(data), params["boundary"])
+	var fields []postmanKV
+	for {
+		part, err := reader.NextPart()
+		if errors.Is(err, io.EOF) {
+			return fields, len(fields) > 0
+		}
+		if err != nil || part.FormName() == "" {
+			return nil, false
+		}
+		if part.FileName() != "" {
+			fields = append(fields, postmanKV{Key: part.FormName(), Type: "file"})
+			continue
+		}
+		value, err := io.ReadAll(part)
+		if err != nil {
+			return nil, false
+		}
+		fields = append(fields, postmanKV{Key: part.FormName(), Type: "text", Value: string(value)})
+	}
 }
 
 // parseFormField reads one -F/--form-string value. allowFile enables the "@path" file
