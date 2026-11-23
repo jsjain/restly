@@ -350,7 +350,7 @@ export default function RequestTab({ tab }: Props) {
               bulk.headers ? (
                 <KvBulkEdit rows={(req.header ??= [])} onChange={edit} label="header" />
               ) : (
-                <KvTable rows={(req.header ??= [])} onChange={edit} label="header" description />
+                <KvTable rows={(req.header ??= [])} onChange={edit} label="header" description headers />
               )
             ) : null}
             {sub === "body" ? <BodyEditor item={item} onChange={edit} /> : null}

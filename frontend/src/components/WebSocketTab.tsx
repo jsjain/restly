@@ -428,7 +428,7 @@ export default function WebSocketTab({ tab }: Props) {
 
       <div className="subtab-body ws-subtab-body">
         {sub === "params" ? <ParamsPanel item={item} onChange={edit} /> : null}
-        {sub === "headers" ? <KvTable rows={(req.header ??= [])} onChange={edit} label="header" /> : null}
+        {sub === "headers" ? <KvTable rows={(req.header ??= [])} onChange={edit} label="header" headers /> : null}
         {sub === "auth" ? <AuthEditor target={req} onChange={edit} hideInherit={isDraft} inherited={inheritedAuth(tab.file, tab.path)} /> : null}
       </div>
 

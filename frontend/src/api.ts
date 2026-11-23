@@ -2,6 +2,7 @@
 // classes we must not use, see types.ts) and our own plain-JSON types. Every function
 // here is a thin wrapper: call the binding, cast the result, normalize Go nils to [].
 import * as Backend from "../wailsjs/go/main/App";
+import { detectFormatKind, formatLossless } from "./format";
 import { EventsOn, EventsOff, ClipboardSetText, WindowSetBackgroundColour } from "../wailsjs/runtime/runtime";
 import type {
   Workspace,
@@ -131,6 +132,9 @@ export function snippet(input: SendInput, lang: string): Promise<string> {
 export async function parseCurl(command: string): Promise<Item> {
   const item = (await Backend.ParseCurl(command)) as unknown as Item;
   if (item.request) item.request.header ??= [];
+  const body = item.request?.body;
+  const kind = body?.mode === "raw" && body.raw ? detectFormatKind("raw", body.options?.raw?.language) : null;
+  if (kind) body!.raw = formatLossless(kind, body!.raw!);
   return item;
 }
 

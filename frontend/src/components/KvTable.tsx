@@ -4,6 +4,7 @@ import Select from "./Select";
 import VarInput from "./VarInput";
 import type { KV } from "../types";
 import "../kvtable.css";
+import { HEADER_NAMES, headerValueOptions } from "../headers";
 import { readDescription, setRowDescription } from "../description";
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
   valuePlaceholder?: string;
   formdata?: boolean; // adds a text/file type column; file rows edit `src` instead of `value`
   description?: boolean; // adds a free-text description column
+  headers?: boolean; // offers well-known header names and values as the user types
   label?: string; // singular noun for what a row holds, e.g. "header", "param", used in aria labels
 }
 
@@ -21,7 +23,7 @@ type Field = "key" | "value";
 // Shared table for params, headers, urlencoded, and form-data: an enabled checkbox
 // (writes/deletes `disabled`), key, value, an optional description, and a delete button. The
 // last row is a blank ghost row: typing in it appends a real row and moves focus there.
-export default function KvTable({ rows, onChange, keyPlaceholder = "Key", valuePlaceholder = "Value", formdata, description, label }: Props) {
+export default function KvTable({ rows, onChange, keyPlaceholder = "Key", valuePlaceholder = "Value", formdata, description, headers, label }: Props) {
   const rowLabel = label ?? (formdata ? "form field" : "row");
   const refs = useRef<Record<Field, (HTMLInputElement | null)[]>>({ key: [], value: [] });
   const focus = useRef<{ index: number; field: Field } | null>(null);
@@ -83,6 +85,7 @@ export default function KvTable({ rows, onChange, keyPlaceholder = "Key", valueP
                   <VarInput
                     value={row.key}
                     placeholder={keyPlaceholder}
+                    suggestions={headers ? HEADER_NAMES : undefined}
                     inputRef={(el) => {
                       refs.current.key[index] = el;
                     }}
@@ -96,6 +99,7 @@ export default function KvTable({ rows, onChange, keyPlaceholder = "Key", valueP
                   <VarInput
                     value={(isFile ? row.src : row.value) ?? ""}
                     placeholder={isFile ? "file path" : valuePlaceholder}
+                    suggestions={headers ? headerValueOptions(row.key) : undefined}
                     inputRef={(el) => {
                       refs.current.value[index] = el;
                     }}
@@ -147,7 +151,12 @@ export default function KvTable({ rows, onChange, keyPlaceholder = "Key", valueP
           <tr className="kv-ghost">
             <td className="kv-ck"></td>
             <td>
-              <VarInput value="" placeholder={keyPlaceholder} onChange={(v) => addFrom("key", v)} />
+              <VarInput
+                value=""
+                placeholder={keyPlaceholder}
+                suggestions={headers ? HEADER_NAMES : undefined}
+                onChange={(v) => addFrom("key", v)}
+              />
             </td>
             <td>
               <VarInput value="" placeholder={valuePlaceholder} onChange={(v) => addFrom("value", v)} />

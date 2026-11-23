@@ -1,6 +1,12 @@
 // Run with: node frontend/checks/format.check.ts
 import assert from "node:assert/strict";
-import { formatJson, formatXml, detectFormatKind } from "../src/format.ts";
+import { formatJson, formatXml, detectFormatKind, formatLossless } from "../src/format.ts";
+
+// Imported bodies format only when nothing but whitespace changes.
+assert.equal(formatLossless("json", '{"a":1}'), '{\n  "a": 1\n}');
+assert.equal(formatLossless("json", '{"id":12345678901234567890}'), '{"id":12345678901234567890}');
+assert.equal(formatLossless("json", '{"a":"\\u00e9"}'), '{"a":"\\u00e9"}');
+assert.equal(formatLossless("json", "not json"), "not json");
 
 // Plain JSON, reindented.
 {

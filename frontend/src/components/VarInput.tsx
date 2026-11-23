@@ -2,6 +2,7 @@ import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "re
 import type { ChangeEvent, ClipboardEvent, FocusEvent, KeyboardEvent, MouseEvent, Ref } from "react";
 import { createPortal } from "react-dom";
 import { ensureGlobalsLoaded, listVariables, resolveVariable, VARIABLE_PATTERN, type ResolvedVariable } from "../variables";
+import { rankSuggestions } from "../headers";
 import "../variables.css";
 
 interface Props {
@@ -15,6 +16,7 @@ interface Props {
   autoFocus?: boolean;
   mono?: boolean;
   inputRef?: Ref<HTMLInputElement>;
+  suggestions?: string[]; // plain-text completions, ranked against the whole value
 }
 
 type Segment = { text: string; name?: string };
@@ -55,6 +57,11 @@ function textWidth(text: string, font: string): number {
   return ctx.measureText(text).width;
 }
 
+function suggestStyle(el: HTMLInputElement) {
+  const r = el.getBoundingClientRect();
+  return { top: r.bottom + 4, left: r.left };
+}
+
 function maskValue(v: string): string {
   return "•".repeat(Math.min(Math.max(v.length, 4), 10));
 }
@@ -75,6 +82,7 @@ export default function VarInput({
   autoFocus,
   mono = true,
   inputRef,
+  suggestions,
 }: Props) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const mirrorRef = useRef<HTMLDivElement | null>(null);
@@ -89,6 +97,15 @@ export default function VarInput({
   const [autocomplete, setAutocomplete] = useState<{ start: number; query: string } | null>(null);
   const [acIndex, setAcIndex] = useState(0);
   const acId = useId();
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const [sugIndex, setSugIndex] = useState(0);
+  // True until this input's first passive effect. KvTable focuses a row it just created from the ghost row
+  // in a layout effect, before then, so only that hand-off opens suggestions on focus. Focusing a filled
+  // cell must not, or a stray Tab would overwrite its value.
+  const fresh = useRef(true);
+  useEffect(() => {
+    fresh.current = false;
+  }, []);
 
   useEffect(() => {
     ensureGlobalsLoaded();
@@ -130,6 +147,9 @@ export default function VarInput({
     return listVariables().filter((v) => v.name.toLowerCase().includes(q));
   }, [autocomplete]);
 
+  // Variable completion takes precedence over plain suggestions.
+  const shown = suggestions && suggestOpen && !autocomplete ? rankSuggestions(suggestions, value) : [];
+
   function syncScroll() {
     if (mirrorRef.current && innerInputRef.current) mirrorRef.current.scrollLeft = innerInputRef.current.scrollLeft;
   }
@@ -148,6 +168,15 @@ export default function VarInput({
     // selectionStart reflects the caret post-edit synchronously on the native input.
     requestAnimationFrame(syncScroll);
     evaluateAutocomplete();
+    setSuggestOpen(true);
+    setSugIndex(0);
+  }
+
+  function commitSuggestion(option: string) {
+    pendingCaret.current = option.length;
+    setSuggestOpen(false);
+    setSugIndex(0);
+    onChange(option);
   }
 
   function commit(item: ResolvedVariable) {
@@ -164,6 +193,28 @@ export default function VarInput({
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (shown.length > 0) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSugIndex((i) => Math.min(i + 1, shown.length - 1));
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSugIndex((i) => Math.max(i - 1, 0));
+        return;
+      }
+      if (e.key === "Enter" || e.key === "Tab") {
+        e.preventDefault();
+        commitSuggestion(shown[Math.min(sugIndex, shown.length - 1)]);
+        return;
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setSuggestOpen(false);
+        return;
+      }
+    }
     if (autocomplete && filtered.length > 0) {
       if (e.key === "ArrowDown") {
         e.preventDefault();
@@ -290,18 +341,47 @@ export default function VarInput({
         onKeyUp={handleKeyUp}
         onScroll={syncScroll}
         onClick={syncScroll}
-        onFocus={syncScroll}
+        onFocus={() => {
+          syncScroll();
+          if (fresh.current) setSuggestOpen(true);
+        }}
         onSelect={syncScroll}
         onBlur={(e) => {
           setAutocomplete(null);
+          setSuggestOpen(false);
           onBlur?.(e);
         }}
         onPaste={onPaste}
-        aria-activedescendant={autocomplete && filtered[acIndex] ? `${acId}-${acIndex}` : undefined}
+        aria-activedescendant={
+          autocomplete && filtered[acIndex] ? `${acId}-${acIndex}` : shown.length > 0 ? `${acId}-s${sugIndex}` : undefined
+        }
       />
       {hover ? (
         <VarPopup token={hover.name} anchorRect={hover.rect} onEnter={handlePopupEnter} onLeave={handlePopupLeave} />
       ) : null}
+      {shown.length > 0 && innerInputRef.current
+        ? createPortal(
+            <ul className="var-autocomplete" role="listbox" id={acId} style={suggestStyle(innerInputRef.current)}>
+              {shown.map((option, i) => (
+                <li
+                  key={option}
+                  id={`${acId}-s${i}`}
+                  role="option"
+                  aria-selected={i === sugIndex}
+                  className={"var-autocomplete-item" + (i === sugIndex ? " active" : "")}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    commitSuggestion(option);
+                  }}
+                  onMouseEnter={() => setSugIndex(i)}
+                >
+                  <span className="var-autocomplete-name mono">{option}</span>
+                </li>
+              ))}
+            </ul>,
+            document.body
+          )
+        : null}
       {autocomplete && acStyle && filtered.length > 0
         ? createPortal(
             <ul className="var-autocomplete" role="listbox" id={acId} style={{ top: acStyle.top, left: acStyle.left }}>

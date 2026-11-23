@@ -430,6 +430,8 @@
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius);
   overflow: hidden;
+  /* In a flex column (headers, form bodies) overflow: hidden would let the frame shrink and clip its rows instead of the pane scrolling. */
+  flex-shrink: 0;
 }
 
 .kv-frame .kv-table {

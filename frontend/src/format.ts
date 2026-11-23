@@ -193,3 +193,11 @@ export function formatBody(kind: BodyFormatKind, text: string): FormatResult {
   if (kind === "xml") return formatXml(text);
   return formatJson(text); // "json" and "graphql-variables" are both plain JSON
 }
+
+// Formats a body nobody asked to format, such as an imported one, only when that changes whitespace
+// alone: JSON.parse rounds big integers and rewrites escapes, which must not happen silently.
+export function formatLossless(kind: BodyFormatKind, text: string): string {
+  const r = formatBody(kind, text);
+  const squash = (s: string) => s.replace(/\s+/g, "");
+  return r.ok && squash(r.text) === squash(text) ? r.text : text;
+}
