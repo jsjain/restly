@@ -4,7 +4,7 @@ import { File, Globe, Info, Keyboard, Palette, Plus, SlidersHorizontal, Trash2 }
 import type { LucideIcon } from "lucide-react";
 import * as api from "../api";
 import { toast, setHistoryLimit } from "../store";
-import type { AppInfo, ClientCert, Settings } from "../types";
+import type { AppInfo, ClientCert, Settings, UpdateSettings, UpdateStatus } from "../types";
 import { listCommands, SETTINGS_SAVED } from "../commands";
 import { effectiveKeys, isCustomized } from "../shortcuts";
 import { fuzzyFilter, highlight } from "../fuzzy";
@@ -36,6 +36,32 @@ const DENSITIES: { value: Density; label: string }[] = [
   { value: "default", label: "Default" },
   { value: "comfortable", label: "Comfortable" },
 ];
+
+const UPDATE_MODES: { value: UpdateSettings["mode"]; label: string }[] = [
+  { value: "off", label: "Off" },
+  { value: "notify", label: "Notify me" },
+  { value: "download", label: "Download and ask to restart" },
+  { value: "auto", label: "Install automatically" },
+];
+
+function updateLine(status: UpdateStatus | null): string {
+  switch (status?.state) {
+    case "checking":
+      return "Checking…";
+    case "current":
+      return "Restly is up to date.";
+    case "available":
+      return `Restly ${status.version} is available.`;
+    case "ready":
+      return `Restly ${status.version} is ready to install.`;
+    case "downloading":
+      return `Downloading Restly ${status.version}…`;
+    case "error":
+      return `Couldn't check for updates. ${status.error}`;
+    default:
+      return "";
+  }
+}
 
 const PROXY_MODES = [
   { mode: "none", label: "None" },
@@ -113,6 +139,7 @@ export default function AppSettingsTab() {
   const [logPath, setLogPath] = useState("");
   const uaInputRef = useRef<HTMLInputElement>(null);
   const [density, setDensityChoice] = useState<Density>(getDensity);
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
 
   useEffect(() => {
     api
@@ -130,6 +157,11 @@ export default function AppSettingsTab() {
       .getAppInfo()
       .then(setAppInfo)
       .catch((err) => toast(String(err), "error"));
+    api
+      .getUpdateStatus()
+      .then((s) => setUpdateStatus((prev) => prev ?? s))
+      .catch(() => {});
+    return api.onUpdateStatus(setUpdateStatus);
   }, []);
 
   async function copyVersion() {
@@ -183,11 +215,35 @@ export default function AppSettingsTab() {
     update((s) => (s.network.clientCerts[index][field] = value));
   }
 
+  // Writes through at once. Reads the stored settings first, so a version dismissed from the banner
+  // (update.skipped) and Network edits not yet saved here are neither lost nor saved by accident.
+  async function commitUpdateMode(mode: UpdateSettings["mode"]) {
+    try {
+      const stored = await api.getSettings();
+      stored.update = { ...stored.update, mode };
+      await api.saveSettings(stored);
+      update((s) => (s.update = stored.update));
+      window.dispatchEvent(new Event(SETTINGS_SAVED));
+    } catch (err) {
+      toast(String(err), "error");
+    }
+  }
+
+  async function checkNow() {
+    try {
+      setUpdateStatus(await api.checkForUpdates());
+    } catch (err) {
+      toast(String(err), "error");
+    }
+  }
+
   async function handleSave() {
     setSaving(true);
     setError("");
     try {
-      await api.saveSettings(settings!);
+      // update.skipped may have changed since this tab loaded, and mode is saved by its own control.
+      const stored = await api.getSettings();
+      await api.saveSettings({ ...settings!, update: stored.update });
       window.dispatchEvent(new Event(SETTINGS_SAVED));
       toast("Settings saved");
     } catch (err) {
@@ -332,6 +388,17 @@ export default function AppSettingsTab() {
                     onBlur={() => setSecondsText(String(autosave.seconds))}
                   />
                   <span className="unit">seconds</span>
+                </Row>
+              </section>
+              <section className="sset">
+                <h2>Updates</h2>
+                <Row title="Updates" help="Restly checks GitHub for a new version at launch and once a day.">
+                  <Select
+                    value={settings.update.mode}
+                    options={UPDATE_MODES}
+                    ariaLabel="Updates"
+                    onChange={(v) => commitUpdateMode(v as UpdateSettings["mode"])}
+                  />
                 </Row>
               </section>
               <section className="sset">
@@ -563,6 +630,14 @@ export default function AppSettingsTab() {
                   Copy
                 </button>
               </div>
+              <Row title="Updates" help={updateLine(updateStatus) || undefined}>
+                <button
+                  onClick={checkNow}
+                  disabled={updateStatus?.state === "checking" || updateStatus?.state === "downloading"}
+                >
+                  Check for updates
+                </button>
+              </Row>
               {logPath ? (
                 <Row title="Log file" help={logPath}>
                   <button onClick={showLogFile}>Show log file</button>

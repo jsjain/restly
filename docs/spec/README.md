@@ -57,5 +57,6 @@ frontend/               React + TypeScript + CodeMirror 6
 | [testing.md](testing.md) | D8, D9 | How Restly is tested and its performance targets. |
 | [releases.md](releases.md) | D31, D32 | The version source, logo, CI builds, and release files. |
 | [error-log.md](error-log.md) | D35 | restly.log and error reports from the webview. |
+| [updates.md](updates.md) | D36 | Checking for, downloading, and installing new versions. |
 
-The next free decision number is D36.
+The next free decision number is D37.

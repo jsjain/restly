@@ -261,9 +261,25 @@ export interface Network {
   userAgent: string; // "" for Restly's own default
 }
 
+export interface UpdateSettings {
+  mode: "off" | "notify" | "download" | "auto";
+  skipped?: string; // a version the user dismissed, not offered again by the background check
+}
+
 export interface Settings {
   network: Network;
   historyLimit: number; // sent requests the History list keeps
+  update: UpdateSettings;
+}
+
+// What the updater is doing, sent by Go as the "update:status" event.
+export interface UpdateStatus {
+  state: "idle" | "checking" | "current" | "available" | "downloading" | "ready" | "error";
+  version: string;
+  pageUrl: string; // the release page
+  error: string;
+  checkedAt: string;
+  canInstall: boolean; // false when this install cannot update itself, so only the release page is offered
 }
 
 // Shown in Settings > About. Commit, buildTime, and goVersion are "" when built without vcs info.

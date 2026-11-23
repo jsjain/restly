@@ -6,6 +6,10 @@ export function CancelSend(arg1) {
   return window['go']['main']['App']['CancelSend'](arg1);
 }
 
+export function CheckForUpdates() {
+  return window['go']['main']['App']['CheckForUpdates']();
+}
+
 export function ClearCookies() {
   return window['go']['main']['App']['ClearCookies']();
 }
@@ -30,6 +34,10 @@ export function DeleteTheme(arg1) {
   return window['go']['main']['App']['DeleteTheme'](arg1);
 }
 
+export function DownloadUpdate() {
+  return window['go']['main']['App']['DownloadUpdate']();
+}
+
 export function DuplicateCollection(arg1) {
   return window['go']['main']['App']['DuplicateCollection'](arg1);
 }
@@ -52,6 +60,10 @@ export function GetKeybindings() {
 
 export function GetSettings() {
   return window['go']['main']['App']['GetSettings']();
+}
+
+export function GetUpdateStatus() {
+  return window['go']['main']['App']['GetUpdateStatus']();
 }
 
 export function GetWorkspace() {
@@ -114,6 +126,10 @@ export function QuitApp() {
   return window['go']['main']['App']['QuitApp']();
 }
 
+export function RestartToUpdate() {
+  return window['go']['main']['App']['RestartToUpdate']();
+}
+
 export function RevealLogFile() {
   return window['go']['main']['App']['RevealLogFile']();
 }
@@ -156,6 +172,10 @@ export function SetHistoryLimit(arg1) {
 
 export function SetUnsaved(arg1) {
   return window['go']['main']['App']['SetUnsaved'](arg1);
+}
+
+export function SkipUpdate(arg1) {
+  return window['go']['main']['App']['SkipUpdate'](arg1);
 }
 
 export function Snippet(arg1, arg2) {

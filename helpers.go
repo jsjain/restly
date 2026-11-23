@@ -102,6 +102,20 @@ func normalizeHistoryLimit(limit int) int {
 	return min(limit, maxHistoryLimit)
 }
 
+// normalizeUpdateMode maps an unset or unknown mode (older settings.json files) to notify.
+func normalizeUpdateMode(mode string) string {
+	switch mode {
+	case updateOff, updateNotify, updateDownload, updateAuto:
+		return mode
+	default:
+		return updateNotify
+	}
+}
+
 func defaultSettings() Settings {
-	return Settings{Network: httpx.DefaultNetwork(), HistoryLimit: defaultHistoryLimit}
+	return Settings{
+		Network:      httpx.DefaultNetwork(),
+		HistoryLimit: defaultHistoryLimit,
+		Update:       UpdateSettings{Mode: updateNotify},
+	}
 }

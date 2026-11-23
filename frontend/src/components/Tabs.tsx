@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, Cookie, Download, Folder, Globe, Info, Layers, Play, Plug, Plus, SlidersHorizontal, Terminal, X } from "lucide-react";
 import * as api from "../api";
+import UpdateBanner from "./UpdateBanner";
 import {
   state,
   setActiveTab,
@@ -400,6 +401,7 @@ export default function Tabs() {
         </div>
       </div>
       {menu ? <TabContextMenu tab={menu.tab} x={menu.x} y={menu.y} onClose={() => setMenu(null)} /> : null}
+      <UpdateBanner />
       <div className="tab-content">
         <ErrorBoundary resetKey={state.activeTab}>
           {state.activeTab?.kind === "request" ? (

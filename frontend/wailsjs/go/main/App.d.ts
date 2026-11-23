@@ -8,6 +8,8 @@ import {collection} from '../models';
 
 export function CancelSend(arg1:string):Promise<void>;
 
+export function CheckForUpdates():Promise<main.UpdateStatus>;
+
 export function ClearCookies():Promise<void>;
 
 export function ClearHistory():Promise<void>;
@@ -20,6 +22,8 @@ export function DeleteHistory(arg1:string):Promise<void>;
 
 export function DeleteTheme(arg1:string):Promise<void>;
 
+export function DownloadUpdate():Promise<void>;
+
 export function DuplicateCollection(arg1:string):Promise<main.FileRef>;
 
 export function Export(arg1:string):Promise<string>;
@@ -31,6 +35,8 @@ export function GetHistory():Promise<Array<history.Entry>>;
 export function GetKeybindings():Promise<main.TextFile>;
 
 export function GetSettings():Promise<main.Settings>;
+
+export function GetUpdateStatus():Promise<main.UpdateStatus>;
 
 export function GetWorkspace():Promise<main.Workspace>;
 
@@ -62,6 +68,8 @@ export function PickFile(arg1:string):Promise<string>;
 
 export function QuitApp():Promise<void>;
 
+export function RestartToUpdate():Promise<void>;
+
 export function RevealLogFile():Promise<void>;
 
 export function Run(arg1:main.RunInput):Promise<void>;
@@ -83,6 +91,8 @@ export function Send(arg1:main.SendInput):Promise<main.SendResult>;
 export function SetHistoryLimit(arg1:number):Promise<number>;
 
 export function SetUnsaved(arg1:boolean):Promise<void>;
+
+export function SkipUpdate(arg1:string):Promise<void>;
 
 export function Snippet(arg1:main.SendInput,arg2:string):Promise<string>;
 

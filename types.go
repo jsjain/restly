@@ -24,8 +24,25 @@ type Workspace struct {
 
 // Settings are per-machine preferences stored outside the workspace.
 type Settings struct {
-	Network      httpx.Network `json:"network"`
-	HistoryLimit int           `json:"historyLimit"` // entries kept, defaultHistoryLimit when unset
+	Network      httpx.Network  `json:"network"`
+	HistoryLimit int            `json:"historyLimit"` // entries kept, defaultHistoryLimit when unset
+	Update       UpdateSettings `json:"update"`
+}
+
+// UpdateSettings choose how Restly finds and installs new versions.
+type UpdateSettings struct {
+	Mode    string `json:"mode"`              // updateOff, updateNotify, updateDownload or updateAuto
+	Skipped string `json:"skipped,omitempty"` // a version the user dismissed, not offered again by the background check
+}
+
+// UpdateStatus is the state of the update check and download, sent with eventUpdateStatus.
+type UpdateStatus struct {
+	State      string `json:"state"` // one of the update* state constants
+	Version    string `json:"version"`
+	PageURL    string `json:"pageUrl"`
+	Error      string `json:"error"`
+	CheckedAt  string `json:"checkedAt"`  // RFC 3339, "" before the first check
+	CanInstall bool   `json:"canInstall"` // false when the user must install from the release page
 }
 
 type FileRef struct {

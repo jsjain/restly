@@ -3,7 +3,7 @@
 // here is a thin wrapper: call the binding, cast the result, normalize Go nils to [].
 import * as Backend from "../wailsjs/go/main/App";
 import { detectFormatKind, formatLossless } from "./format";
-import { EventsOn, EventsOff, ClipboardSetText, WindowSetBackgroundColour } from "../wailsjs/runtime/runtime";
+import { EventsOn, EventsOff, ClipboardSetText, WindowSetBackgroundColour, BrowserOpenURL } from "../wailsjs/runtime/runtime";
 import type {
   Workspace,
   Collection,
@@ -21,6 +21,7 @@ import type {
   TextFile,
   WsEvent,
   AppInfo,
+  UpdateStatus,
 } from "./types";
 
 export { EventsOn, EventsOff, ClipboardSetText };
@@ -184,6 +185,7 @@ export async function getSettings(): Promise<Settings> {
   const settings = (await Backend.GetSettings()) as unknown as Settings;
   settings.network.clientCerts ??= [];
   settings.network.userAgent ??= "";
+  settings.update ??= { mode: "notify" };
   return settings;
 }
 
@@ -268,4 +270,35 @@ export function onWsEvent(cb: (event: WsEvent) => void): () => void {
 
 export function onHistoryAdded(cb: (entry: HistoryEntry) => void): () => void {
   return EventsOn("history:added", cb);
+}
+
+export function getUpdateStatus(): Promise<UpdateStatus> {
+  return Backend.GetUpdateStatus() as unknown as Promise<UpdateStatus>;
+}
+
+// Checks in any mode and resolves the result.
+export function checkForUpdates(): Promise<UpdateStatus> {
+  return Backend.CheckForUpdates() as unknown as Promise<UpdateStatus>;
+}
+
+// Rejects with the failure, which callers show.
+export function downloadUpdate(): Promise<void> {
+  return Backend.DownloadUpdate();
+}
+
+// Quits through the unsaved-changes prompt, installs, and relaunches.
+export function restartToUpdate(): Promise<void> {
+  return Backend.RestartToUpdate();
+}
+
+export function skipUpdate(version: string): Promise<void> {
+  return Backend.SkipUpdate(version);
+}
+
+export function onUpdateStatus(cb: (status: UpdateStatus) => void): () => void {
+  return EventsOn("update:status", cb);
+}
+
+export function openUrl(url: string): void {
+  BrowserOpenURL(url);
 }

@@ -1,11 +1,14 @@
 package main
 
+import "time"
+
 const (
 	eventRunResult    = "run:result"
 	eventRunDone      = "run:done"
 	eventHistoryAdded = "history:added"
 	eventWebSocket    = "ws:event"
 	eventQuitRequest  = "app:quit-requested"
+	eventUpdateStatus = "update:status"
 
 	// maxBodyView caps the body sent to the webview. Larger bodies are saved to a file instead.
 	maxBodyView = 10 << 20
@@ -31,6 +34,38 @@ const (
 	themesDir       = "themes" // imported VS Code color themes, kept as the original files
 	keybindingsFile = "keybindings.json"
 	maxThemeSize    = 5 << 20
+)
+
+// Update modes, stored in Settings.Update.Mode.
+const (
+	updateOff      = "off"
+	updateNotify   = "notify"
+	updateDownload = "download"
+	updateAuto     = "auto"
+)
+
+// Update states, sent in UpdateStatus.State.
+const (
+	updateIdle        = "idle"
+	updateChecking    = "checking"
+	updateCurrent     = "current"
+	updateAvailable   = "available"
+	updateDownloading = "downloading"
+	updateReady       = "ready"
+	updateError       = "error"
+)
+
+const (
+	updateFirstCheck = 10 * time.Second
+	updateInterval   = 24 * time.Hour
+	// updateClientTimeout covers a whole asset download, which is the longest request.
+	updateClientTimeout = 10 * time.Minute
+
+	updatesDir          = "updates" // downloaded releases, kept in the data folder
+	defaultUpdateFeed   = "https://api.github.com/repos/jsjain/restly/releases/latest"
+	defaultUpdateOrigin = "https://github.com"
+	updateFeedEnv       = "RESTLY_UPDATE_FEED" // replaces the feed, for tests against a local server
+	updateChecksumsName = "SHA256SUMS.txt"
 )
 
 // errSendCancelled is the SendResult error after CancelSend, shown in the response pane.

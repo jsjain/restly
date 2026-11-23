@@ -48,6 +48,7 @@ type App struct {
 	logFile  *os.File    // nil when the log file failed to open
 	fileLog  *log.Logger // writes to logFile, nil when logFile is nil
 	logPath  string      // "" when the log file failed to open
+	updates  *updater
 
 	mu           sync.Mutex // guards the fields below
 	collections  map[string]*collection.Collection
@@ -69,6 +70,13 @@ func NewApp() *App {
 		logError:     log.Printf,
 	}
 	app.sockets = ws.NewManager(func(event ws.Event) { app.emit(eventWebSocket, event) })
+	feedURL, origin := updateFeed(os.Getenv(updateFeedEnv))
+	app.updates = newUpdater(
+		feedURL,
+		origin,
+		func(status UpdateStatus) { app.emit(eventUpdateStatus, status) },
+		func(format string, args ...any) { app.logError(format, args...) },
+	)
 	return app
 }
 
@@ -97,6 +105,8 @@ func (app *App) startup(ctx context.Context) {
 	}
 	if err := app.openData(dir); err != nil {
 		app.logError("failed to load settings, cookies, or history: %v", err)
+	} else {
+		app.startUpdates(ctx, dir)
 	}
 }
 
@@ -187,6 +197,8 @@ func (app *App) shutdown(ctx context.Context) {
 	if err := app.saveCookies(); err != nil {
 		app.logError("%v", err)
 	}
+	// Last, so the relaunched version never starts before this one has written its files.
+	app.installUpdate()
 	if app.logFile != nil {
 		if err := app.logFile.Close(); err != nil {
 			runtime.LogErrorf(ctx, "failed to close the log file: %v", err)
@@ -236,6 +248,7 @@ func (app *App) SaveSettings(settings Settings) error {
 		return errors.New("settings folder failed to open, see the log for details")
 	}
 	settings.HistoryLimit = normalizeHistoryLimit(settings.HistoryLimit)
+	settings.Update.Mode = normalizeUpdateMode(settings.Update.Mode)
 	if err := app.client.Configure(settings.Network); err != nil {
 		return err
 	}
@@ -1243,6 +1256,7 @@ func readSettings(path string) (Settings, error) {
 		return defaultSettings(), fmt.Errorf("failed to parse %s: %w", path, err)
 	}
 	settings.HistoryLimit = normalizeHistoryLimit(settings.HistoryLimit)
+	settings.Update.Mode = normalizeUpdateMode(settings.Update.Mode)
 	return settings, nil
 }
 

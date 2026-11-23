@@ -695,9 +695,24 @@ export namespace main {
 		    return a;
 		}
 	}
+	export class UpdateSettings {
+	    mode: string;
+	    skipped?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new UpdateSettings(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.mode = source["mode"];
+	        this.skipped = source["skipped"];
+	    }
+	}
 	export class Settings {
 	    network: httpx.Network;
 	    historyLimit: number;
+	    update: UpdateSettings;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -707,6 +722,7 @@ export namespace main {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.network = this.convertValues(source["network"], httpx.Network);
 	        this.historyLimit = source["historyLimit"];
+	        this.update = this.convertValues(source["update"], UpdateSettings);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -739,6 +755,29 @@ export namespace main {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.file = source["file"];
 	        this.data = source["data"];
+	    }
+	}
+	
+	export class UpdateStatus {
+	    state: string;
+	    version: string;
+	    pageUrl: string;
+	    error: string;
+	    checkedAt: string;
+	    canInstall: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new UpdateStatus(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.state = source["state"];
+	        this.version = source["version"];
+	        this.pageUrl = source["pageUrl"];
+	        this.error = source["error"];
+	        this.checkedAt = source["checkedAt"];
+	        this.canInstall = source["canInstall"];
 	    }
 	}
 	export class Workspace {

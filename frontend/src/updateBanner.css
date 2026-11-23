@@ -1,0 +1,19 @@
+/* A slim notice row above the tab strip. */
+
+.update-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  padding: 4px 12px;
+  background: var(--primary-tint);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: var(--fs-small);
+  color: var(--text);
+}
+
+.update-banner .update-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
