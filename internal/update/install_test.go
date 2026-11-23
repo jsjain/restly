@@ -55,7 +55,8 @@ func TestInstallSwap(t *testing.T) {
 		}
 		info, err := os.Stat(exe)
 		requireOK(t, err)
-		if info.Mode().Perm() != 0o755 {
+		// Windows has no executable bit, so it reports 0666 for any file.
+		if runtime.GOOS != "windows" && info.Mode().Perm() != 0o755 {
 			t.Errorf("mode = %v, want 0755", info.Mode().Perm())
 		}
 		if got := readFile(t, exe+".old"); got != "old" {
